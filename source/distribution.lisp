@@ -1,0 +1,210 @@
+(in-package #:mang)
+
+(defadt [distribution]
+  (<3dist> [distribution] (integer (0))
+           [rope] (integer (0))
+           [distribution] (integer (0)))
+  (<2dist> [rope] (integer (0))
+           [distribution] (integer (0)))
+  (<sure> [rope] (integer (0)))
+  (<nodist> [rope]))
+
+(defmatch mult ([distribution] integer)
+    [distribution]
+  (((<nodist> r)
+    _)
+   (<nodist> r))
+  (((<sure> r s)
+    x)
+   (<sure> r (* s x)))
+  (((<2dist> r sr d sd)
+    x)
+   (<2dist> r (* sr x)
+            (mult d x)
+            (* sd x)))
+  (((<3dist> dl sdl r sr dr sdr)
+    x)
+   (<3dist> (mult dl x)
+            (* sdl x)
+            r (* sr x)
+            (mult dr x)
+            (* sdr x))))
+
+(defmatch size ([distribution])
+    (integer 0)
+  ((<3dist> _ l _ i _ r)
+   (+ l i r))
+  ((<2dist> _ i _ d)
+   (+ i d))
+  ((<sure> _ s)
+   s)
+  ((<nodist> _)
+   0))
+
+(defmatch compare ([distribution] [distribution])
+    (member :less :equal :greater)
+  (((<nodist> d1)
+    (<nodist> d2))
+   (compare d1 d2))
+  (((<nodist> _)
+    _)
+   :less)
+  ((_ (<nodist> _))
+   :greater)
+  (((<sure> r1 s1)
+    (<sure> r2 s2))
+   (ecase (compare s1 s2)
+     (:less :less)
+     (:greater :greater)
+     (:equal
+      (comare r1 r2))))
+  (((<sure> _ _)
+    _)
+   :less)
+  ((_ (<sure> _ _))
+   :greater)
+  (((<2dist> r1 s1 d1 sd1)
+    (<2dist> r2 s2 d2 sd2))
+   (ecase (compare s1 s2)
+     (:less :less)
+     (:greater :greater)
+     (:equal
+      (ecase (compare sd1 sd2)
+        (:less :less)
+        (:greater :greater)
+        (:equal
+         (ecase (compare r1 r2)
+           (:less :less)
+           (:greater :greater)
+           (:equal
+            (compare d1 d2))))))))
+  (((<2dist> _ _ _ _)
+    _)
+   :less)
+  ((_ (<2dist> _ _ _ _))
+   :greater)
+  (((<3dist> dl1 sl1 r1 s1 dr1 sr1)
+    (<3dist> dl2 sl2 r2 s2 dr2 sr2))
+   (ecase (compare s1 s2)
+     (:less :less)
+     (:greater :greater)
+     (:equal
+      (ecase (compare sl1 sl2)
+        (:less :less)
+        (:greater :greater)
+        (:equal
+         (ecase (compare sr1 sr2)
+           (:less :less)
+           (:greater :greater)
+           (:equal
+            (ecase (compare r1 r2)
+              (:less :less)
+              (:greater :greater)
+              (:equal
+               (ecase (compare dl1 dl2)
+                 (:less :less)
+                 (:greater :greater)
+                 (:equal
+                  (compare dr1 dr2)))))))))))))
+
+(defmatch insert ([distribution] [rope] integer)
+    [distribution]
+  (((<nodist> _)
+    r s)
+   (<sure> r s))
+  (((<sure> or os)
+    r s)
+   (ecase (compare or r)
+     (:less
+      (<2dist> or os
+               (<sure> r s)
+               s))
+     (:equal
+      (<sure> or (+ os s)))
+     (:greater
+      (<2dist> r s
+               (<sure> or os)
+               os))))
+  (((<2dist> or os d sd)
+    r s)
+   (ecase (compare or r)
+     (:less
+      (let ((nd (insert d r s)))
+        (<2dist> or os nd (size nd))))
+     (:equal
+      (<2dist> or (+ os s)
+               d sd))
+     (:greater
+      (<3dist> (<sure> r s)
+               s
+               or os
+               d sd))))
+  (((<3dist> ld ls or os rd rs)
+    r s)
+   (ecase (compare or os)
+     (:less
+      (let ((nrd (insert rd r s)))
+        (<3dist> ld ls
+                 or os
+                 nrd (size nrd))))
+     (:equal
+      (<3dist> ld ls
+               or (+ os s)
+               rd rs))
+     (:greater
+      (let ((nld (insert ld r s)))
+        (<3dist> nld (size nld)
+                 or os
+                 rd rs))))))
+
+(defmatch merge ([distribution] [distribution])
+    [distribution]
+  (((<nodist> _)
+    d)
+   d)
+  ((d (<nodist> _))
+   d)
+  (((<sure> item size)
+    d)
+   (insert d item size))
+  ((d (<sure> item size))
+   (insert d item size))
+  (((<2dist> r s di _)
+    d)
+   (merge (insert d r s)
+          di))
+  ((d (<2dist> r s di _))
+   (merge (insert d r s)
+          di))
+  (((<3dist> dl _ r s dr _)
+    d)
+   (merge (merge (insert d r s)
+                 dl)
+          dr)))
+
+(defmatch extract ([distribution] integer)
+    [rope]
+  (((<nodist> result)
+    _)
+   result)
+  (((<sure> result _)
+    _)
+   result)
+  (((<2dist> item size dist _)
+    index)
+   (if (< index size)
+       item
+       (extract dist (- index size))))
+  (((<3dist> dl sl i s dr _)
+    index)
+   (if (< index sl)
+       (extract dl index)
+       (let ((index (- index sl)))
+         (if (< index s)
+             i
+             (extract dr index))))))
+
+(defun random-from-dist (distribution)
+  (declare (type [distribution] distribution))
+  (extract distribution (random (max (size distribution)
+                                     1))))
