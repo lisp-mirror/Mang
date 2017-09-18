@@ -1,8 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:mang
-  (:use #:cl #:cl-adt #:cells #:equal #:cl-ppcre #:cl-ppcre-unicode
-        #:cl-automaton)
+  (:use #:cl #:cl-adt #:cells #:equal #:cl-ppcre #:cl-ppcre-unicode)
   (:shadowing-import-from
    #:fset
    #:compare #:with #:less #:convert :set #:union #:@ #:filter #:image #:map

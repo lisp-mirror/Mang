@@ -8,8 +8,7 @@
                #:fset
                #:cl-adt
                #:equal
-               #:cl-ppcre-unicode
-               #:cl-automaton)
+               #:cl-ppcre-unicode)
   :components
   ((:file "package")
    (:module
