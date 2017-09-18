@@ -14,18 +14,13 @@
                     (collection set)
                     &key (key-fn #'car)
                       (value-fn #'cdr)
-                      from-type pair-fn &allow-other-keys)
-  (declare (ignore from-type pair-fn))
-  (convert 'map (convert 'list collection)
+                      from-type (pair-fn #'cons)
+                      &allow-other-keys)
+  (declare (ignore from-type))
+  (convert 'map (convert 'list collection
+                         :pair-fn pair-fn)
            :key-fn key-fn
            :value-fn value-fn))
-
-(defun origin (obj map)
-  (expand (lambda (k v)
-            (if (equal? v obj)
-                (set k)
-                (empty-set)))
-          map))
 
 (defmethod all-fitting ((collection map)
                         obj)
@@ -40,14 +35,20 @@
             (@ predicate obj))
           collection))
 
+(defun origin (obj map)
+  (expand (lambda (k v)
+            (if (equal? v obj)
+                (set k)
+                (empty-set)))
+          map))
+
 (defun map-value-order (obj map)
   (size (origin obj map)))
 
 (defun filtering-combine (obj map add mult initial-value)
   (let ((result initial-value))
-    (fset:do-map (k v
-                    (all-fitting map obj)
-                    result)
+    (do-map (k v (all-fitting map obj)
+               result)
       (declare (ignore k))
       (setf result (@ add (@ mult (map-value-order v map)
                                   v)
