@@ -11,3 +11,8 @@
                                     (declare (ignore k))
                                     v)
                                   (classes<- self))))))
+
+(defun glyph-system (phoneme-classes)
+  (make-instance 'glyph-system
+                 :phoneme-classes (with-default phoneme-classes
+                                    (empty-set))))
