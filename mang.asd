@@ -1,25 +1,49 @@
-;;;; mang.asd
+;;;; mang-cells.asd
 
 (asdf:defsystem #:mang
-  :description "Describe mang here"
-  :author "Thomas Bartscher <thomas.bartscher@weltraumschlangen.de>"
-  :license "BSD3"
-  :depends-on (#:equal
+  :description "Describe mang-cells here"
+  :author "Thomas Bartscher <thomas-bartscher@weltraumschlangen.de>"
+  :license "MPL-v2.0"
+  :depends-on (#:cells
+               #:fset
                #:cl-adt
-               #:rope)
+               #:equal
+               #:cl-ppcre-unicode
+               #:cl-automaton)
   :components
   ((:file "package")
    (:module
-    "source"
+    "utility"
     :depends-on ("package")
     :components
-    ((:file "distribution")
-     (:file "match")
-     (:file "chop"
-            :depends-on ("distribution"
-                         "match"))
-     (:file "follow-db"
-            :depends-on ("distribution"
-                         "match"))
+    ((:file "set")
+     (:file "distribution")
+     (:file "nfsm-dfsm"
+            :depends-on ("set" "distribution"))
+     ))
+   (:module
+    "source"
+    :depends-on ("package" "utility")
+    :components
+    ((:module
+      "phonotactics"
+      :components
+      (
+       ))
+     (:module
+      "grammar"
+      :components
+      (
+       ))
+     (:module
+      "language"
+      :components
+      (
+       ))
+     (:module
+      "history"
+      :components
+      (
+       ))
      ))
    ))
