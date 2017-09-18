@@ -27,7 +27,7 @@
     ((:module
       "phonotactics"
       :components
-      (
+      ((:file "glyph")
        ))
      (:module
       "grammar"
