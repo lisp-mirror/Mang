@@ -79,12 +79,3 @@
   (convert 'list
            (intersection (convert 'set list)
                          set)))
-
-#+nil
-(defmethod lookup-union (set map)
-  (if (empty? set)
-      (empty-set)
-      (let ((value (arb set)))
-        (union (set (@ map value))
-               (lookup-union (less set value)
-                             map)))))
