@@ -1,5 +1,11 @@
 (in-package #:mang)
 
+;;;;; Definitions pertaining to nondeterministic finite state machines (NFSMs)
+;;;;; and deterministic finite state machines (DFSMs). NFSMs should never be
+;;;;; used anywhere but for creating DFSMs out of them. That is, outside this
+;;;;; file, anything relating to NFSMs should be a method definition for the
+;;;;; generic function NFSM<-.
+
 (defun transition-closure (states transitions)
   (labels ((_rec (states acc)
              (if (empty? states)
@@ -33,6 +39,19 @@
                 (with (@ ts transition)
                       target)))))
 
+;;;; The functions for generating NFSMs all return multiple values. Defining an
+;;;; own NFSM class seems like overkill (since NFSMs shouldn't be used anywhere
+;;;; else either way) and returning it in a list just adds additional overhead
+;;;; (I assume).
+;;;; The values returned are, in this order:
+;;;; START-STATE ACCEPTING-STATE TRANSITION-TABLE EPSILON-TRANSITIONS
+;;;; The start state and accepting state are just objects that are only used for
+;;;; their identity.
+;;;; The transition table does not contain the epsilon transitions. It is a map
+;;;; of states to a map of possible transitions to a set of possible states
+;;;; reached by taking the former transition when being in the former state.
+;;;; The epsilon transitions are a map from states to sets of states reachable
+;;;; without any transition from the former state.
 (defmethod nfsm<- (obj)
   (let ((in-state (gensym "in"))
         (out-state (gensym "out")))
@@ -251,6 +270,9 @@
     (labels ((_rec (state acc)
                (let ((transitions (domain (@ transition-map state))))
                  (if (or (empty? transitions)
+                         ;; the following part of the check should be changed –
+                         ;; as it is now, the generator simply prefers shorter
+                         ;; words
                          (and (@ accepting state)
                               (= (random 2)
                                  0)))
@@ -266,6 +288,13 @@
       (_rec (start-state<- dfsm)
             '()))))
 
+;;;; The following implementations for the matching via deterministic finite
+;;;; state machine assume that there is a maximum length that the given DFSM can
+;;;; match. This forbids matching for anything containing the * modificator, but
+;;;; for matching reasonable words this is a perfectly reasonable
+;;;; expectation. The DFSM builders implemented here definitely should only
+;;;; produce DFSMs matching only constructs under a given length. If not, that
+;;;; should be considered a bug.
 (defmethod run-dfsm ((dfsm dfsm)
                      (word cons))
   (let ((transition-table (transition-table<- dfsm)))
