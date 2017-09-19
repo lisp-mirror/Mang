@@ -51,4 +51,6 @@
 (defmethod generate ((generator word-system)
                      markov)
   (generate (dfsm<- generator)
-            markov))
+            (with markov
+                  (constantly t)
+                  (uniform-distribution (set "")))))
