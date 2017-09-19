@@ -1,29 +1,34 @@
 (in-package #:mang)
 
-(defun word-forms<-spec (spec)
-  (if spec
-      (destructuring-bind (min/repeat/syllable &rest spec)
-          spec
-        (if (integerp min/repeat/syllable)
-            (destructuring-bind (max/syllable &rest spec)
-                spec
-              (if (integerp max/syllable)
-                  (destructuring-bind (syllable &rest spec)
-                      spec
-                    (expand (lambda (tail)
-                              (image (lambda (intro)
-                                       (append intro tail))
-                                     (var-repeat min/repeat/syllable
-                                                 max/syllable syllable)))
-                            (word-forms<-spec spec)))
-                  (image (lambda (tail)
-                           (append (repeat min/repeat/syllable max/syllable)
-                                   tail))
-                         (word-forms<-spec spec))))
-            (image (lambda (tail)
-                     (cons min/repeat/syllable tail))
-                   (word-forms<-spec spec))))
-      (set '())))
+(defmethod word-forms<-spec ((spec null))
+  (set '()))
+
+(defmethod word-forms<-spec ((spec cons))
+  (destructuring-bind (min/repeat/syllable &rest spec)
+      spec
+    (if (integerp min/repeat/syllable)
+        (destructuring-bind (max/syllable &rest spec)
+            spec
+          (if (integerp max/syllable)
+              (destructuring-bind (syllable &rest spec)
+                  spec
+                (expand (lambda (tail)
+                          (image (lambda (intro)
+                                   (append intro tail))
+                                 (var-repeat min/repeat/syllable
+                                             max/syllable syllable)))
+                        (word-forms<-spec spec)))
+              (image (lambda (tail)
+                       (append (repeat min/repeat/syllable max/syllable)
+                               tail))
+                     (word-forms<-spec spec))))
+        (image (lambda (tail)
+                 (cons min/repeat/syllable tail))
+               (word-forms<-spec spec)))))
+
+(defmethod word-forms<-spec ((spec set))
+  (expand #'word-forms<-spec
+          spec))
 
 (defun words<-spec (spec classes)
   (image (lambda (word)
@@ -54,3 +59,13 @@
             (with markov
                   (constantly t)
                   (uniform-distribution (set "")))))
+
+(defun string<-word (word &optional syllables?)
+  (format nil "~{~A~}"
+          (if syllables?
+              (mapcar (lambda (glyph)
+                        (if (string= glyph "")
+                            "·"
+                            glyph))
+                      word)
+              word)))
