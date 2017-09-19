@@ -15,7 +15,8 @@
     "utility"
     :depends-on ("package")
     :components
-    ((:file "set")
+    ((:file "list")
+     (:file "set")
      (:file "distribution")
      (:file "nfsm-dfsm"
             :depends-on ("set" "distribution"))
@@ -28,6 +29,7 @@
       "phonotactics"
       :components
       ((:file "glyph")
+       (:file "word")
        ))
      (:module
       "grammar"

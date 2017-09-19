@@ -1,5 +1,10 @@
 (in-package #:mang)
 
+(defmethod tree-map (f (tree set))
+  (image (lambda (el)
+           (tree-map f el))
+         tree))
+
 (defmethod expand (fn (collection set))
   (reduce #'union
           (image fn collection)
