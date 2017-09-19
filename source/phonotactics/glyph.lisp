@@ -14,5 +14,5 @@
 
 (defun glyph-system (phoneme-classes)
   (make-instance 'glyph-system
-                 :phoneme-classes (with-default phoneme-classes
-                                    (empty-set))))
+                 :phoneme-classes (c_in (with-default phoneme-classes
+                                          (empty-set)))))
