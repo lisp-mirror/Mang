@@ -3,7 +3,7 @@
 (defmodel glyph-system ()
   ((%classes :type map
              :accessor classes<-
-             :initarg :phoneme-classes)
+             :initarg :classes)
    (%glyphs :type set
             :reader glyphs<-
             :initform (c? (expand (lambda (k v)
@@ -11,7 +11,7 @@
                                     v)
                                   (classes<- self))))))
 
-(defun glyph-system (phoneme-classes)
+(defun glyph-system (classes)
   (make-instance 'glyph-system
-                 :phoneme-classes (c_in (with-default phoneme-classes
-                                          (empty-set)))))
+                 :classes (c_in (with-default classes
+                                  (empty-set)))))
