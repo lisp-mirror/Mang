@@ -24,6 +24,12 @@
                      (with collected (repeat n obj)))))
     collected))
 
+(defun intersperse (item list)
+  (if (rest list)
+      (list* (first list)
+             item (intersperse item (rest list)))
+      list))
+
 (defmethod tree-map (f (tree null))
   (declare (ignore f tree))
   nil)
