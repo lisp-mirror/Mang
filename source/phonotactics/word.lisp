@@ -69,3 +69,15 @@
                             glyph))
                       word)
               word)))
+
+(defmethod learn ((obj cons)
+                  (markov map))
+  (image (lambda (predicate distribution)
+           (let ((dist distribution))
+             (loop :for x :below (length obj)
+                :when (@ predicate (subseq obj 0 x))
+                :do (setf dist
+                          (with dist (elt obj x)
+                                1)))
+             (values predicate dist)))
+         markov))
