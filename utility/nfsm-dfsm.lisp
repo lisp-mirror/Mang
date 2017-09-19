@@ -274,7 +274,7 @@
                          ;; as it is now, the generator simply prefers shorter
                          ;; words
                          (and (@ accepting state)
-                              (= (random 2)
+                              (= (random 4)
                                  0)))
                      acc
                      (let* ((dist (keep transitions
