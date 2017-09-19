@@ -13,12 +13,15 @@
                           0 1 `(c v ,(set 'end nil))))
                *urwormdwarf-phonemes*))
 
-(defun generate-urwormdwarf-word ()
-  (generate *urwormdwarf-words*
-            (map ((constantly t)
-                  (uniform-distribution (glyphs<- *urwormdwarf-phonemes*))))))
-
-(defun urwormdwarf-word-set (&optional (n 100))
-  (convert 'set
-           (loop :for x :below n
-              :collect (generate-urwormdwarf-word))))
+(defparameter *falranda-learner*
+  (learner (map ((constantly t)
+                 (uniform-distribution (with (glyphs<- *urwormdwarf-phonemes*)
+                                             "")
+                                       100)))
+           (set (match-outro-generator 3 (complement (set "")))
+                (match-outro-generator 3)
+                (match-outro-generator 4)
+                (match-outro-generator 5)
+                (match-outro-generator 2)
+                (match-outro-generator 1)
+                (match-everything-generator))))

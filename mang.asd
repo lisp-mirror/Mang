@@ -39,7 +39,7 @@
      (:module
       "language"
       :components
-      (
+      ((:file "learn")
        ))
      (:module
       "history"
