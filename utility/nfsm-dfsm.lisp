@@ -263,10 +263,10 @@
                      :start-state in
                      :accepting-states outs))))
 
-(defmethod generate ((dfsm dfsm)
+(defmethod generate ((generator dfsm)
                      (markov map))
-  (let ((transition-map (transition-table<- dfsm))
-        (accepting (accepting-states<- dfsm)))
+  (let ((transition-map (transition-table<- generator))
+        (accepting (accepting-states<- generator)))
     (labels ((_rec (state acc)
                (let ((transitions (domain (@ transition-map state))))
                  (if (or (empty? transitions)
@@ -285,7 +285,7 @@
                        (_rec (@ (@ transition-map state)
                                 transition)
                              (nconc acc (list transition))))))))
-      (_rec (start-state<- dfsm)
+      (_rec (start-state<- generator)
             '()))))
 
 ;;;; The following implementations for the matching via deterministic finite
