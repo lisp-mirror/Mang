@@ -70,14 +70,79 @@
                       word)
               word)))
 
+(defmethod learn ((obj null)
+                  (markov map))
+  (declare (ignore obj))
+  markov)
+
 (defmethod learn ((obj cons)
                   (markov map))
-  (image (lambda (predicate distribution)
-           (let ((dist distribution))
-             (loop :for x :below (length obj)
-                :when (@ predicate (subseq obj 0 x))
-                :do (setf dist
-                          (with dist (elt obj x)
-                                1)))
-             (values predicate dist)))
-         markov))
+  (let ((init (butlast obj))
+        (to-learn (last obj)))
+    (map-union (learn init markov)
+               (image (lambda (predicate dist)
+                        (declare (ignore dist))
+                        (values predicate (if (@ predicate init)
+                                              (uniform-distribution
+                                               (list to-learn))
+                                              <nodist>)))
+                      markov)
+               #'union)))
+
+(defmethod learn ((obj null)
+                  (markov-template set))
+  (empty-map <nodist>))
+
+;;; a markov-template is a set of functions taking two arguments: The intro up
+;;; to the point where the word is learned and the glyph to be learned. It
+;;; returns a set of functions taking one argument (the intro part of the word
+;;; that is already generated) which again return a boolean.
+(defmethod learn ((obj cons)
+                  (markov-template set))
+  (let ((intro (butlast obj))
+        (to-learn (last obj)))
+    (map-union
+     (learn intro markov-template)
+     (with-default
+         (convert 'map
+                  (expand (lambda (generator)
+                            (image (lambda (matcher)
+                                     (cons matcher
+                                           (uniform-distribution `(,to-learn))))
+                                   (@ generator intro to-learn)))
+                          markov-template))
+       <nodist>)
+     #'union)))
+
+;;;; Here's a few functions to use in markov templates
+(let ((memoized (empty-map)))
+  (defun match-outro-generator (length &optional to-learn-predicate)
+    (if to-learn-predicate
+        (lambda (intro to-learn)
+          (if (@ to-learn-predicate to-learn)
+              (let* ((parameters (list length intro))
+                     (found (@ memoized parameters)))
+                (if found
+                    found
+                    (let ((matcher (let ((outro (outro length intro)))
+                                     (set (lambda (future)
+                                            (equal? (outro length
+                                                           future)
+                                                    outro))))))
+                      (setf memoized
+                            (with memoized parameters matcher))
+                      matcher)))
+              (empty-set)))
+        (lambda (intro to-learn)
+          (declare (ignore to-learn))
+          (let* ((parameters (list length intro))
+                 (found (@ memoized parameters)))
+            (if found
+                found
+                (let ((matcher (let ((outro (outro length intro)))
+                                 (set (lambda (future)
+                                        (equal? (outro length future)
+                                                outro))))))
+                  (setf memoized
+                        (with memoized parameters matcher))
+                  matcher)))))))
