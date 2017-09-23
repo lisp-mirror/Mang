@@ -30,12 +30,12 @@
              item (intersperse item (rest list)))
       list))
 
+(defmethod tree-map (f tree)
+  (@ f tree))
+
 (defmethod tree-map (f (tree null))
   (declare (ignore f tree))
   nil)
-
-(defmethod tree-map (f tree)
-  (@ f tree))
 
 (defmethod tree-map (f (tree cons))
   (cons (tree-map f (car tree))
