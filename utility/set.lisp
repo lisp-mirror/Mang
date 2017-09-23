@@ -19,11 +19,10 @@
                     (collection set)
                     &key (key-fn #'car)
                       (value-fn #'cdr)
-                      from-type (pair-fn #'cons)
+                      from-type pair-fn
                       &allow-other-keys)
-  (declare (ignore from-type))
-  (convert 'map (convert 'list collection
-                         :pair-fn pair-fn)
+  (declare (ignore from-type pair-fn))
+  (convert 'map (convert 'list collection)
            :key-fn key-fn
            :value-fn value-fn))
 
@@ -41,6 +40,11 @@
           collection))
 
 (defun origin (obj map)
+  (domain (filter (lambda (k v)
+                    (declare (ignore k))
+                    (equal? obj v))
+                  map))
+  #+nil
   (expand (lambda (k v)
             (if (equal? v obj)
                 (set k)
