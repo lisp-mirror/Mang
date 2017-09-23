@@ -1,4 +1,4 @@
-;;;; mang-cells.asd
+;;;; mang.asd
 
 (asdf:defsystem #:mang
   :description "Describe mang-cells here"
