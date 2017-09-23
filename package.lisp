@@ -8,7 +8,7 @@
    #:empty-set #:domain #:reduce #:empty-map #:range #:size #:set-difference-2
    #:map-difference-2 #:arb #:empty? #:complement #:lookup #:intersection
    #:set-difference #:map-union #:$ #:do-map #:do-set #:map-default
-   #:with-default #:last
+   #:with-default #:last #:collection #:remove
    )
   (:shadowing-import-from
    #:cells

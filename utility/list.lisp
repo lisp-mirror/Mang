@@ -207,3 +207,19 @@
 
 (defun outro (n sequence)
   (reverse (intro n (reverse sequence))))
+
+(defmethod filter (fn (collection null))
+  (declare (ignore fn collection))
+  nil)
+
+(defmethod filter ((fn function)
+                   (collection cons))
+  (remove-if-not fn collection))
+
+(defmethod filter ((fn collection)
+                   (collection cons))
+  (destructuring-bind (curr &rest rest)
+      collection
+    (if (@ fn curr)
+        (cons curr (filter fn rest))
+        (filter fn rest))))

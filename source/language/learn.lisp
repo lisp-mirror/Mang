@@ -1,7 +1,39 @@
 (in-package #:mang)
 
-(defclass learner ()
+(defmodel markov ()
   ((%markov :type map
+            :reader markov<-
+            :initarg :content
+            :initform (empty-map <nodist>))))
+
+(defmodel sum-markov ()
+  ((%in1 :type (or markov sum-markov diminish-markov)
+         :accessor in1<-
+         :initarg :in1)
+   (%in2 :type (or markov sum-markov diminish-markov)
+         :accessor in2<-
+         :initarg :in2)
+   (%out :type map
+         :reader markov<-
+         :initform (c? (map-union (markov<- (in1<- self))
+                                  (markov<- (in2<- self))
+                                  #'union)))))
+
+(defmodel diminish-markov ()
+  ((%in1 :type (or markov sum-markov diminish-markov)
+         :accessor in1<-
+         :initarg :in1)
+   (%in2 :type (or markov sum-markov diminish-markov)
+         :accessor in2<-
+         :initarg :in2)
+   (%out :type map
+         :reader markov<-
+         :initform (c? (map-union (markov<- (in1<- self))
+                                  (markov<- (in2<- self))
+                                  #'diminish)))))
+
+(defclass learner ()
+  ((%markov :type (or markov sum-markov diminish-markov)
             :reader markov<-
             :initarg :markov
             :initform (empty-map <nodist>))
@@ -10,9 +42,42 @@
               :initarg :markov-template
               :initform (empty-set))))
 
-(defun learner (markov markov-template)
+(defmethod learner ((markov map)
+                    (markov-template set))
   (make-instance 'learner
-                 :markov (if (typep (map-default markov)
+                 :markov (make-instance 'markov
+                                        :content
+                                        (if (typep (map-default markov)
+                                                   '[distribution])
+                                            markov
+                                            (with-default markov
+                                              <nodist>)))
+                 :markov-template markov-template))
+
+(defmethod learner ((markov markov)
+                    (markov-template set))
+  (make-instance 'learner
+                 :markov (if (typep (map-default (markov<- markov))
+                                    '[distribution])
+                             markov
+                             (with-default markov
+                               <nodist>))
+                 :markov-template markov-template))
+
+(defmethod learner ((markov sum-markov)
+                    (markov-template set))
+  (make-instance 'learner
+                 :markov (if (typep (map-default (markov<- markov))
+                                    '[distribution])
+                             markov
+                             (with-default markov
+                               <nodist>))
+                 :markov-template markov-template))
+
+(defmethod learner ((markov diminish-markov)
+                    (markov-template set))
+  (make-instance 'learner
+                 :markov (if (typep (map-default (markov<- markov))
                                     '[distribution])
                              markov
                              (with-default markov
@@ -27,7 +92,7 @@
                   obj)
   (let ((template (markov-template<- learner)))
     (learner (map-union (markov<- learner)
-                        (learn obj template)
+                        (learn template obj)
                         #'union)
              template)))
 
@@ -63,7 +128,7 @@
   (let ((intro (butlast obj))
         (to-learn (last obj)))
     (map-union
-     (learn intro markov-template)
+     (learn markov-template intro)
      (with-default
          (convert 'map
                   (expand (lambda (generator)
@@ -77,32 +142,38 @@
 
 ;;;; Here's a few functions to use in markov templates
 (let ((memoized (empty-map)))
-  (defun match-outro-generator (length &optional to-learn-predicate)
+  (defun match-outro-generator (length &key to-learn-predicate ignore-glyphs)
     (if to-learn-predicate
         (lambda (intro to-learn)
           (if (@ to-learn-predicate to-learn)
-              (let* ((parameters (list length intro))
+              (let* ((parameters (list length intro ignore-glyphs))
                      (found (@ memoized parameters)))
                 (if found
                     found
-                    (let ((matcher (let ((outro (outro length intro)))
-                                     (set (lambda (future)
-                                            (equal? (outro length
-                                                           future)
-                                                    outro))))))
+                    (let
+                        ((matcher (let ((outro (remove ignore-glyphs
+                                                       (outro length intro))))
+                                    (set (lambda (future)
+                                           (equal? (outro length
+                                                          (remove ignore-glyphs
+                                                                  future))
+                                                   outro))))))
                       (setf memoized
                             (with memoized parameters matcher))
                       matcher)))
               (empty-set)))
         (lambda (intro to-learn)
           (declare (ignore to-learn))
-          (let* ((parameters (list length intro))
+          (let* ((parameters (list length intro ignore-glyphs))
                  (found (@ memoized parameters)))
             (if found
                 found
-                (let ((matcher (let ((outro (outro length intro)))
+                (let ((matcher (let ((outro (remove ignore-glyphs
+                                                    (outro length intro))))
                                  (set (lambda (future)
-                                        (equal? (outro length future)
+                                        (equal? (outro length
+                                                       (remove ignore-glyphs
+                                                               future))
                                                 outro))))))
                   (setf memoized
                         (with memoized parameters matcher))

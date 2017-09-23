@@ -3,7 +3,7 @@
 (defparameter *urwormdwarf-phonemes*
   (glyph-system (map ('c (set "b" "d" "m" "n" "v" "z" "g" "ň" "r" "x"))
                      ('begin (set "b" "d" "m" "n" "v" "g" "ň" "x"))
-                     ('end (set "m" "n" "ň"))
+                     ('end (set "m" "n" "ň" "r" "x"))
                      ('v (set "y" "å" "u")))))
 
 (defparameter *urwormdwarf-words*
@@ -18,10 +18,22 @@
                  (uniform-distribution (with (glyphs<- *urwormdwarf-phonemes*)
                                              "")
                                        100)))
-           (set (match-outro-generator 3 (complement (set "")))
+           (set (match-outro-generator 3
+                                       :to-learn-predicate
+                                       (complement (set "")))
                 (match-outro-generator 3)
                 (match-outro-generator 4)
                 (match-outro-generator 5)
                 (match-outro-generator 2)
                 (match-outro-generator 1)
+                (match-outro-generator 3
+                                       :ignore-glyphs (set ""))
+                (match-outro-generator 4
+                                       :ignore-glyphs (set ""))
+                (match-outro-generator 5
+                                       :ignore-glyphs (set ""))
+                (match-outro-generator 2
+                                       :ignore-glyphs (set ""))
+                (match-outro-generator 1
+                                       :ignore-glyphs (set ""))
                 (match-everything-generator))))
