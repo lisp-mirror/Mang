@@ -319,22 +319,22 @@
                                                                       word)))
                                                      (and pos (= pos 0))))
                                                  (domain transitions))))
-                 (if (empty? valid-transitions)
-                     (if (@ accepting-states state)
-                         (set '())
-                         (empty-set))
-                     (if (and (string= word "")
-                              (@ accepting-states state))
-                         (set '())
-                         (let ((results (empty-set)))
-                           (do-set (transition valid-transitions results)
-                             (let ((found
-                                    (_rec (@ transitions transition)
-                                          (subseq word (length transition)))))
-                               (setf results
-                                     (union results (image (lambda (found)
-                                                             (cons transition
-                                                                   found))
-                                                           found)))))))))))
+                 (cond
+                   ((and (string= word "")
+                         (@ accepting-states state))
+                    (set '()))
+                   ((empty? valid-transitions)
+                    (empty-set))
+                   (t
+                    (let ((results (empty-set)))
+                      (do-set (transition valid-transitions results)
+                        (let ((found
+                               (_rec (@ transitions transition)
+                                     (subseq word (length transition)))))
+                          (setf results
+                                (union results (image (lambda (found)
+                                                        (cons transition
+                                                              found))
+                                                      found)))))))))))
       (_rec (start-state<- dfsm)
             word))))
