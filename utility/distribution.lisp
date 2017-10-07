@@ -1,7 +1,12 @@
 (in-package #:mang)
 
 (defadt [distribution]
-  (<distribution> real [distribution] real t [distribution] real)
+  (<distribution> real             ; weight of left subtree
+                  [distribution]   ; left subtree
+                  real             ; weight of node
+                  t                ; value of node
+                  [distribution]   ; right subtree
+                  real)            ; weight of right subtree
   <nodist>)
 
 (defmethod print-object ((object <distribution>)

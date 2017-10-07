@@ -1,7 +1,7 @@
 ;;;; mang.asd
 
 (asdf:defsystem #:mang
-  :description "Describe mang-cells here"
+  :description "Library for generating language families"
   :author "Thomas Bartscher <thomas-bartscher@weltraumschlangen.de>"
   :license "MPL-v2.0"
   :depends-on (#:cells
@@ -20,6 +20,7 @@
      (:file "distribution")
      (:file "nfsm-dfsm"
             :depends-on ("set" "distribution"))
+     (:file "pointer")
      ))
    (:module
     "source"

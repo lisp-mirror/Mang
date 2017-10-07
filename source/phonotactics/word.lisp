@@ -60,6 +60,11 @@
                   (constantly t)
                   (uniform-distribution (set "")))))
 
+(defmethod run-dfsm ((dfsm word-system)
+                     word)
+  (run-dfsm (dfsm<- dfsm)
+            word))
+
 (defun string<-word (word &optional syllables?)
   (format nil "~{~A~}"
           (if syllables?

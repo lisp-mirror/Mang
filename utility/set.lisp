@@ -43,13 +43,7 @@
   (domain (filter (lambda (k v)
                     (declare (ignore k))
                     (equal? obj v))
-                  map))
-  #+nil
-  (expand (lambda (k v)
-            (if (equal? v obj)
-                (set k)
-                (empty-set)))
-          map))
+                  map)))
 
 (defun map-value-order (obj map)
   (size (origin obj map)))

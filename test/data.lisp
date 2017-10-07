@@ -13,27 +13,42 @@
                           0 1 `(c v ,(set 'end nil))))
                *urwormdwarf-phonemes*))
 
-(defparameter *falranda-learner*
-  (learner (map ((constantly t)
-                 (uniform-distribution (with (glyphs<- *urwormdwarf-phonemes*)
-                                             "")
-                                       100)))
-           (set (match-outro-generator 3
-                                       :to-learn-predicate
-                                       (complement (set "")))
-                (match-outro-generator 3)
-                (match-outro-generator 4)
-                (match-outro-generator 5)
-                (match-outro-generator 2)
-                (match-outro-generator 1)
-                (match-outro-generator 3
-                                       :ignore-glyphs (set ""))
-                (match-outro-generator 4
-                                       :ignore-glyphs (set ""))
-                (match-outro-generator 5
-                                       :ignore-glyphs (set ""))
-                (match-outro-generator 2
-                                       :ignore-glyphs (set ""))
-                (match-outro-generator 1
-                                       :ignore-glyphs (set ""))
-                (match-everything-generator))))
+(defparameter *urwormdwarf-store*
+  (let ((template (set (match-everything-generator)
+                       (match-outro-generator 1)
+                       (match-outro-generator 2 :ignore-glyphs (set ""))
+                       (match-outro-generator 3 :ignore-glyphs (set ""))
+                       (match-outro-generator 4 :ignore-glyphs (set ""))))
+        (dist (uniform-distribution (glyphs<- *urwormdwarf-phonemes*))))
+    (map (:noun
+          (learner template dist))
+         (:verb
+          (learner template dist))
+         (:particle
+          (learner template dist))
+         (:adjective
+          (learner template dist))
+         (:everything
+          (learner template dist))
+         (:beautiful
+          (learner template dist))
+         (:ugly
+          (learner template dist)))))
+
+(defparameter *urwormdwarf-nouns*
+  (learning-markov (& *urwormdwarf-store*)
+                   (set :everything :noun)))
+
+(defparameter *urwormdwarf-verbs*
+  (learning-markov (& *urwormdwarf-store*)
+                   (set :everything :verb)))
+
+(defparameter *urwormdwarf-particles*
+  (learning-markov (& *urwormdwarf-store*)
+                   (set :everything)
+                   :negative (set :particle)
+                   :learn (set :everything :particle)))
+
+(defparameter *urwormdwarf-adjectives*
+  (learning-markov (& *urwormdwarf-store*)
+                   (set :everything :adjective)))

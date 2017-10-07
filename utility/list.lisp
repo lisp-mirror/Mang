@@ -223,3 +223,16 @@
     (if (@ fn curr)
         (cons curr (filter fn rest))
         (filter fn rest))))
+
+(defmethod without ((collection null)
+                    items)
+  (declare (ignore collection items))
+  nil)
+
+(defmethod without ((collection cons)
+                    (items set))
+  (destructuring-bind (curr &rest rest)
+      collection
+    (if (@ items curr)
+        (without rest items)
+        (cons curr (without rest items)))))

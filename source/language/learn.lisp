@@ -1,101 +1,5 @@
 (in-package #:mang)
 
-(defmodel markov ()
-  ((%markov :type map
-            :reader markov<-
-            :initarg :content
-            :initform (empty-map <nodist>))))
-
-(defmodel sum-markov ()
-  ((%in1 :type (or markov sum-markov diminish-markov)
-         :accessor in1<-
-         :initarg :in1)
-   (%in2 :type (or markov sum-markov diminish-markov)
-         :accessor in2<-
-         :initarg :in2)
-   (%out :type map
-         :reader markov<-
-         :initform (c? (map-union (markov<- (in1<- self))
-                                  (markov<- (in2<- self))
-                                  #'union)))))
-
-(defmodel diminish-markov ()
-  ((%in1 :type (or markov sum-markov diminish-markov)
-         :accessor in1<-
-         :initarg :in1)
-   (%in2 :type (or markov sum-markov diminish-markov)
-         :accessor in2<-
-         :initarg :in2)
-   (%out :type map
-         :reader markov<-
-         :initform (c? (map-union (markov<- (in1<- self))
-                                  (markov<- (in2<- self))
-                                  #'diminish)))))
-
-(defclass learner ()
-  ((%markov :type (or markov sum-markov diminish-markov)
-            :reader markov<-
-            :initarg :markov
-            :initform (empty-map <nodist>))
-   (%template :type set
-              :reader markov-template<-
-              :initarg :markov-template
-              :initform (empty-set))))
-
-(defmethod learner ((markov map)
-                    (markov-template set))
-  (make-instance 'learner
-                 :markov (make-instance 'markov
-                                        :content
-                                        (if (typep (map-default markov)
-                                                   '[distribution])
-                                            markov
-                                            (with-default markov
-                                              <nodist>)))
-                 :markov-template markov-template))
-
-(defmethod learner ((markov markov)
-                    (markov-template set))
-  (make-instance 'learner
-                 :markov (if (typep (map-default (markov<- markov))
-                                    '[distribution])
-                             markov
-                             (with-default markov
-                               <nodist>))
-                 :markov-template markov-template))
-
-(defmethod learner ((markov sum-markov)
-                    (markov-template set))
-  (make-instance 'learner
-                 :markov (if (typep (map-default (markov<- markov))
-                                    '[distribution])
-                             markov
-                             (with-default markov
-                               <nodist>))
-                 :markov-template markov-template))
-
-(defmethod learner ((markov diminish-markov)
-                    (markov-template set))
-  (make-instance 'learner
-                 :markov (if (typep (map-default (markov<- markov))
-                                    '[distribution])
-                             markov
-                             (with-default markov
-                               <nodist>))
-                 :markov-template markov-template))
-
-(defmethod generate ((markov learner)
-                     generator)
-  (generate generator (markov<- markov)))
-
-(defmethod learn ((learner learner)
-                  obj)
-  (let ((template (markov-template<- learner)))
-    (learner (map-union (markov<- learner)
-                        (learn template obj)
-                        #'union)
-             template)))
-
 (defmethod learn ((markov map)
                   (obj null))
   (declare (ignore obj))
@@ -105,7 +9,7 @@
                   (obj cons))
   (let ((init (butlast obj))
         (to-learn (last obj)))
-    (map-union (learn init markov)
+    (map-union (learn markov init)
                (image (lambda (predicate dist)
                         (declare (ignore dist))
                         (values predicate (if (@ predicate init)
@@ -118,6 +22,94 @@
 (defmethod learn ((markov-template set)
                   (obj null))
   (empty-map <nodist>))
+
+(defclass learning-markov ()
+  ((%store :type function
+           :reader store<-
+           :initarg :store)
+   (%positive :type set
+              :reader positive<-
+              :initarg :positive
+              :initform (empty-set))
+   (%negative :type set
+              :reader negative<-
+              :initarg :negative
+              :initform (empty-set))
+   (%learn :type set
+           :reader learn<-
+           :initarg :learn
+           :initform (empty-set))))
+
+(defmethod markov<- ((obj learning-markov))
+  (let ((store (&<- (store<- obj)))
+        (positive-markov (empty-map <nodist>))
+        (negative-markov (empty-map <nodist>)))
+    (do-set (category (positive<- obj))
+      (setf positive-markov
+            (map-union (markov<- (@ store category))
+                       positive-markov
+                       #'union)))
+    (do-set (category (negative<- obj))
+      (setf negative-markov
+            (map-union (markov<- (@ store category))
+                       negative-markov
+                       #'union)))
+    (map-union positive-markov negative-markov
+               #'diminish)))
+
+(defun learning-markov (store positive &key (negative (empty-set))
+                                         (learn positive))
+  (declare (type function store)
+           (type set positive negative learn))
+  (the
+   (values learning-markov &rest nil)
+   (values
+    (make-instance 'learning-markov
+                   :store store
+                   :positive positive
+                   :negative negative
+                   :learn learn))))
+
+(defmethod generate (generator (markov learning-markov))
+  (generate generator (markov<- markov)))
+
+(defmethod learn ((markov learning-markov)
+                  obj)
+  (let ((store (store<- markov)))
+    (do-set (category (positive<- markov))
+      (setf (@ (&<- store)
+               category)
+            (learn (@ (&<- store)
+                      category)
+                   obj))))
+  markov)
+
+(defclass learner ()
+  ((%markov :type map
+            :accessor markov<-
+            :initarg :markov
+            :initform (empty-map <nodist>))
+   (%template :type set
+              :reader markov-template<-
+              :initarg :template
+              :initform (empty-set))))
+
+(defun learner (template standard)
+  (declare (type set template))
+  (make-instance 'learner
+                 :template template
+                 :markov (map ((arb (@ (match-everything-generator)))
+                               standard)
+                              :default <nodist>)))
+
+(defmethod learn ((markov learner)
+                  obj)
+  (setf (markov<- markov)
+        (map-union (learn (markov-template<- markov)
+                          obj)
+                   (markov<- markov)
+                   #'union))
+  markov)
 
 ;;; a markov-template is a set of functions taking two arguments: The intro up
 ;;; to the point where the word is learned and the glyph to be learned. It
@@ -142,7 +134,13 @@
 
 ;;;; Here's a few functions to use in markov templates
 (let ((memoized (empty-map)))
-  (defun match-outro-generator (length &key to-learn-predicate ignore-glyphs)
+  (defun match-outro-generator (length &key to-learn-predicate
+                                         (ignore-glyphs (empty-set)))
+    (declare (type (integer (0))
+                   length)
+             (type (or function null)
+                   to-learn-predicate)
+             (type set ignore-glyphs))
     (if to-learn-predicate
         (lambda (intro to-learn)
           (if (@ to-learn-predicate to-learn)
@@ -150,14 +148,12 @@
                      (found (@ memoized parameters)))
                 (if found
                     found
-                    (let
-                        ((matcher (let ((outro (remove ignore-glyphs
-                                                       (outro length intro))))
-                                    (set (lambda (future)
-                                           (equal? (outro length
-                                                          (remove ignore-glyphs
-                                                                  future))
-                                                   outro))))))
+                    (let ((matcher (let ((outro (without (outro length intro)
+                                                         ignore-glyphs)))
+                                     (set (lambda (future)
+                                            (postfix? outro
+                                                      (without future
+                                                               ignore-glyphs)))))))
                       (setf memoized
                             (with memoized parameters matcher))
                       matcher)))
@@ -168,13 +164,12 @@
                  (found (@ memoized parameters)))
             (if found
                 found
-                (let ((matcher (let ((outro (remove ignore-glyphs
-                                                    (outro length intro))))
+                (let ((matcher (let ((outro (without (outro length intro)
+                                                     ignore-glyphs)))
                                  (set (lambda (future)
-                                        (equal? (outro length
-                                                       (remove ignore-glyphs
-                                                               future))
-                                                outro))))))
+                                        (postfix? outro
+                                                  (without future
+                                                           ignore-glyphs)))))))
                   (setf memoized
                         (with memoized parameters matcher))
                   matcher)))))))
