@@ -183,6 +183,8 @@
    <nodist>)
   ((d <nodist>)
    d)
+  ((d1 (<distribution> _ <nodist> _ _ <nodist> _))
+   (normalize d1))
   ((d1 d2)
    (let ((d2 (normalize d2)))
      (labels ((_rec (d1 d2)
