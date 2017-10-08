@@ -98,8 +98,7 @@
   (declare (type set template))
   (make-instance 'learner
                  :template template
-                 :markov (map ((arb (@ (match-everything-generator)))
-                               standard)
+                 :markov (map (#'true standard)
                               :default <nodist>)))
 
 (defmethod learn ((markov learner)
@@ -174,6 +173,9 @@
                         (with memoized parameters matcher))
                   matcher)))))))
 
-(let ((f (constantly t)))
-  (defun match-everything-generator ()
-    (constantly (set f))))
+(defun true (&rest args)
+  (declare (ignore args))
+  t)
+
+(defun match-everything-generator ()
+  (constantly (set #'true)))
