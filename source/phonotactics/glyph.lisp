@@ -5,7 +5,6 @@
              :accessor classes<-
              :initarg :classes)
    (%glyphs :type set
-            :reader glyphs<-
             :initform (c? (expand (lambda (k v)
                                     (declare (ignore k))
                                     v)
@@ -15,3 +14,7 @@
   (make-instance 'glyph-system
                  :classes (c_in (with-default classes
                                   (empty-set)))))
+
+(defmethod glyphs<- ((obj glyph-system))
+  (with (slot-value obj '%glyphs)
+        ""))
