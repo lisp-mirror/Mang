@@ -102,10 +102,10 @@
                               #+nil"o" "o"
                               #+nil"a" "a"
                               #+nil"ə" "ê"))
-                     ('w (set #+nil"ɻ" "r"
-                              #+nil"l" "l"
-                              #+nil"j" "j"
-                              #+nil"w" "w")))))
+                     ('w (set #+nil"ɻ̩" "r"
+                              #+nil"l̩" "l"
+                              #+nil"j̩" "j"
+                              #+nil"w̩" "w")))))
 
 (defparameter *urkobold-words*
   (word-system (set #+nil
