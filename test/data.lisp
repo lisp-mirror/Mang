@@ -38,16 +38,24 @@
 (defparameter *urwormdwarf-nouns*
   (learning-markov (& *urwormdwarf-store*)
                    (set :everything :noun)))
+(learn *urwormdwarf-nouns* '("d" "å" "" "m" "y"))
 
 (defparameter *urwormdwarf-verbs*
   (learning-markov (& *urwormdwarf-store*)
                    (set :everything :verb)))
+(learn *urwormdwarf-verbs* '("m" "å" "x"))
+(learn *urwormdwarf-verbs* '("m" "u" "m"))
 
-(defparameter *urwormdwarf-particles*
+(Defparameter *urwormdwarf-particles*
   (learning-markov (& *urwormdwarf-store*)
                    (set :everything)
                    :negative (set :particle)
                    :learn (set :everything :particle)))
+(learn *urwormdwarf-particles* '("d" "y" "r"))
+(learn *urwormdwarf-particles* '("m" "y" "r"))
+(learn *urwormdwarf-particles* '("d" "u"))
+(learn *urwormdwarf-particles* '("ň" "u" "n"))
+(learn *urwormdwarf-particles* '("ň" "y"))
 
 (defparameter *urwormdwarf-adjectives*
   (learning-markov (& *urwormdwarf-store*)
