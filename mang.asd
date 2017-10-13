@@ -47,6 +47,12 @@
       :components
       (
        ))
+     (:module
+      "presentation"
+      ;; expample sentences, glosses and stuff
+      :components
+      (
+       ))
      ))
    (:module
     "test"
