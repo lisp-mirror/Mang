@@ -41,6 +41,7 @@
       "language"
       :components
       ((:file "learn")
+       (:file "dictionary")
        ))
      (:module
       "history"
