@@ -22,3 +22,70 @@
                                    `(r tongue v)
                                    `(p l tongue v))))
                *urkobold-phonemes*))
+
+(defparameter *urkobold-store*
+  (map (:count
+        (set (match-everything-generator)))
+       (:everything
+        (set (match-outro-generator 2)
+             (match-outro-generator 3 :ignore-glyphs (set ""))))
+       (:noun
+        (set (match-outro-generator 1)
+             (match-outro-generator 2 :ignore-glyphs (set ""))))
+       (:verb
+        (set (match-outro-generator 1)
+             (match-outro-generator 2)
+             (match-outro-generator 2 :ignore-glyphs (set "" "^"))))
+       (:adjective
+        (set (match-outro-generator 2 :ignore-glyphs (set "^"))))
+       (:affix
+        (set (match-everything-generator)
+             (match-outro-generator 1 :ignore-glyphs (set ""))
+             (match-outro-generator 2)))
+       (:good
+        (set (match-everything-generator)
+             (match-outro-generator 1)
+             (match-outro-generator 3 :ignore-glyphs (set ""))))
+       (:bad
+        (set (match-everything-generator)
+             (match-outro-generator 2 :ignore-glyphs (set ""))
+             (match-outro-generator 3)))
+       (:funny
+        (set (match-everything-generator)
+             (match-outro-generator 1)
+             (match-outro-generator 2 :ignore-glyphs (set "" "^"))))
+       (:sad
+        (set (match-everything-generator)
+             (match-outro-generator 1)
+             (match-outro-generator 2)
+             (match-outro-generator 3 :ignore-glyphs
+                                    (@ (classes<- *urkobold-phonemes*)
+                                       'v))))
+       (:practical
+        (set (match-everything-generator)
+             (match-outro-generator 3 :ignore-glyphs (set ""))
+             (match-outro-generator 2 :ignore-glyphs
+                                    (@ (classes<- *urkobold-phonemes*)
+                                       'c))))
+       (:plant
+        (set (match-outro-generator 2)))
+       (:animal
+        (set (match-outro-generator 2)))
+       (:ugly
+        (set (match-everything-generator)
+             (match-outro-generator 1 :ignore-glyphs
+                                    (@ (classes<- *urkobold-phonemes*)
+                                       'c))
+             (match-outro-generator 1 :ignore-glyphs
+                                    (set ($ (@ (classes<- *urkobold-phonemes*)
+                                               'v))
+                                         "^"))))
+       (:beautiful
+        (set (match-everything-generator)
+             (match-outro-generator 1 :ignore-glyphs
+                                    (set ($ (@ (classes<- *urkobold-phonemes*)
+                                               'c))
+                                         "^"))
+             (match-outro-generator 1 :ignore-glyphs
+                                    (@ (classes<- *urkobold-phonemes*)
+                                       'v))))))
