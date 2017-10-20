@@ -101,6 +101,7 @@
 (learn *urwormdwarf-verbs* '("ň" "o" "" "d" "u" "" "r" "u" "r"))
 (learn *urwormdwarf-verbs* '("d" "u" "" "m" "y" "x"))
 (learn *urwormdwarf-verbs* '("x" "å" "" "r" "y" "ň"))
+(learn *urwormdwarf-verbs* '("x" "å" "n"))
 
 (defparameter *urwormdwarf-particles*
   (learning-markov (& *urwormdwarf-store*)
