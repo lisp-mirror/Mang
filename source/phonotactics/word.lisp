@@ -70,7 +70,7 @@
           (if syllables?
               (mapcar (lambda (glyph)
                         (if (string= glyph "")
-                            "·"
+                            "."
                             glyph))
                       word)
               word)))
