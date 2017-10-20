@@ -22,7 +22,10 @@
 (defparameter *urwormdwarf-store*
   (let ((template (set (match-everything-generator)
                        (match-outro-generator 1)
-                       (match-outro-generator 1)
+                       (match-outro-generator 1 :ignore-glyphs (set "b" "d" "m"
+                                                                    "n" "v" "z"
+                                                                    "g" "ň" "r"
+                                                                    "x"))
                        (match-outro-generator 2 :ignore-glyphs (set ""))
                        (match-outro-generator 3 :ignore-glyphs (set ""))
                        (match-outro-generator 4 :ignore-glyphs (set ""))))
@@ -62,7 +65,11 @@
 (learn *urwormdwarf-nouns* '("v" "å" "" "m" "u" "" "d" "u" "m"))
 (learn *urwormdwarf-nouns* '("ň" "u" "" "r" "u" "r"))
 (learn *urwormdwarf-nouns* '("m" "ÿ" "" "g" "å" "m"))
-(learn *urwormdwarf-nouns* '("m" "å" "" "ň" "" "å" "r"))
+(learn *urwormdwarf-nouns* '("m" "å" "" "ň" "å" "r"))
+(learn *urwormdwarf-nouns* '("m" "u" "" "r" "u" "x"))
+(learn *urwormdwarf-nouns* '("x" "å" "" "z" "y"))
+(learn *urwormdwarf-nouns* '("v" "y" "r"))
+(learn *urwormdwarf-nouns* '("m" "y" "" "b" "å"))
 
 (defparameter *urwormdwarf-verbs*
   (learning-markov (& *urwormdwarf-store*)
@@ -93,6 +100,7 @@
 (learn *urwormdwarf-verbs* '("x" "u" "" "g" "å" "" "r" "y" "ň"))
 (learn *urwormdwarf-verbs* '("ň" "o" "" "d" "u" "" "r" "u" "r"))
 (learn *urwormdwarf-verbs* '("d" "u" "" "m" "y" "x"))
+(learn *urwormdwarf-verbs* '("x" "å" "" "r" "y" "ň"))
 
 (defparameter *urwormdwarf-particles*
   (learning-markov (& *urwormdwarf-store*)
@@ -122,6 +130,8 @@
 (learn *urwormdwarf-particles* '("v" "u" "" "ň" "u" "r"))
 (learn *urwormdwarf-particles* '("v" "u"))
 (learn *urwormdwarf-particles* '("n" "å"))
+(learn *urwormdwarf-particles* '("v" "å" "m"))
+(learn *urwormdwarf-particles* '("n" "ü" "r"))
 
 (defparameter *urwormdwarf-numbers*
   (learning-markov (& *urwormdwarf-store*)
@@ -145,7 +155,7 @@
 (learn *urwormdwarf-adjectives* '("x" "ÿ" "" "m" "y" "n"))
 (learn *urwormdwarf-adjectives* '("v" "å" "" "m" "u" "" "m" "y" "x"))
 (learn *urwormdwarf-adjectives* '("v" "u" "" "d" "å"))
-(learn *urwormdwarf-adjectives* '("v" "ẙ" "x"))
+(learn *urwormdwarf-adjectives* '("v" "ÿ" "x"))
 (learn *urwormdwarf-adjectives* '("n" "u" "" "v" "u" "x"))
 (learn *urwormdwarf-adjectives* '("g" "u" "" "ň" "å" "m"))
 (learn *urwormdwarf-adjectives* '("d" "u" "" "n" "å" "x"))
@@ -153,3 +163,6 @@
 (learn *urwormdwarf-adjectives* '("d" "u" "" "r" "u"))
 (learn *urwormdwarf-adjectives* '("x" "å" "" "m" "y" "ň"))
 (learn *urwormdwarf-adjectives* '("v" "y" "" "z" "y" "" "r" "o" "m"))
+(learn *urwormdwarf-adjectives* '("d" "u" "" "m" "å" "" "g" "å"))
+(learn *urwormdwarf-adjectives* '("v" "y" "x"))
+(learn *urwormdwarf-particles* '("x" "å" "" "ň" "å" "r"))
