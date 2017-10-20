@@ -59,6 +59,6 @@
     "test"
     :depends-on ("package" "source")
     :components
-    ((:file "data")
+    ((:file "urwormdwarf")
      ))
    ))
