@@ -9,12 +9,12 @@
                      ('cv (set "ÿ" "o" "ü")))))
 
 (defparameter *urwormdwarf-words*
-  (word-system (set (list 1 1 `(begin ,(set 'v 'cv)
-                                      ,(set 'end nil)))
-                    (list 1 1 `(begin ,(set 'v 'cv))
+  (word-system (set (list `(begin ,(set 'v 'cv)
+                                  ,(set 'end nil)))
+                    (list `(begin ,(set 'v 'cv))
                           0 1 `(c v ,(set 'end nil)))
-                    (list 1 1 `(begin ,(set 'v 'cv))
-                          1 1 `(c v)
+                    (list `(begin ,(set 'v 'cv))
+                          `(c v)
                           0 1 `(c ,(set 'v 'cv)
                                   ,(set 'end nil))))
                *urwormdwarf-phonemes*))
