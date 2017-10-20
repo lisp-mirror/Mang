@@ -60,5 +60,6 @@
     :depends-on ("package" "source")
     :components
     ((:file "urwormdwarf")
+     (:file "urkobold")
      ))
    ))
