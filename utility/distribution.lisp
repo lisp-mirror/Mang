@@ -248,7 +248,12 @@
 (defmethod print-object ((object [distribution])
                          stream)
   (format stream "~:@<(DISTRIBUTION~;~{ ~S~}~;)~:@>"
-          (list<-distribution object)))
+          (apply #'append
+                 (sort (loop :for (w v)
+                          :on (list<-distribution object)
+                          :by #'cddr
+                          :collect `(,w ,v))
+                       #'> :key #'first))))
 
 (defmatch extract ([distribution] real)
     t
