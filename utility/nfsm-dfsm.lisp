@@ -264,7 +264,10 @@
                      :accepting-states outs))))
 
 (defmethod generate ((generator dfsm)
-                     (markov map))
+                     (markov map)
+                     &optional negative)
+  (declare (type (or map null)
+                 negative))
   (let ((transition-map (transition-table<- generator))
         (accepting (accepting-states<- generator)))
     (labels ((_rec (state acc)
@@ -278,9 +281,17 @@
                                  0)))
                      acc
                      (let* ((dist (keep transitions
-                                        (filtering-combine acc markov
-                                                           #'union #'mult
-                                                           <nodist>)))
+                                        (if negative
+                                            (diminish
+                                             (filtering-combine acc markov
+                                                                #'union #'mult
+                                                                <nodist>)
+                                             (filtering-combine acc negative
+                                                                #'union #'mult
+                                                                <nodist>))
+                                            (filtering-combine acc markov
+                                                               #'union #'mult
+                                                               <nodist>))))
                             (transition (extract-random dist)))
                        (_rec (@ (@ transition-map state)
                                 transition)

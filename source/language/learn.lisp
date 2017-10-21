@@ -40,23 +40,6 @@
            :initarg :learn
            :initform (empty-set))))
 
-(defmethod markov<- ((obj learning-markov))
-  (let ((store (&<- (store<- obj)))
-        (positive-markov (empty-map <nodist>))
-        (negative-markov (empty-map <nodist>)))
-    (do-set (category (positive<- obj))
-      (setf positive-markov
-            (map-union (markov<- (@ store category))
-                       positive-markov
-                       #'union)))
-    (do-set (category (negative<- obj))
-      (setf negative-markov
-            (map-union (markov<- (@ store category))
-                       negative-markov
-                       #'union)))
-    (map-union positive-markov negative-markov
-               #'diminish)))
-
 (defun learning-markov (store positive &key (negative (empty-set))
                                          (learn positive))
   (declare (type function store)
@@ -70,8 +53,25 @@
                    :negative negative
                    :learn learn))))
 
-(defmethod generate (generator (markov learning-markov))
-  (generate generator (markov<- markov)))
+(defmethod generate (generator (markov learning-markov)
+                     &optional negative)
+  (declare (ignore negative))
+  (let ((store (&<- (store<- markov))))
+    (generate generator
+              (let ((positive-markov (empty-map <nodist>)))
+                (do-set (category (positive<- markov)
+                                  positive-markov)
+                  (setf positive-markov
+                        (map-union (markov<- (@ store category))
+                                   positive-markov
+                                   #'union))))
+              (let ((negative-markov (empty-map <nodist>)))
+                (do-set (category (negative<- markov)
+                                  negative-markov)
+                  (setf negative-markov
+                        (map-union (markov<- (@ store category))
+                                   negative-markov
+                                   #'union)))))))
 
 (defmethod learn ((markov learning-markov)
                   obj)

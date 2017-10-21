@@ -54,11 +54,18 @@
                  :glyph-system (c_in glyph-system)))
 
 (defmethod generate ((generator word-system)
-                     (markov map))
+                     (markov map)
+                     &optional negative)
+  (declare (type (or map null)
+                 negative))
   (generate (dfsm<- generator)
             (with markov
                   (constantly t)
-                  (uniform-distribution (set "")))))
+                  (uniform-distribution (set "")))
+            (when negative
+              (with negative
+                    (constantly t)
+                    (uniform-distribution (set ""))))))
 
 (defmethod run-dfsm ((dfsm word-system)
                      word)
