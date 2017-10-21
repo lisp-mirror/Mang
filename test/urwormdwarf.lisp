@@ -106,7 +106,7 @@
 (defparameter *urwormdwarf-particles*
   (learning-markov (& *urwormdwarf-store*)
                    (set :everything)
-                   :negative (set :particle :number)
+                   :negative (set :everything :particle :number)
                    :learn (set :everything :particle)))
 (learn *urwormdwarf-particles* '("v" "å"))
 (learn *urwormdwarf-particles* '("x" "y"))
@@ -166,4 +166,4 @@
 (learn *urwormdwarf-adjectives* '("v" "y" "" "z" "y" "" "r" "o" "m"))
 (learn *urwormdwarf-adjectives* '("d" "u" "" "m" "å" "" "g" "å"))
 (learn *urwormdwarf-adjectives* '("v" "y" "x"))
-(learn *urwormdwarf-particles* '("x" "å" "" "ň" "å" "r"))
+(learn *urwormdwarf-adjectives* '("x" "å" "" "ň" "å" "r"))
