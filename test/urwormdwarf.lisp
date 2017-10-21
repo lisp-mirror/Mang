@@ -22,10 +22,16 @@
 (defparameter *urwormdwarf-store*
   (let ((template (set (match-everything-generator)
                        (match-outro-generator 1)
-                       (match-outro-generator 1 :ignore-glyphs (set "b" "d" "m"
-                                                                    "n" "v" "z"
-                                                                    "g" "ň" "r"
-                                                                    "x"))
+                       (match-outro-generator
+                        1 :ignore-glyphs
+                        (set ($ (@ (classes<- *urwormdwarf-phonemes*)
+                                   'c))
+                             ""))
+                       (match-outro-generator
+                        1 :ignore-glyphs
+                        (set ($ (@ (classes<- *urwormdwarf-phonemes*)
+                                   'v))
+                             ""))
                        (match-outro-generator 2 :ignore-glyphs (set ""))
                        (match-outro-generator 3 :ignore-glyphs (set ""))
                        (match-outro-generator 4 :ignore-glyphs (set ""))))
