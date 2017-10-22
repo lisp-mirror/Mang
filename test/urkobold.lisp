@@ -38,105 +38,140 @@
                *urkobold-phonemes*))
 
 (defparameter *urkobold-store*
-  (let ((dist (uniform-distribution (glyphs<- *urkobold-phonemes*))))
-    (image (lambda (k v)
-             (values k (learner v dist)))
-           (map (:count
-                 (set (match-everything-generator)))
-                (:everything
-                 (set (match-outro-generator 2)
-                      (match-outro-generator 3 :ignore-glyphs (set ""))))
-                (:noun
-                 (set (match-outro-generator 1)
-                      (match-outro-generator 2 :ignore-glyphs (set ""))))
-                (:verb
-                 (set (match-outro-generator 1)
-                      (match-outro-generator 2)
-                      (match-outro-generator 2 :ignore-glyphs (set "" "^"))))
-                (:adjective
-                 (set (match-outro-generator 2 :ignore-glyphs (set "^"))))
-                (:affix
-                 (set (match-everything-generator)
-                      (match-outro-generator 1 :ignore-glyphs (set ""))
-                      (match-outro-generator 2)))
-                (:good
-                 (set (match-everything-generator)
-                      (match-outro-generator 1)
-                      (match-outro-generator 3 :ignore-glyphs (set ""))))
-                (:bad
-                 (set (match-everything-generator)
-                      (match-outro-generator 2 :ignore-glyphs (set ""))
-                      (match-outro-generator 3)))
-                (:funny
-                 (set (match-everything-generator)
-                      (match-outro-generator 1)
-                      (match-outro-generator 2 :ignore-glyphs (set "" "^"))))
-                (:sad
-                 (set (match-everything-generator)
-                      (match-outro-generator 1)
-                      (match-outro-generator 2)
-                      (match-outro-generator 3 :ignore-glyphs
-                                             (@ (classes<- *urkobold-phonemes*)
-                                                'v))))
-                (:practical
-                 (set (match-everything-generator)
-                      (match-outro-generator 3 :ignore-glyphs (set ""))
-                      (match-outro-generator 2 :ignore-glyphs
-                                             (@ (classes<- *urkobold-phonemes*)
-                                                'c))))
-                (:abstract
-                 (set (match-outro-generator 2)))
-                (:mass
-                 (set (match-outro-generator 2)))
-                (:object
-                 (set (match-outro-generator 2)))
-                (:plant
-                 (set (match-outro-generator 2)))
-                (:animal
-                 (set (match-outro-generator 2)))
-                (:person
-                 (set (match-outro-generator 2)))
-                (:ugly
-                 (set (match-everything-generator)
-                      (match-outro-generator 1 :ignore-glyphs
-                                             (@ (classes<- *urkobold-phonemes*)
-                                                'c))
-                      (match-outro-generator
-                       1 :ignore-glyphs
-                       (set ($ (@ (classes<- *urkobold-phonemes*)
-                                  'v))
-                            "^"))))
-                (:beautiful
-                 (set (match-everything-generator)
-                      (match-outro-generator
-                       1 :ignore-glyphs
-                       (set ($ (@ (classes<- *urkobold-phonemes*)
-                                  'c))
-                            "^"))
-                      (match-outro-generator 1 :ignore-glyphs
-                                             (@ (classes<- *urkobold-phonemes*)
-                                                'v))))
-                (:light
-                 (set (match-everything-generator)
-                      (match-outro-generator 1 :ignore-glyphs (set "" "^"))))
-                (:dark
-                 (set (match-everything-generator)
-                      (match-outro-generator 1 :ignore-glyphs (set "" "^"))))
-                (:movement
-                 (set (match-outro-generator 2 :ignore-glyphs (set ""))))))))
+  (let ((dist (uniform-distribution (glyphs<- *urkobold-phonemes*)))
+        (consonants (set ($ (@ (classes<- *urkobold-phonemes*)
+                               'c))
+                         ""))
+        (vowels (set ($ (@ (classes<- *urkobold-phonemes*)
+                           'v))
+                     "")))
+    (store (image (lambda (category template)
+                    (values category (learner template dist)))
+                  (map
+                   (:count
+                    (set (match-everything-generator)))
+                   (:everything
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 4 :ignore-glyphs (set ""))))
+                   (:noun
+                    (set (match-outro-generator 2)
+                         (match-outro-generator 3 :ignore-glyphs (set ""))
+                         (match-outro-generator 1 :ignore-glyphs consonants)
+                         (match-outro-generator 2 :ignore-glyphs vowels)))
+                   (:verb
+                    (set (match-outro-generator 2)
+                         (match-outro-generator 3 :ignore-glyphs (set ""))
+                         (match-outro-generator 1 :ignore-glyphs consonants)
+                         (match-outro-generator 2 :ignore-glyphs vowels)))
+                   (:adjective
+                    (set (match-outro-generator 2)
+                         (match-outro-generator 3 :ignore-glyphs (set ""))
+                         (match-outro-generator 1 :ignore-glyphs consonants)
+                         (match-outro-generator 2 :ignore-glyphs vowels)))
+                   (:affix
+                    (set (match-outro-generator 1)
+                         (match-outro-generator 2 :ignore-glyphs (set ""))
+                         (match-outro-generator 1 :ignore-glyphs consonants)
+                         (match-outro-generator 1 :ignore-glyphs vowels)))
+                   (:person
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 3 :ignore-glyphs consonants)
+                         (match-outro-generator 4 :ignore-glyphs vowels)))
+                   (:animal
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 3 :ignore-glyphs consonants)
+                         (match-outro-generator 4 :ignore-glyphs vowels)))
+                   (:plant
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 3 :ignore-glyphs consonants)
+                         (match-outro-generator 4 :ignore-glyphs vowels)))
+                   (:object
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 3 :ignore-glyphs consonants)
+                         (match-outro-generator 4 :ignore-glyphs vowels)))
+                   (:mass
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 3 :ignore-glyphs consonants)
+                         (match-outro-generator 4 :ignore-glyphs vowels)))
+                   (:abstract
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 3 :ignore-glyphs consonants)
+                         (match-outro-generator 4 :ignore-glyphs vowels)))
+                   (:good
+                    (set (match-outro-generator 4)
+                         (match-outro-generator 5)
+                         (match-outro-generator 4 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:bad
+                    (set (match-outro-generator 4)
+                         (match-outro-generator 5)
+                         (match-outro-generator 4 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:funny
+                    (set (match-outro-generator 4)
+                         (match-outro-generator 5)
+                         (match-outro-generator 4 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:sad
+                    (set (match-outro-generator 4)
+                         (match-outro-generator 5)
+                         (match-outro-generator 4 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:light
+                    (set (match-outro-generator 4)
+                         (match-outro-generator 5)
+                         (match-outro-generator 4 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:dark
+                    (set (match-outro-generator 4)
+                         (match-outro-generator 5)
+                         (match-outro-generator 4 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:living
+                    (set (match-outro-generator 4)
+                         (match-outro-generator 5)
+                         (match-outro-generator 4 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:dead
+                    (set (match-outro-generator 4)
+                         (match-outro-generator 5)
+                         (match-outro-generator 4 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:active
+                    (set (match-outro-generator 4)
+                         (match-outro-generator 5)
+                         (match-outro-generator 4 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:inert
+                    (set (match-outro-generator 4)
+                         (match-outro-generator 5)
+                         (match-outro-generator 4 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels))))))))
 
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :person))
-       ;; person gender – suffix on agreement
-       ;; plant belonging to person
-       ;; POSS-plant-PERSON-PR.3.SUFF BENE-person-PLANT
-       ;; źi-pl'a-lin·-r'o            śa-ölndol'eka-·rň
-       ;; źipl'alin·r'o śaölndol'eka·rn
-       ;; -lin·
-       '("l" "i" "" "n" "ə"))
+(defparameter *urkobold-dictionary*
+  (dictionary))
 
+(let ((word (word '("l" "i" "" "n" "ə")))
+      ;; -lin·
+      (learn (set :count :everything :affix :person)))
+  ;; gender: person
+  ;; suffix
+  (learn-word *urkobold-store* word learn)
+  (setf *urkobold-dictionary*
+        (with *urkobold-dictionary*
+              (dictionary-entry word "PERSON" learn))))
+
+(let ((word (word '("a" "n")))
+      ;; -an
+      (learn (set :count :everything :affix :animal)))
+  ;; gender: animal
+  ;; suffix
+  (learn-word *urkobold-store* word learn)
+  (setf *urkobold-dictionary*
+        (with *urkobold-dictionary*
+              (dictionary-entry word "ANIMAL" learn))))
+
+#|
 (learn (learning-markov (& *urkobold-store*)
                         (set :everything)
                         :negative (set :count :everything :affix)
@@ -553,3 +588,9 @@
        ;; n'oelnglöölmr'o ogži gil'ekal'aölmr'o
        ;; n'o-
        '("n" "^" "o"))
+|#
+
+;;; plant belonging to person
+;;; POSS-plant-PERSON-PR.3.SUFF BENE-person-PLANT
+;;; źi-pl'a-lin·-r'o            śa-ölndol'eka-·rň
+;;; źipl'alin·r'o śaölndol'eka·rn

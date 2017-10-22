@@ -19,6 +19,7 @@
                                   ,(set 'end nil))))
                *urwormdwarf-phonemes*))
 
+#|
 (defparameter *urwormdwarf-store*
   (let ((template (set (match-everything-generator)
                        (match-outro-generator 1)
@@ -173,3 +174,4 @@
 (learn *urwormdwarf-adjectives* '("d" "u" "" "m" "å" "" "g" "å"))
 (learn *urwormdwarf-adjectives* '("v" "y" "x"))
 (learn *urwormdwarf-adjectives* '("x" "å" "" "ň" "å" "r"))
+|#

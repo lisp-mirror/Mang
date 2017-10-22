@@ -23,78 +23,6 @@
                   (obj null))
   (empty-map <nodist>))
 
-(defclass learning-markov ()
-  ((%store :type function
-           :reader store<-
-           :initarg :store)
-   (%positive :type set
-              :reader positive<-
-              :initarg :positive
-              :initform (empty-set))
-   (%negative :type set
-              :reader negative<-
-              :initarg :negative
-              :initform (empty-set))
-   (%learn :type set
-           :reader learn<-
-           :initarg :learn
-           :initform (empty-set))))
-
-(defun learning-markov (store positive &key (negative (empty-set))
-                                         (learn positive))
-  (declare (type function store)
-           (type set positive negative learn))
-  (the
-   (values learning-markov &rest nil)
-   (values
-    (make-instance 'learning-markov
-                   :store store
-                   :positive positive
-                   :negative negative
-                   :learn learn))))
-
-(defmethod generate (generator (markov learning-markov)
-                     &optional negative)
-  (declare (ignore negative))
-  (let ((store (&<- (store<- markov))))
-    (generate generator
-              (let ((positive-markov (empty-map <nodist>)))
-                (do-set (category (positive<- markov)
-                                  positive-markov)
-                  (setf positive-markov
-                        (map-union (markov<- (@ store category))
-                                   positive-markov
-                                   #'union))))
-              (let ((negative-markov (empty-map <nodist>)))
-                (do-set (category (negative<- markov)
-                                  negative-markov)
-                  (setf negative-markov
-                        (map-union (markov<- (@ store category))
-                                   negative-markov
-                                   #'union)))))))
-
-(defmethod learn ((markov learning-markov)
-                  obj)
-  (let ((store (store<- markov)))
-    (do-set (category (or (learn<- markov)
-                          (positive<- markov)))
-      (setf (@ (&<- store)
-               category)
-            (learn (@ (&<- store)
-                      category)
-                   obj))))
-  markov)
-
-(defclass learner ()
-  ((%markov :type map
-            :accessor markov<-
-            :initarg :markov
-            :initform (empty-map <nodist>))
-   (%template :type set
-              :reader markov-template<-
-              :initarg :template
-              :initform (empty-set))))
-
 (defun learner (template standard)
   (declare (type set template))
   (make-instance 'learner
@@ -110,6 +38,53 @@
                    (markov<- markov)
                    #'union))
   markov)
+
+(defmethod copy ((obj learner))
+  (make-instance 'learner
+                 :template (markov-template<- obj)
+                 :markov (markov<- obj)))
+
+(defclass store ()
+  ((%categories :type map
+                :reader categories<-
+                :initarg :categories
+                :initform
+                (empty-map))))
+
+(defun store (categories)
+  (make-instance 'store
+                 :categories categories))
+
+(defmethod copy ((obj store))
+  (make-instance 'store
+                 :categories (image (lambda (category learner)
+                                      (values category (copy learner)))
+                                    (categories<- obj))))
+
+(defmethod lookup ((collection store)
+                   (key set))
+  (let ((categories (categories<- collection))
+        (result (empty-map <nodist>)))
+    (do-set (category key result)
+      (setf result
+            (map-union (markov<- (@ categories category))
+                       result)))))
+
+(defmethod generate-word ((word-system word-system)
+                          (store store)
+                          (positive set)
+                          &key (negative (set)))
+  (word (generate word-system (@ store positive)
+                  (@ store negative))))
+
+(defmethod learn-word ((store store)
+                       (word word)
+                       &optional (learn (positive<- word)))
+  (let ((categories (categories<- store)))
+    (do-set (category learn store)
+      (let ((learner (@ categories category)))
+        (when learner
+          (learn learner word))))))
 
 ;;; a markov-template is a set of functions taking two arguments: The intro up
 ;;; to the point where the word is learned and the glyph to be learned. It

@@ -40,8 +40,9 @@
      (:module
       "language"
       :components
-      ((:file "learn")
-       (:file "dictionary")
+      ((:file "dictionary")
+       (:file "learn"
+              :depends-on ("dictionary"))
        ))
      (:module
       "history"
@@ -50,7 +51,7 @@
        ))
      (:module
       "presentation"
-      ;; expample sentences, glosses and stuff
+      ;; example sentences, glosses and stuff
       :components
       (
        ))
