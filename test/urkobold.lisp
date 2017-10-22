@@ -7,6 +7,7 @@
                      ('t (set "p" "t" "k"))
                      ('d (set "b" "d" "g"))
                      ('p (set "p" "b"))
+                     ('f (set "ɸ" "ʃ" "s" "ɕ" "β" "z" "ʒ" "ʑ"))
                      ('s (set "ɸ" "ʃ" "s" "ɕ" "ɹ" "l"))
                      ('z (set "β" "z" "ʒ" "ʑ" "ɹ" "l"))
                      ('l (set "ɹ" "l"))
@@ -20,18 +21,21 @@
                                `(c v)
                                `(t s v)
                                `(d z v)
+                               `(f n v)
                                `(v l n)
                                `(r tongue v)
                                `(p ll tongue v))
                           1 3 (set `(c v)
                                    `(t s v)
                                    `(d z v)
+                                   `(f n v)
                                    `(v l n)
                                    `(r tongue v)
                                    `(p ll tongue v)))
                     (list (set `(c v)
                                `(t s v)
                                `(d z v)
+                               `(f n v)
                                `(v l n)
                                `(r tongue v)
                                `(p ll tongue v))))
@@ -71,6 +75,16 @@
                    (:affix
                     (set (match-outro-generator 1)
                          (match-outro-generator 2 :ignore-glyphs (set ""))
+                         (match-outro-generator 1 :ignore-glyphs consonants)
+                         (match-outro-generator 1 :ignore-glyphs vowels)))
+                   (:suffix
+                    (set (match-outro-generator 1)
+                         (match-outro-generator 1 :ignore-glyphs (set ""))
+                         (match-outro-generator 1 :ignore-glyphs consonants)
+                         (match-outro-generator 1 :ignore-glyphs vowels)))
+                   (:prefix
+                    (set (match-outro-generator 1)
+                         (match-outro-generator 1 :ignore-glyphs (set ""))
                          (match-outro-generator 1 :ignore-glyphs consonants)
                          (match-outro-generator 1 :ignore-glyphs vowels)))
                    (:person
@@ -146,155 +160,255 @@
                     (set (match-outro-generator 4)
                          (match-outro-generator 5)
                          (match-outro-generator 4 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:big
+                    (set (match-outro-generator 4)
+                         (match-outro-generator 5)
+                         (match-outro-generator 4 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:small
+                    (set (match-outro-generator 4)
+                         (match-outro-generator 5)
+                         (match-outro-generator 4 :ignore-glyphs consonants)
                          (match-outro-generator 5 :ignore-glyphs vowels))))))))
 
 (defparameter *urkobold-dictionary*
   (dictionary))
 
-(let ((word (word '("l" "i" "" "n" "ə")))
-      ;; -lin·
-      (learn (set :count :everything :affix :person)))
-  ;; gender: person
-  ;; suffix
-  (learn-word *urkobold-store* word learn)
-  (setf *urkobold-dictionary*
-        (with *urkobold-dictionary*
-              (dictionary-entry word "PERSON" learn))))
+(defun learn-urkobold-word (form gloss learn)
+  (let ((word (word form)))
+    (unless (empty? (@ *urkobold-dictionary* form))
+      (warn "Homophones for ~S:~% ~S ~S~%~{~{ ~S~}~}"
+            form gloss learn
+            (convert 'list
+                     (image (lambda (entry)
+                              (list (gloss<- entry)
+                                    (learn<- entry)))
+                            (@ *urkobold-dictionary* form)))))
+    (learn-word *urkobold-store* word learn)
+    (setf *urkobold-dictionary*
+          (with *urkobold-dictionary*
+                (dictionary-entry word gloss learn)))))
 
-(let ((word (word '("a" "n")))
-      ;; -an
-      (learn (set :count :everything :affix :animal)))
-  ;; gender: animal
-  ;; suffix
-  (learn-word *urkobold-store* word learn)
-  (setf *urkobold-dictionary*
-        (with *urkobold-dictionary*
-              (dictionary-entry word "ANIMAL" learn))))
+(learn-urkobold-word '("l" "i" "" "n" "ə")  ; -lin·
+                     ;; gender: person
+                     ;; suffix
+                     "PERSON"
+                     (set :count :everything :affix :suffix :person))
+
+(learn-urkobold-word '("a" "n")  ; -an
+                     ;; gender: animal
+                     ;; suffix
+                     "ANIMAL"
+                     (set :count :everything :affix :suffix :animal))
+
+(learn-urkobold-word '("ɳ" "^" "u")  ; -n'u
+                     ;; gender: plant
+                     ;; suffix
+                     "PLANT"
+                     (set :count :everything :affix :suffix :plant))
+
+(learn-urkobold-word '("o" "k")  ; -ok
+                     ;; gender: object
+                     ;; suffix
+                     "OBJECT"
+                     (set :count :everything :affix :suffix :object))
+
+(learn-urkobold-word '("ɵ" "" "ɕ" "a")  ; -öśa
+                     ;; gender: mass
+                     ;; suffix
+                     "MASS"
+                     (set :count :everything :affix :suffix :mass))
+
+(learn-urkobold-word '("ɻ" "^" "y")  ; -r'y
+                     ;; gender: abstract
+                     ;; suffix
+                     "ABSTRACT"
+                     (set :count :everything :affix :suffix :abstract))
+
+(learn-urkobold-word '("ʃ" "a")  ; ša
+                     ;; first person pronoun
+                     "PRONOUN.1"
+                     (set :count :everything))
+
+(learn-urkobold-word '("ɕ" "a")  ; -śa
+                     ;; first person suffix
+                     "PRONOUN.1.SUFFIX"
+                     (set :count :everything :affix :suffix))
+
+(learn-urkobold-word '("ʒ" "u")  ; žu
+                     ;; second person pronoun
+                     "PRONOUN.2"
+                     (set :count :everything))
+
+(learn-urkobold-word '("ʑ" "u")  ; -źu
+                     ;; second person suffix
+                     "PRONOUN.2.SUFFIX"
+                     (set :count :everything :affix :suffix))
+
+(learn-urkobold-word '("t" "y")  ; ty
+                     ;; third person pronoun: person gender
+                     "PRONOUN.3.PERSON"
+                     (set :count :everything :person))
+
+(learn-urkobold-word '("a" "ɹ" "n")  ; arn
+                     ;; third person pronoun: animal gender
+                     "PRONOUN.3.ANIMAL"
+                     (set :count :everything :animal))
+
+(learn-urkobold-word '("ɳ" "^" "o")  ; n'o
+                     ;; third person pronoun: plant gender
+                     "PRONOUN.3.PLANT"
+                     (set :count :everything :plant))
+
+(learn-urkobold-word '("o" "" "g" "i")  ; ogi
+                     ;; third person pronoun: object gender
+                     "PRONOUN.3.OBJECT"
+                     (set :count :everything :object))
+
+(learn-urkobold-word '("ɹ" "ɵ")  ; rö
+                     ;; third person pronoun: mass gender
+                     "PRONOUN.3.MASS"
+                     (set :count :everything :mass))
+
+(learn-urkobold-word '("p" "ɻ" "^" "o")  ; pr'o
+                     ;; third person pronoun: abstract gender
+                     "PRONOUN.3.ABSTRACT"
+                     (set :count :everything :abstract))
+
+(learn-urkobold-word '("ɹ" "i")  ; -ri
+                     ;; third person suffix
+                     "PRONOUN.3.SUFFIX"
+                     (set :count :everything :affix :suffix))
+
+(learn-urkobold-word '("d" "ɹ" "i")  ; -dri
+                     ;; abessive suffix
+                     "ABESSIVE"
+                     (set :count :everything :affix :suffix :small))
+
+(learn-urkobold-word '("ɸ" "o")  ; -fo
+                     ;; plural suffix
+                     "PLURAL"
+                     (set :count :everything :affix :suffix :big))
+
+(learn-urkobold-word '("k" "ɵ")  ; -kö
+                     ;; collective suffix
+                     "COLLECTIVE"
+                     (set :count :everything :affix :suffix :big))
+
+(learn-urkobold-word '("a" "l" "ŋ")  ; -alň
+                     ;; indefinite suffix
+                     "INDEFINITE"
+                     (set :count :everything :affix :suffix))
+
+(learn-urkobold-word '("ɳ" "^" "a")  ; n'a-
+                     ;; benefactive case
+                     ;; who is the one something belongs to?
+                     ;; prefix
+                     "BENEFACTIVE"
+                     (set :count :everything :affix :prefix :good))
+
+(learn-urkobold-word '("p" "ɸ" "a")  ; pfa-
+                     ;; possessive case
+                     ;; what is possessed?
+                     ;; prefix
+                     "POSSESSIVE"
+                     (set :count :everything :affix :prefix))
+
+(learn-urkobold-word '("p" "ɹ" "a")  ; pra
+                     ;; inalienable possessive case – prefix
+                     ;; what is possessed and can't be taken away?
+                     ;; for body parts, parents, children and siblings
+                     ;; prefix
+                     "INALIENABLE"
+                     (set :count :everything :affix :prefix))
 
 #|
 (learn (learning-markov (& *urkobold-store*)
-                        (set :everything)
+                        (set :everything :good)
                         :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :animal))
-       ;; animal gender – suffix on agreement
-       ;; -ölm
-       '("ɵ" "l" "m"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :plant)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :plant))
-       ;; plant gender – suffix on agreement
-       ;; plant belonging to person
-       ;; POSS-plant-PERSON-PR.3.SUFF BENE-person-PLANT-PR.3.SUFF
-       ;; źi-pl'a-lin·-r'o            śa-ölndol'eka-·rň-r'o
-       ;; źipl'alin·r'o śaölndol'eka·rňr'o
-       ;; -·rň
-       '("ə" "ɹ" "ŋ"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :object)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :object))
-       ;; object gender – suffix on agreement
-       ;; -pa
-       '("p" "a"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :mass)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :mass))
-       ;; mass gender – suffix on agreement
-       ;; -tro
-       '("t" "ɹ" "o"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :abstract)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :abstract))
-       ;; abstract gender – suffix on agreement
-       ;; -ši
-       '("ʃ" "i"))
+                        :learn (set :count :everything :affix :good))
+       ;; ornative case – prefix
+       ;; applies to clothing and worn tools
+       ;; the person wears a cap
+       ;; ORNATIVE-cap-INDEF-PERSON-PR.3.SUFF BENE-person-OBJECT-PR.3.SUFF
+       ;; śi-gežöpšu-n'ö-lin·-r'o             śa-ölndol'eka-pa-r'o
+       ;; śigežöpšun'ölin·r'o śaölndol'ekapar'o
+       '("ɕ" "i"))
 
 (learn (learning-markov (& *urkobold-store*)
                         (set :everything :person)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; PR.1
-       ;; fi
-       '("ɸ" "i"))
+                        :negative (set :count :everything :affix
+                                       :animal :plant :object :mass :abstract)
+                        :learn (set :count :everything :affix :person))
+       ;; vocative case – prefix
+       ;; lo-
+       '("l" "o"))
 
 (learn (learning-markov (& *urkobold-store*)
-                        (set :everything :person)
+                        (set :everything :practical :object)
                         :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; PR.1.SUFF
-       ;; vi
-       '("β" "i"))
+                        :learn (set :count :everything :affix :practical :object))
+       ;; instrumentive case – prefix
+       ;; he uses his feet to go to the hut
+       ;; INSTRUMENTIVE-foot-PLURAL-PERSON-PR.3.SUFF PR.3 ALLATIVE-hut-PERSON-PR.3
+       ;; r'e-voilm-gly-lin·-r'o                     aly  gi-mufi-lin·-r'o
+       ;; r'evoilmglylin·r'o aly gimufilin·r'o
+       ;; r'e-
+       '("ɻ" "^" "e"))
 
 (learn (learning-markov (& *urkobold-store*)
-                        (set :everything :person)
+                        (set :everything :movement)
                         :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; PR.2
-       ;; gzu
-       '("g" "z" "u"))
+                        :learn (set :count :everything :affix :movement))
+       ;; perlative case – prefix
+       ;; I go through the woods to my friend.
+       ;; PERLATIVE-tree-COLL-PERSON-PR.1.SUFF BENE-PR.1-PERSON-PR.3.SUFF ALLATIVE-POSS-friend-PERSON-PR.1.SUFF
+       ;; z·-eln-glö-lin·-vi                   śa-fi-lin·-r'o             gi-źi-ilňl'u-lin·-vi
+       ;; z·elnglölin·vi śafilin·r'o giźiilňl'ulin·vi
+       ;; z·-
+       '("z" "ə"))
 
 (learn (learning-markov (& *urkobold-store*)
-                        (set :everything :person)
+                        (set :everything :movement)
                         :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; PR.2.SUFF
-       ;; ksu
-       '("k" "s" "u"))
+                        :learn (set :count :everything :affix :movement))
+       ;; allative case – prefix
+       ;; I go through the woods to it's friend.
+       ;; to my friend I go through the woods
+       ;; ALLATIVE-POSS-friend-PERSON-PR.1.SUFF BENE-PR.1-PERSON-PR.3.SUFF PERLATIVE-tree-COLL-PERSON-PR.1.SUFF
+       ;; gi-źi-ilňl'u-lin·-vi                  śa-fi-lin·-r'o             z·-eln-glö-lin·-vi
+       ;; giźiilňl'ulin·vi śafilin·r'o z·elnglölin·vi
+       ;; gi-
+       '("g" "i"))
 
 (learn (learning-markov (& *urkobold-store*)
-                        (set :everything :person)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; PR.3.PERSON
-       ;; aly
-       '("a" "" "l" "y"))
+                        (set :everything :bad)
+                        :negative (set :count :everything :affix
+                                       :good :funny)
+                        :learn (set :count :everything :affix :bad))
+       ;; aversive case – prefix
+       ;; you go to the tree avoiding the stone
+       ;; avoiding the stone to the tree you go
+       ;; AVERSIVE-stone(obj)-PERSON-PR.2.SUFF ALLATIVE-tree-PERSON-PR.2.SUFF PR.2
+       ;; ulň-pśopl'egy-lin·-ksu               gi-eln-lin·-ksu                gzu
+       ;; ulňpśopl'egylin·kse gielnlin·ksu gzu
+       ;; ulň-
+       '("u" "l" "ŋ"))
 
 (learn (learning-markov (& *urkobold-store*)
-                        (set :everything :animal)
+                        (set :everything :movement)
                         :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; PR.3.ANIMAL
-       ;; ogži
-       '("o" "" "g" "ʒ" "i"))
+                        :learn (set :count :everything :affix :movement))
+       ;; egressive case – prefix
+       ;; It [an animal] moves from the woods to the plains
+       ;; from the woods it goes to the plains
+       ;; EGRESSIVE-tree-COLL-ANIMAL-PR.3.SUFF PR.3.ANIMAL ALLATIVE-plain(terrain)-ANIMAL-PR.3.SUFF
+       ;; n'o-eln-glö-ölm-r'o                  ogži        gi-l'ekal'a-ölm-r'o
+       ;; n'oelnglöölmr'o ogži gil'ekal'aölmr'o
+       ;; n'o-
+       '("n" "^" "o"))
 
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :plant)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; PR.3.PLANT
-       ;; apl'o
-       '("a" "" "p" "ɭ" "^" "o"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :object)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; PR.3.OBJECT
-       ;; eorn
-       '("e" "" "o" "ɹ" "n"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :mass)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; PR.3.MASS
-       ;; oso
-       '("o" "" "s" "o"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :person :animal :plant :object :mass)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; PR.3.SUFF
-       ;; r'o
-       '("ɻ" "^" "o"))
 
 (learn (learning-markov (& *urkobold-store*)
                         (set :everything :noun :good :beautiful :light :person)
@@ -422,175 +536,4 @@
        ;; plain(terrain) – abstract gender
        ;; l'ekal'a
        '("ɭ" "^" "e" "" "k" "a" "" "ɭ" "^" "a"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; plural – suffix
-       ;; trees
-       ;; tree-PL
-       ;; eln-gly
-       ;; -gly
-       '("g" "l" "y"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; collective – suffix
-       ;; woods
-       ;; tree-COLL
-       ;; eln-glö
-       ;; -glö
-       '("g" "l" "ɵ"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :bad))
-       ;; abessive – suffix
-       ;; no tree
-       ;; tree-ABESS
-       ;; eln-pše
-       ;; -pše
-       '("p" "ʃ" "e"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; indefinite marking – suffix
-       ;; the null marking is the definite
-       ;; a tree
-       ;; tree-INDEF
-       ;; eln-n'ö
-       ;; -n'ö
-       '("ɳ" "^" "ɵ"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :good)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :good))
-       ;; benefactive case – prefix
-       ;; plant belonging to person
-       ;; POSS-plant-PERSON-PR.3.SUFF BENE-person-PLANT-PR.3.SUFF
-       ;; źi-pl'a-lin·-r'o            śa-ölndol'eka-·rň-r'o
-       ;; źipl'alin·r'o śaölndol'eka·rṇr'o
-       ;; śa-
-       '("ɕ" "a"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :practical)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :practical))
-       ;; possesive case – prefix
-       ;; plant belonging to person
-       ;; POSS-plant-PERSON-PR.3.SUFF BENE-person-PLANT-PR.3.SUFF
-       ;; źi-pl'a-lin·-r'o            śa-ölndol'eka-·rň-r'o
-       ;; źipl'alin·r'o śaölndol'eka·rňr'o
-       ;; źi-
-       '("ʑ" "i"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :person :good)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix))
-       ;; inalienable possesive case – prefix
-       ;; applies to body parts, parents and children
-       ;; person's arm
-       ;; IPOSS-arm-PERSON-PR.3.SUFF BENE-person-OBJECT-PR.3.SUFF
-       ;; mi-ilňgžo-lin·-r'o         śa-ölndol'eka-pa-r'o
-       ;; miilňgžolin·r'o śaölndol'ekapar'o
-       '("m" "i"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :good)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :good))
-       ;; ornative case – prefix
-       ;; applies to clothing and worn tools
-       ;; the person wears a cap
-       ;; ORNATIVE-cap-INDEF-PERSON-PR.3.SUFF BENE-person-OBJECT-PR.3.SUFF
-       ;; śi-gežöpšu-n'ö-lin·-r'o             śa-ölndol'eka-pa-r'o
-       ;; śigežöpšun'ölin·r'o śaölndol'ekapar'o
-       '("ɕ" "i"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :person)
-                        :negative (set :count :everything :affix
-                                       :animal :plant :object :mass :abstract)
-                        :learn (set :count :everything :affix :person))
-       ;; vocative case – prefix
-       ;; lo-
-       '("l" "o"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :practical :object)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :practical :object))
-       ;; instrumentive case – prefix
-       ;; he uses his feet to go to the hut
-       ;; INSTRUMENTIVE-foot-PLURAL-PERSON-PR.3.SUFF PR.3 ALLATIVE-hut-PERSON-PR.3
-       ;; r'e-voilm-gly-lin·-r'o                     aly  gi-mufi-lin·-r'o
-       ;; r'evoilmglylin·r'o aly gimufilin·r'o
-       ;; r'e-
-       '("ɻ" "^" "e"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :movement)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :movement))
-       ;; perlative case – prefix
-       ;; I go through the woods to my friend.
-       ;; PERLATIVE-tree-COLL-PERSON-PR.1.SUFF BENE-PR.1-PERSON-PR.3.SUFF ALLATIVE-POSS-friend-PERSON-PR.1.SUFF
-       ;; z·-eln-glö-lin·-vi                   śa-fi-lin·-r'o             gi-źi-ilňl'u-lin·-vi
-       ;; z·elnglölin·vi śafilin·r'o giźiilňl'ulin·vi
-       ;; z·-
-       '("z" "ə"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :movement)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :movement))
-       ;; allative case – prefix
-       ;; I go through the woods to it's friend.
-       ;; to my friend I go through the woods
-       ;; ALLATIVE-POSS-friend-PERSON-PR.1.SUFF BENE-PR.1-PERSON-PR.3.SUFF PERLATIVE-tree-COLL-PERSON-PR.1.SUFF
-       ;; gi-źi-ilňl'u-lin·-vi                  śa-fi-lin·-r'o             z·-eln-glö-lin·-vi
-       ;; giźiilňl'ulin·vi śafilin·r'o z·elnglölin·vi
-       ;; gi-
-       '("g" "i"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :bad)
-                        :negative (set :count :everything :affix
-                                       :good :funny)
-                        :learn (set :count :everything :affix :bad))
-       ;; aversive case – prefix
-       ;; you go to the tree avoiding the stone
-       ;; avoiding the stone to the tree you go
-       ;; AVERSIVE-stone(obj)-PERSON-PR.2.SUFF ALLATIVE-tree-PERSON-PR.2.SUFF PR.2
-       ;; ulň-pśopl'egy-lin·-ksu               gi-eln-lin·-ksu                gzu
-       ;; ulňpśopl'egylin·kse gielnlin·ksu gzu
-       ;; ulň-
-       '("u" "l" "ŋ"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :movement)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :movement))
-       ;; egressive case – prefix
-       ;; It [an animal] moves from the woods to the plains
-       ;; from the woods it goes to the plains
-       ;; EGRESSIVE-tree-COLL-ANIMAL-PR.3.SUFF PR.3.ANIMAL ALLATIVE-plain(terrain)-ANIMAL-PR.3.SUFF
-       ;; n'o-eln-glö-ölm-r'o                  ogži        gi-l'ekal'a-ölm-r'o
-       ;; n'oelnglöölmr'o ogži gil'ekal'aölmr'o
-       ;; n'o-
-       '("n" "^" "o"))
 |#
-
-;;; plant belonging to person
-;;; POSS-plant-PERSON-PR.3.SUFF BENE-person-PLANT
-;;; źi-pl'a-lin·-r'o            śa-ölndol'eka-·rň
-;;; źipl'alin·r'o śaölndol'eka·rn
