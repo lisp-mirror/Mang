@@ -14,6 +14,13 @@
                      :initarg :transformations
                      :initform nil)))
 
+(defmethod print-object ((object word)
+                         stream)
+  (format stream "(WORD ~S :ORIGIN ~S :TRANSFORMATIONS ~S)"
+          (form<- object)
+          (origin<- object)
+          (transformations<- object)))
+
 (defun word (form &key origin transformations)
   (declare (type cons form)
            (type (or word null)
@@ -42,6 +49,13 @@
            :initarg :learn
            :initform (set))))
 
+(defmethod print-object ((object dictionary-entry)
+                         stream)
+  (format stream "(DICTIONARY-ENTRY ~S ~S ~S)"
+          (word<- object)
+          (gloss<- object)
+          (learn<- object)))
+
 (defun dictionary-entry (word gloss &optional (learn (positive<- word)))
   (declare (type word word)
            (type string gloss))
@@ -55,6 +69,11 @@
              :reader content<-
              :initarg :content
              :initform (set))))
+
+(defmethod print-object ((object dictionary)
+                         stream)
+  (format stream "(DICTIONARY ~S)"
+          (content<- object)))
 
 (defun dictionary (&rest entries)
   (make-instance 'dictionary
@@ -71,6 +90,13 @@
                    (key word))
   (filter (lambda (entry)
             (equal? (word<- entry)
+                    key))
+          (content<- collection)))
+
+(defmethod lookup ((collection dictionary)
+                   (key cons))
+  (filter (lambda (entry)
+            (equal? (form<- (word<- entry))
                     key))
           (content<- collection)))
 
