@@ -23,6 +23,16 @@
                   (obj null))
   (empty-map <nodist>))
 
+(defclass learner ()
+  ((%template :type set
+              :reader markov-template<-
+              :initarg :template
+              :initform (set))
+   (%markov :type map
+            :accessor markov<-
+            :initarg :markov
+            :initform (empty-map <nodist>))))
+
 (defun learner (template standard)
   (declare (type set template))
   (make-instance 'learner
@@ -79,7 +89,7 @@
 
 (defmethod learn-word ((store store)
                        (word word)
-                       &optional (learn (positive<- word)))
+                       (learn set))
   (let ((categories (categories<- store)))
     (do-set (category learn store)
       (let ((learner (@ categories category)))
