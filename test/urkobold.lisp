@@ -177,6 +177,9 @@
 
 (defun learn-urkobold-word (form gloss learn)
   (let ((word (word form)))
+    (unless (run-dfsm *urkobold-words* form)
+      (error "Form ~S is not a valid urkobold word"
+             form))
     (unless (empty? (@ *urkobold-dictionary* form))
       (warn "Homophones for ~S:~% ~S ~S~%~{~{ ~S~}~}"
             form gloss learn
@@ -196,7 +199,7 @@
                      "PERSON"
                      (set :count :everything :affix :suffix :person))
 
-(learn-urkobold-word '("a" "n")  ; -an
+(learn-urkobold-word '("m" "e")  ; -me
                      ;; gender: animal
                      ;; suffix
                      "ANIMAL"
@@ -208,7 +211,7 @@
                      "PLANT"
                      (set :count :everything :affix :suffix :plant))
 
-(learn-urkobold-word '("o" "k")  ; -ok
+(learn-urkobold-word '("g" "e")  ; -ge
                      ;; gender: object
                      ;; suffix
                      "OBJECT"
