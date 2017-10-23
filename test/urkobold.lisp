@@ -537,3 +537,148 @@
        ;; l'ekal'a
        '("ɭ" "^" "e" "" "k" "a" "" "ɭ" "^" "a"))
 |#
+
+(learn-urkobold-word '("y" "l" "m")  ; ylm
+                     ;; plant gender
+                     "tree"
+                     (set :count :everything :noun :plant :good :dark :inert :big))
+
+(learn-urkobold-word '("ɹ" "a" "" "ʒ" "e")  ; raže
+                     ;; plant gender
+                     "shrub/bush"
+                     (set :count :everything :noun :plant :dark))
+
+(learn-urkobold-word '("l" "a" "" "s" "e")  ; lase
+                     ;; plant gender
+                     "grass"
+                     (set :count :everything :noun :plant :mass :small))
+
+(learn-urkobold-word '("ɭ" "^" "ɵ" "" "k" "a")  ; l'öka
+                     ;; plant gender
+                     "herb/weed/spice"
+                     (set :count :everything :noun :plant :good :funny :small))
+
+(learn-urkobold-word '("b" "o" "" "ɭ" "^" "ə")  ; bol'·
+                     ;; object gender
+                     "treetrunk"
+                     (set :count :everything :noun :plant :object :inert :big))
+
+(learn-urkobold-word '("t" "o" "" "ʃ" "ə")  ; toš·
+                     ;; object gender
+                     "leg"  ; including foot
+                     (set :count :everything :noun :person :animal :object :active))
+
+(learn-urkobold-word '("d" "a" "" "ʃ" "ə")  ; daš·
+                     ;; object gender
+                     "arm"  ; including hand
+                     (set :count :everything :noun :person :object :active))
+
+(learn-urkobold-word '("b" "o" "" "ɹ" "ə")  ; bor·
+                     ;; object gender
+                     "rump"
+                     (set :count :everything :noun :person :animal :object :inert))
+
+(learn-urkobold-word '("o" "ɹ" "n" "" "t" "ə")  ; ornt·
+                     ;; object gender
+                     "head"
+                     (set :count :everything :noun :person :animal :object :abstract))
+
+(learn-urkobold-word '("g" "o" "" "ɭ" "^" "i")  ; gol'i
+                     ;; object gender
+                     "eye"
+                     (set :count :everything :noun :person :animal :object :light))
+
+(learn-urkobold-word '("ʑ" "a" "" "ɹ" "o")  ; źaro
+                     ;; object gender
+                     "ear"
+                     (set :count :everything :noun :person :animal :object))
+
+(learn-urkobold-word '("m" "u" "" "p" "a")  ; mupa
+                     ;; object gender
+                     "mouth"
+                     (set :count :everything :noun :person :object :funny))
+
+(learn-urkobold-word '("ɹ" "ɵ" "" "β" "e")  ; röve
+                     ;; mass gender
+                     "hair(collective)/fur"
+                     (set :count :everything :noun :person :animal :mass :small))
+
+(learn-urkobold-word '("ɸ" "i" "" "l" "a")  ; fila
+                     ;; object gender
+                     "leaf"
+                     (set :count :everything :noun :plant :object :good :funny :small))
+
+(learn-urkobold-word '("ɕ" "y" "" "β" "i")  ; śyvi
+                     ;; object gender
+                     "blossom/flower"
+                     (set :count :everything :noun :plant :object :good :small))
+
+(learn-urkobold-word '("a" "l" "m" "" "d" "ə")  ; almd·
+                     ;; object gender
+                     "branch/twig"
+                     (set :count :everything :noun :plant :object :inert))
+
+(learn-urkobold-word '("ɸ" "y" "" "s" "n" "a")  ; fysna
+                     ;; person gender
+                     "sun"
+                     (set :count :everything :noun :person :good :light))
+
+(learn-urkobold-word '("g" "l" "y" "" "o" "l" "m")  ; glyolm
+                     ;; person gender
+                     "moon"
+                     (set :count :everything :noun :person :good :dark))
+
+(learn-urkobold-word '("b" "o" "" "ʒ" "n" "ə")  ; božne
+                     ;; mass gender
+                     "earth/soil"
+                     (set :count :everything :noun :mass :good :inert))
+
+(learn-urkobold-word '("p" "ɭ" "^" "o" "" "k" "u")  ; pl'oku
+                     ;; object gender
+                     "stone"
+                     (set :count :everything :noun :mass :inert :sad))
+
+(learn-urkobold-word '("g" "u" "" "ʃ" "o")  ; gušo
+                     ;; mass gender
+                     "mountains"
+                     (set :count :everything :noun :mass :inert))
+
+(learn-urkobold-word '("ɭ" "^" "a" "" "l" "o")  ; l'alo
+                     ;; object gender
+                     "tongue"
+                     (set :count :everything :noun :person :animal :object :funny))
+
+(learn-urkobold-word '("s" "i" "" "ɕ" "n" "a")  ; siśna
+                     ;; abstract gender
+                     "daytime"
+                     (set :count :everything :noun :abstract :light))
+
+(learn-urkobold-word '("u" "l" "m" "" "β" "o")  ; ulmvo
+                     ;; abstract gender
+                     "nighttime"
+                     (set :count :everything :noun :abstract :dark))
+
+(learn-urkobold-word '("β" "a" "" "ɕ" "y" "" "ɹ" "o")  ; vaśyro
+                     ;; abstract gender
+                     "air/wind"
+                     (set :count :everything :noun :abstract :active))
+
+(learn-urkobold-word '("ɸ" "o" "" "p" "ɭ" "^" "a")  ; fopl'a
+                     ;; person gender
+                     "fire"
+                     (set :count :everything :noun :person :active :funny))
+
+(learn-urkobold-word '("ɭ" "^" "a" "" "ʃ" "m" "a")  ; lašma
+                     ;; object gender
+                     "fruit"
+                     (set :count :everything :noun :plant :object :good))
+
+(learn-urkobold-word '("p" "l" "i" "" "ʃ" "n" "o")  ; plišno
+                     ;; mass gender
+                     "water"
+                     (set :count :everything :noun :mass :good :funny))
+
+(learn-urkobold-word '("b" "ɭ" "^" "a" "" "k" "ə")  ; bl'ak·
+                     ;; object gender
+                     "nut"
+                     (set :count :everything :noun :plant :object :good))
