@@ -56,7 +56,7 @@
           (gloss<- object)
           (learn<- object)))
 
-(defun dictionary-entry (word gloss &optional (learn (positive<- word)))
+(defun dictionary-entry (word gloss learn)
   (declare (type word word)
            (type string gloss))
   (make-instance 'dictionary-entry
@@ -124,5 +124,6 @@
 
 (defmethod add-entry ((dictionary dictionary)
                       (word word)
-                      (gloss string))
-  (with dictionary (dictionary-entry word gloss)))
+                      (gloss string)
+                      (learn set))
+  (with dictionary (dictionary-entry word gloss learn)))
