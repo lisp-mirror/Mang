@@ -21,22 +21,27 @@
                                `(c v)
                                `(t s v)
                                `(d z v)
-                               `(f n v)
-                               `(v l n)
+                               `(f ,(set 'n 'l)
+                                   v)
+                               `(v ,(set 'l nil)
+                                   n)
                                `(r tongue v)
                                `(p ll tongue v))
-                          1 3 (set `(c v)
+                          1 2 (set `(c v)
                                    `(t s v)
                                    `(d z v)
                                    `(f n v)
-                                   `(v l n)
+                                   `(v ,(set 'l nil)
+                                       n)
                                    `(r tongue v)
                                    `(p ll tongue v)))
                     (list (set `(c v)
                                `(t s v)
                                `(d z v)
-                               `(f n v)
-                               `(v l n)
+                               `(f ,(set 'n 'l)
+                                   v)
+                               `(v ,(set 'l nil)
+                                   n)
                                `(r tongue v)
                                `(p ll tongue v))))
                *urkobold-phonemes*))
@@ -193,495 +198,199 @@
           (with *urkobold-dictionary*
                 (dictionary-entry word gloss learn)))))
 
-(learn-urkobold-word '("l" "i" "" "n" "ə")  ; -lin·
-                     ;; gender: person
-                     ;; suffix
-                     "PERSON"
-                     (set :count :everything :affix :suffix :person))
-
-(learn-urkobold-word '("m" "e")  ; -me
-                     ;; gender: animal
-                     ;; suffix
-                     "ANIMAL"
-                     (set :count :everything :affix :suffix :animal))
-
-(learn-urkobold-word '("ɳ" "^" "u")  ; -n'u
-                     ;; gender: plant
-                     ;; suffix
-                     "PLANT"
-                     (set :count :everything :affix :suffix :plant))
-
-(learn-urkobold-word '("g" "e")  ; -ge
-                     ;; gender: object
-                     ;; suffix
-                     "OBJECT"
-                     (set :count :everything :affix :suffix :object))
-
-(learn-urkobold-word '("ɵ" "" "ɕ" "a")  ; -öśa
-                     ;; gender: mass
-                     ;; suffix
-                     "MASS"
-                     (set :count :everything :affix :suffix :mass))
-
-(learn-urkobold-word '("ɻ" "^" "y")  ; -r'y
-                     ;; gender: abstract
-                     ;; suffix
-                     "ABSTRACT"
-                     (set :count :everything :affix :suffix :abstract))
-
-(learn-urkobold-word '("ʃ" "a")  ; ša
-                     ;; first person pronoun
-                     "PRONOUN.1"
-                     (set :count :everything))
-
-(learn-urkobold-word '("ɕ" "a")  ; -śa
-                     ;; first person suffix
-                     "PRONOUN.1.SUFFIX"
-                     (set :count :everything :affix :suffix))
-
-(learn-urkobold-word '("ʒ" "u")  ; žu
-                     ;; second person pronoun
-                     "PRONOUN.2"
-                     (set :count :everything))
-
-(learn-urkobold-word '("ʑ" "u")  ; -źu
-                     ;; second person suffix
-                     "PRONOUN.2.SUFFIX"
-                     (set :count :everything :affix :suffix))
-
-(learn-urkobold-word '("t" "y")  ; ty
-                     ;; third person pronoun: person gender
-                     "PRONOUN.3.PERSON"
-                     (set :count :everything :person))
-
-(learn-urkobold-word '("a" "ɹ" "n")  ; arn
-                     ;; third person pronoun: animal gender
-                     "PRONOUN.3.ANIMAL"
-                     (set :count :everything :animal))
-
-(learn-urkobold-word '("ɳ" "^" "o")  ; n'o
-                     ;; third person pronoun: plant gender
-                     "PRONOUN.3.PLANT"
-                     (set :count :everything :plant))
-
-(learn-urkobold-word '("o" "" "g" "i")  ; ogi
-                     ;; third person pronoun: object gender
-                     "PRONOUN.3.OBJECT"
-                     (set :count :everything :object))
-
-(learn-urkobold-word '("ɹ" "ɵ")  ; rö
-                     ;; third person pronoun: mass gender
-                     "PRONOUN.3.MASS"
-                     (set :count :everything :mass))
-
-(learn-urkobold-word '("p" "ɻ" "^" "o")  ; pr'o
-                     ;; third person pronoun: abstract gender
-                     "PRONOUN.3.ABSTRACT"
-                     (set :count :everything :abstract))
-
-(learn-urkobold-word '("ɹ" "i")  ; -ri
-                     ;; third person suffix
-                     "PRONOUN.3.SUFFIX"
-                     (set :count :everything :affix :suffix))
-
-(learn-urkobold-word '("d" "ɹ" "i")  ; -dri
-                     ;; abessive suffix
-                     "ABESSIVE"
-                     (set :count :everything :affix :suffix :small))
-
-(learn-urkobold-word '("ɸ" "o")  ; -fo
-                     ;; plural suffix
-                     "PLURAL"
-                     (set :count :everything :affix :suffix :big))
-
-(learn-urkobold-word '("k" "ɵ")  ; -kö
-                     ;; collective suffix
-                     "COLLECTIVE"
-                     (set :count :everything :affix :suffix :big))
-
-(learn-urkobold-word '("a" "l" "ŋ")  ; -alň
-                     ;; indefinite suffix
-                     "INDEFINITE"
-                     (set :count :everything :affix :suffix))
-
-(learn-urkobold-word '("ɳ" "^" "a")  ; n'a-
-                     ;; benefactive case
-                     ;; who is the one something belongs to?
+;;;; Cases
+(learn-urkobold-word '("m" "e")  ; me-
+                     ;; causative
                      ;; prefix
-                     "BENEFACTIVE"
-                     (set :count :everything :affix :prefix :good))
+                     "CAUSATIVE"
+                     (set :count :everything :affix :prefix :active))
 
-(learn-urkobold-word '("p" "ɸ" "a")  ; pfa-
-                     ;; possessive case
-                     ;; what is possessed?
+(learn-urkobold-word '("n" "ɵ")  ; nö-
+                     ;; resultive
+                     ;; prefix
+                     "RESULTIVE"
+                     (set :count :everything :affix :prefix))
+
+(learn-urkobold-word '("ɭ" "^" "e")  ; l'e-
+                     ;; adessive
+                     ;; prefix
+                     "ADESSIVE"
+                     (set :count :everything :affix :prefix :inert))
+
+(learn-urkobold-word '("e" "l" "m")  ; elm-
+                     ;; ablative
+                     ;; prefix
+                     "ABLATIVE"
+                     (set :count :everything :affix :prefix :active))
+
+(learn-urkobold-word '("i" "l" "m")  ; ilm-
+                     ;; egressive
+                     ;; prefix
+                     "EGRESSIVE"
+                     (set :count :everything :affix :prefix :active))
+
+(learn-urkobold-word '("l" "e")  ; le-
+                     ;; lative
+                     ;; prefix
+                     "LATIV"
+                     (set :count :everything :affix :prefix :active))
+
+(learn-urkobold-word '("ʑ" "n" "a")  ; źna-
+                     ;; perlative
+                     ;; prefix
+                     "PERLATIVE"
+                     (set :count :everything :affix :prefix :active))
+
+(learn-urkobold-word '("ə" "l" "n")  ; ·eln-
+                     ;; aversive
+                     ;; prefix
+                     "AVERSIVE"
+                     (set :count :everything :affix :prefix :active :bad))
+
+(learn-urkobold-word '("n" "o")  ; no-
+                     ;; possessive
                      ;; prefix
                      "POSSESSIVE"
                      (set :count :everything :affix :prefix))
 
-(learn-urkobold-word '("p" "ɹ" "a")  ; pra
-                     ;; inalienable possessive case – prefix
-                     ;; what is possessed and can't be taken away?
-                     ;; for body parts, parents, children and siblings
+(learn-urkobold-word '("ɳ" "^" "o")  ; n'o-
+                     ;; inalienable possessive
                      ;; prefix
-                     "INALIENABLE"
+                     "POSSESSIVE(I)"
                      (set :count :everything :affix :prefix))
 
-#|
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :good)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :good))
-       ;; ornative case – prefix
-       ;; applies to clothing and worn tools
-       ;; the person wears a cap
-       ;; ORNATIVE-cap-INDEF-PERSON-PR.3.SUFF BENE-person-OBJECT-PR.3.SUFF
-       ;; śi-gežöpšu-n'ö-lin·-r'o             śa-ölndol'eka-pa-r'o
-       ;; śigežöpšun'ölin·r'o śaölndol'ekapar'o
-       '("ɕ" "i"))
+(learn-urkobold-word '("l" "o")  ; lo-
+                     ;; ornative
+                     ;; prefix
+                     "ORNATIVE"
+                     (set :count :everything :affix :prefix))
 
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :person)
-                        :negative (set :count :everything :affix
-                                       :animal :plant :object :mass :abstract)
-                        :learn (set :count :everything :affix :person))
-       ;; vocative case – prefix
-       ;; lo-
-       '("l" "o"))
+(learn-urkobold-word '("n" "a")  ; na-
+                     ;; possessor
+                     ;; prefix
+                     "POSSESSOR"
+                     (set :count :everything :affix :prefix))
 
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :practical :object)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :practical :object))
-       ;; instrumentive case – prefix
-       ;; he uses his feet to go to the hut
-       ;; INSTRUMENTIVE-foot-PLURAL-PERSON-PR.3.SUFF PR.3 ALLATIVE-hut-PERSON-PR.3
-       ;; r'e-voilm-gly-lin·-r'o                     aly  gi-mufi-lin·-r'o
-       ;; r'evoilmglylin·r'o aly gimufilin·r'o
-       ;; r'e-
-       '("ɻ" "^" "e"))
+(learn-urkobold-word '("ɳ" "^" "a")  ; n'a-
+                     ;; inalienable possessor
+                     ;; prefix
+                     "POSSESSOR(I)"
+                     (set :count :everything :affix :prefix))
 
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :movement)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :movement))
-       ;; perlative case – prefix
-       ;; I go through the woods to my friend.
-       ;; PERLATIVE-tree-COLL-PERSON-PR.1.SUFF BENE-PR.1-PERSON-PR.3.SUFF ALLATIVE-POSS-friend-PERSON-PR.1.SUFF
-       ;; z·-eln-glö-lin·-vi                   śa-fi-lin·-r'o             gi-źi-ilňl'u-lin·-vi
-       ;; z·elnglölin·vi śafilin·r'o giźiilňl'ulin·vi
-       ;; z·-
-       '("z" "ə"))
+(learn-urkobold-word '("l" "a")  ; la-
+                     ;; benefactive
+                     ;; prefix
+                     "BENEFAKTIVE"
+                     (set :count :everything :affix :prefix))
 
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :movement)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :movement))
-       ;; allative case – prefix
-       ;; I go through the woods to it's friend.
-       ;; to my friend I go through the woods
-       ;; ALLATIVE-POSS-friend-PERSON-PR.1.SUFF BENE-PR.1-PERSON-PR.3.SUFF PERLATIVE-tree-COLL-PERSON-PR.1.SUFF
-       ;; gi-źi-ilňl'u-lin·-vi                  śa-fi-lin·-r'o             z·-eln-glö-lin·-vi
-       ;; giźiilňl'ulin·vi śafilin·r'o z·elnglölin·vi
-       ;; gi-
-       '("g" "i"))
+(learn-urkobold-word '("t" "e")  ; te-
+                     ;; instrumental
+                     ;; prefix
+                     "INSTRUMENTAL"
+                     (set :count :everything :affix :prefix))
 
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :bad)
-                        :negative (set :count :everything :affix
-                                       :good :funny)
-                        :learn (set :count :everything :affix :bad))
-       ;; aversive case – prefix
-       ;; you go to the tree avoiding the stone
-       ;; avoiding the stone to the tree you go
-       ;; AVERSIVE-stone(obj)-PERSON-PR.2.SUFF ALLATIVE-tree-PERSON-PR.2.SUFF PR.2
-       ;; ulň-pśopl'egy-lin·-ksu               gi-eln-lin·-ksu                gzu
-       ;; ulňpśopl'egylin·kse gielnlin·ksu gzu
-       ;; ulň-
-       '("u" "l" "ŋ"))
+(learn-urkobold-word '("d" "a")  ; da-
+                     ;; instructive
+                     ;; prefix
+                     "INSTRUCTIVE"
+                     (set :count :everything :affix :prefix))
 
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :movement)
-                        :negative (set :count :everything :affix)
-                        :learn (set :count :everything :affix :movement))
-       ;; egressive case – prefix
-       ;; It [an animal] moves from the woods to the plains
-       ;; from the woods it goes to the plains
-       ;; EGRESSIVE-tree-COLL-ANIMAL-PR.3.SUFF PR.3.ANIMAL ALLATIVE-plain(terrain)-ANIMAL-PR.3.SUFF
-       ;; n'o-eln-glö-ölm-r'o                  ogži        gi-l'ekal'a-ölm-r'o
-       ;; n'oelnglöölmr'o ogži gil'ekal'aölmr'o
-       ;; n'o-
-       '("n" "^" "o"))
+(learn-urkobold-word '("ɕ" "a")  ; śa-
+                     ;; comitative
+                     ;; prefix
+                     "COMITATIVE"
+                     (set :count :everything :affix :prefix))
 
+(learn-urkobold-word '("z" "e")  ; ze-
+                     ;; sociative
+                     ;; prefix
+                     "SOCIATIVE"
+                     (set :count :everything :affix :prefix))
 
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :good :beautiful :light :person)
-                        :negative (set :verb :adjective :bad :ugly :dark)
-                        :learn
-                        (set :count :everything :noun :good :beautiful :light
-                             :person))
-       ;; sun – person gender
-       ;; gźal'a
-       '("g" "ʑ" "a" "" "ɭ" "^" "a"))
+(learn-urkobold-word '("ɹ" "u")  ; ru-
+                     ;; abessive
+                     ;; prefix
+                     "ABESSIVE"
+                     (set :count :everything :affix :prefix))
 
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :good :beautiful :dark :person)
-                        :negative (set :verb :adjective :bad :ugly :light)
-                        :learn
-                        (set :count :everything :noun :good :beautiful :dark
-                             :person))
-       ;; moon – person gender
-       ;; orn
-       '("o" "ɹ" "n"))
+(learn-urkobold-word '("a" "ɹ" "m")  ; arm-
+                     ;; adverbial
+                     ;; prefix
+                     "ADVERBIAL"
+                     (set :count :everything :affix :prefix))
 
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :person :funny)
-                        :negative (set :verb :adjective :bad :ugly :sad)
-                        :learn (set :count :everything :noun :person))
-       ;; person – person gender
-       ;; ölndol'eka
-       '("ɵ" "l" "n" "" "d" "o" "" "ɭ" "^" "e" "" "k" "a"))
+(learn-urkobold-word '("k" "ɵ")  ; kö-
+                     ;; translative"
+                     ;; prefix
+                     "TRANSLATIVE"
+                     (set :count :everything :affix :prefix))
 
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :person :good :funny :abstract)
-                        :negative (set :verb :adjective :bad :sad)
-                        :learn (set :count :everything :noun :person :good))
-       ;; friend – person gender
-       ;; ilňl'u
-       '("i" "l" "ŋ" "" "ɭ" "^" "u"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :plant)
-                        :negative (set :verb :adjective)
-                        :learn (set :count :everything :noun :plant))
-       ;; plant – plant gender
-       ;; pl'a
-       '("p" "ɭ" "^" "a"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :plant)
-                        :negative (set :verb :adjective :bad :ugly)
-                        :learn (set :count :everything :noun :plant))
-       ;; tree – plant gender
-       ;; eln
-       '("e" "l" "n"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :object)
-                        :negative (set :verb :adjective)
-                        :learn (set :count :everything :noun :object))
-       ;; stone (the object) – object gender
-       ;; pśopl'egy
-       '("p" "ɕ" "o" "" "p" "ɭ" "^" "e" "" "g" "y"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :object :good :dark :practical)
-                        :negative (set :verb :adjective :bad)
-                        :learn (set :count :everything :noun :object
-                                    :good :dark :practical))
-       ;; hut – object gender
-       ;; mufi
-       '("m" "u" "" "ɸ" "i"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :object :person :practical)
-                        :negative (set :verb :adjective :bad :ugly :sad)
-                        :learn (set :count :everything
-                                    :noun :object :practical))
-       ;; arm – object gender
-       ;; ilňgžo
-       '("i" "l" "ŋ" "" "g" "ʒ" "o"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :object :person :movement)
-                        :negative (set :verb :adjective :bad :ugly :sad)
-                        :learn (set :count :everything
-                                    :noun :object :movement))
-       ;; foot – object gender
-       ;; voilm
-       '("β" "o" "" "i" "l" "m"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :object :practical)
-                        :negative (set :verb :adjective)
-                        :learn (set :count :everything :object :practical))
-       ;; cap (clothing) – object gender
-       ;; gežöpšu
-       '("g" "e" "" "ʒ" "ɵ" "" "p" "ʃ" "u"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :mass :practical)
-                        :negative (set :verb :adjective :bad)
-                        :learn (set :count :everything :noun :mass :practical))
-       ;; earth(ground)/soil – mass gender
-       ;; l'öd·
-       '("ɭ" "^" "ɵ" "" "d" "ə"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :mass :bad)
-                        :negative (set :verb :adjective :practical)
-                        :learn (set :count :everything :noun :mass :bad))
-       ;; stone(ground) – mass gender
-       ;; pšepl'ete
-       '("p" "ʃ" "e" "" "p" "ɭ" "^" "e" "" "t" "e"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :abstract :movement)
-                        :negative (set :verb :adjective :object)
-                        :learn (set :count :everything :noun :abstract :movement))
-       ;; air – abstract gender
-       ;; šufepše
-       '("ʃ" "u" "" "ɸ" "e" "" "p" "ʃ" "e"))
-
-(learn (learning-markov (& *urkobold-store*)
-                        (set :everything :noun :abstract :good :movement)
-                        :negative (set :verb :adjective :funny)
-                        :learn (set :count :everything :abstract :good))
-       ;; plain(terrain) – abstract gender
-       ;; l'ekal'a
-       '("ɭ" "^" "e" "" "k" "a" "" "ɭ" "^" "a"))
-|#
-
-(learn-urkobold-word '("y" "l" "m")  ; ylm
-                     ;; plant gender
-                     "tree"
-                     (set :count :everything :noun :plant :good :dark :inert :big))
-
-(learn-urkobold-word '("ɹ" "a" "" "ʒ" "e")  ; raže
-                     ;; plant gender
-                     "shrub/bush"
-                     (set :count :everything :noun :plant :dark))
-
-(learn-urkobold-word '("l" "a" "" "s" "e")  ; lase
-                     ;; plant gender
-                     "grass"
-                     (set :count :everything :noun :plant :mass :small))
-
-(learn-urkobold-word '("ɭ" "^" "ɵ" "" "k" "a")  ; l'öka
-                     ;; plant gender
-                     "herb/weed/spice"
-                     (set :count :everything :noun :plant :good :funny :small))
-
-(learn-urkobold-word '("b" "o" "" "ɭ" "^" "ə")  ; bol'·
-                     ;; object gender
-                     "treetrunk"
-                     (set :count :everything :noun :plant :object :inert :big))
-
-(learn-urkobold-word '("t" "o" "" "ʃ" "ə")  ; toš·
-                     ;; object gender
-                     "leg"  ; including foot
-                     (set :count :everything :noun :person :animal :object :active))
-
-(learn-urkobold-word '("d" "a" "" "ʃ" "ə")  ; daš·
-                     ;; object gender
-                     "arm"  ; including hand
-                     (set :count :everything :noun :person :object :active))
-
-(learn-urkobold-word '("b" "o" "" "ɹ" "ə")  ; bor·
-                     ;; object gender
-                     "rump"
-                     (set :count :everything :noun :person :animal :object :inert))
-
-(learn-urkobold-word '("o" "ɹ" "n" "" "t" "ə")  ; ornt·
-                     ;; object gender
-                     "head"
-                     (set :count :everything :noun :person :animal :object :abstract))
-
-(learn-urkobold-word '("g" "o" "" "ɭ" "^" "i")  ; gol'i
-                     ;; object gender
-                     "eye"
-                     (set :count :everything :noun :person :animal :object :light))
-
-(learn-urkobold-word '("ʑ" "a" "" "ɹ" "o")  ; źaro
-                     ;; object gender
-                     "ear"
-                     (set :count :everything :noun :person :animal :object))
-
-(learn-urkobold-word '("m" "u" "" "p" "a")  ; mupa
-                     ;; object gender
-                     "mouth"
-                     (set :count :everything :noun :person :object :funny))
-
-(learn-urkobold-word '("ɹ" "ɵ" "" "β" "e")  ; röve
-                     ;; mass gender
-                     "hair(collective)/fur"
-                     (set :count :everything :noun :person :animal :mass :small))
-
-(learn-urkobold-word '("ɸ" "i" "" "l" "a")  ; fila
-                     ;; object gender
-                     "leaf"
-                     (set :count :everything :noun :plant :object :good :funny :small))
-
-(learn-urkobold-word '("ɕ" "y" "" "β" "i")  ; śyvi
-                     ;; object gender
-                     "blossom/flower"
-                     (set :count :everything :noun :plant :object :good :small))
-
-(learn-urkobold-word '("a" "l" "m" "" "d" "ə")  ; almd·
-                     ;; object gender
-                     "branch/twig"
-                     (set :count :everything :noun :plant :object :inert))
-
-(learn-urkobold-word '("ɸ" "y" "" "s" "n" "a")  ; fysna
+;;;; genders
+(learn-urkobold-word '("ɸ" "l" "ə")  ; -fl·
                      ;; person gender
-                     "sun"
-                     (set :count :everything :noun :person :good :light))
+                     ;; suffix
+                     "PERSON"
+                     (set :count :everything :affix :suffix :person :living))
 
-(learn-urkobold-word '("g" "l" "y" "" "o" "l" "m")  ; glyolm
-                     ;; person gender
-                     "moon"
-                     (set :count :everything :noun :person :good :dark))
+(learn-urkobold-word '("a" "ŋ")  ; -aň
+                     ;; animal gender
+                     ;; suffix
+                     "ANIMAL"
+                     (set :count :everything :affix :suffix :animal :living))
 
-(learn-urkobold-word '("b" "o" "" "ʒ" "n" "ə")  ; božne
+(learn-urkobold-word '("y")  ; -y
+                     ;; plant gender
+                     ;; suffix
+                     "PLANT"
+                     (set :count :everything :affix :suffix :plant :living))
+
+(learn-urkobold-word '("g" "e")  ; -ge
+                     ;; object gender
+                     ;; suffix
+                     "OBJECT"
+                     (set :count :everything :affix :suffix :object))
+
+(learn-urkobold-word '("n" "ɵ")  ; -nö
                      ;; mass gender
-                     "earth/soil"
-                     (set :count :everything :noun :mass :good :inert))
+                     ;; suffix
+                     "MASS"
+                     (set :count :everything :affix :suffix :mass))
 
-(learn-urkobold-word '("p" "ɭ" "^" "o" "" "k" "u")  ; pl'oku
-                     ;; object gender
-                     "stone"
-                     (set :count :everything :noun :mass :inert :sad))
-
-(learn-urkobold-word '("g" "u" "" "ʃ" "o")  ; gušo
-                     ;; mass gender
-                     "mountains"
-                     (set :count :everything :noun :mass :inert))
-
-(learn-urkobold-word '("ɭ" "^" "a" "" "l" "o")  ; l'alo
-                     ;; object gender
-                     "tongue"
-                     (set :count :everything :noun :person :animal :object :funny))
-
-(learn-urkobold-word '("s" "i" "" "ɕ" "n" "a")  ; siśna
+(learn-urkobold-word '("p" "ɻ" "^" "a")  ; -pr'a
                      ;; abstract gender
-                     "daytime"
-                     (set :count :everything :noun :abstract :light))
+                     ;; suffix
+                     "ABSTRACT"
+                     (set :count :everything :affix :suffix :abstract))
 
-(learn-urkobold-word '("u" "l" "m" "" "β" "o")  ; ulmvo
-                     ;; abstract gender
-                     "nighttime"
-                     (set :count :everything :noun :abstract :dark))
+;;;; personal pronouns
+(learn-urkobold-word '("ɸ" "ə")  ; f·
+                     "1s"
+                     (set :count :everything :person))
 
-(learn-urkobold-word '("β" "a" "" "ɕ" "y" "" "ɹ" "o")  ; vaśyro
-                     ;; abstract gender
-                     "air/wind"
-                     (set :count :everything :noun :abstract :active))
+(learn-urkobold-word '("β" "e")  ; ve
+                     "2s"
+                     (set :count :everything :person))
 
-(learn-urkobold-word '("ɸ" "o" "" "p" "ɭ" "^" "a")  ; fopl'a
-                     ;; person gender
-                     "fire"
-                     (set :count :everything :noun :person :active :funny))
+(learn-urkobold-word '("β" "a")  ; va
+                     "3s.PERSON"
+                     (set :count :everything :person))
 
-(learn-urkobold-word '("ɭ" "^" "a" "" "ʃ" "m" "a")  ; lašma
-                     ;; object gender
-                     "fruit"
-                     (set :count :everything :noun :plant :object :good))
+(learn-urkobold-word '("ŋ" "a")  ; ňa
+                     "3s.ANIMAL"
+                     (set :count :everything :animal))
 
-(learn-urkobold-word '("p" "l" "i" "" "ʃ" "n" "o")  ; plišno
-                     ;; mass gender
-                     "water"
-                     (set :count :everything :noun :mass :good :funny))
+(learn-urkobold-word '("n" "y")  ; ny
+                     "3s.PLANT"
+                     (set :count :everything :plant))
 
-(learn-urkobold-word '("b" "ɭ" "^" "a" "" "k" "ə")  ; bl'ak·
-                     ;; object gender
-                     "nut"
-                     (set :count :everything :noun :plant :object :good))
+(learn-urkobold-word '("k" "a")  ; ka
+                     "3s.OBJECT"
+                     (set :count :everything :object))
+
+(learn-urkobold-word '("β" "ɵ")  ; vö
+                     "3s.MASS"
+                     (set :count :everything :mass))
+
+(learn-urkobold-word '("p" "a")  ; pa
+                     "3s.ABSTRACT"
+                     (set :count :everything :abstract))
