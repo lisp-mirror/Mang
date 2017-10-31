@@ -14,10 +14,11 @@
                      ('ll (set "ɻ" "ɭ"))
                      ('r (set "ɳ" "ɻ" "ɭ"))
                      ('n (set "m" "n" "ŋ"))
-                     ('tongue (set "^")))))
+                     ('tongue (set "¡")))))
 
 (defparameter *urkobold-words*
   (word-system (set (list (set 'v
+                               `(tongue v)
                                `(c v)
                                `(t s v)
                                `(d z v)
@@ -35,7 +36,9 @@
                                        n)
                                    `(r tongue v)
                                    `(p ll tongue v)))
-                    (list (set `(c v)
+                    (list (set 'v
+                               `(tongue v)
+                               `(c v)
                                `(t s v)
                                `(d z v)
                                `(f ,(set 'n 'l)
@@ -100,6 +103,10 @@
                     (set (match-outro-generator 3)
                          (match-outro-generator 3 :ignore-glyphs consonants)
                          (match-outro-generator 4 :ignore-glyphs vowels)))
+                   (:body-part
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 3 :ignore-glyphs consonants)
+                         (match-outro-generator 4 :ignore-glyphs vowels)))
                    (:plant
                     (set (match-outro-generator 3)
                          (match-outro-generator 3 :ignore-glyphs consonants)
@@ -116,6 +123,46 @@
                     (set (match-outro-generator 3)
                          (match-outro-generator 3 :ignore-glyphs consonants)
                          (match-outro-generator 4 :ignore-glyphs vowels)))
+                   (:food
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 4)
+                         (match-outro-generator 2 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:sense
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 4)
+                         (match-outro-generator 2 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:sound
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 4)
+                         (match-outro-generator 2 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:smell
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 4)
+                         (match-outro-generator 2 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:sight
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 4)
+                         (match-outro-generator 2 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:tactile
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 4)
+                         (match-outro-generator 2 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:taste
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 4)
+                         (match-outro-generator 2 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
+                   (:emotion
+                    (set (match-outro-generator 3)
+                         (match-outro-generator 4)
+                         (match-outro-generator 2 :ignore-glyphs consonants)
+                         (match-outro-generator 5 :ignore-glyphs vowels)))
                    (:good
                     (set (match-outro-generator 4)
                          (match-outro-generator 5)
@@ -198,6 +245,10 @@
           (with *urkobold-dictionary*
                 (dictionary-entry word gloss learn)))))
 
+(defun generate-urkobold-word (categories &optional (negative (set)))
+  (generate-word *urkobold-words* *urkobold-store* categories
+                 :negative negative))
+
 ;;;; Cases
 (learn-urkobold-word '("m" "e")  ; me-
                      ;; causative
@@ -211,7 +262,7 @@
                      "RESULTIVE"
                      (set :count :everything :affix :prefix))
 
-(learn-urkobold-word '("ɭ" "^" "e")  ; l'e-
+(learn-urkobold-word '("ɭ" "¡" "e")  ; l'e-
                      ;; adessive
                      ;; prefix
                      "ADESSIVE"
@@ -253,7 +304,7 @@
                      "POSSESSIVE"
                      (set :count :everything :affix :prefix))
 
-(learn-urkobold-word '("ɳ" "^" "o")  ; n'o-
+(learn-urkobold-word '("ɳ" "¡" "o")  ; n'o-
                      ;; inalienable possessive
                      ;; prefix
                      "POSSESSIVE(I)"
@@ -271,7 +322,7 @@
                      "POSSESSOR"
                      (set :count :everything :affix :prefix))
 
-(learn-urkobold-word '("ɳ" "^" "a")  ; n'a-
+(learn-urkobold-word '("ɳ" "¡" "a")  ; n'a-
                      ;; inalienable possessor
                      ;; prefix
                      "POSSESSOR(I)"
@@ -356,7 +407,7 @@
                      "MASS"
                      (set :count :everything :affix :suffix :mass))
 
-(learn-urkobold-word '("p" "ɻ" "^" "a")  ; -pr'a
+(learn-urkobold-word '("p" "ɻ" "¡" "a")  ; -pr'a
                      ;; abstract gender
                      ;; suffix
                      "ABSTRACT"
@@ -394,3 +445,126 @@
 (learn-urkobold-word '("p" "a")  ; pa
                      "3s.ABSTRACT"
                      (set :count :everything :abstract))
+
+;;;; number
+(learn-urkobold-word '("b" "ɭ" "¡" "a")  ; -bl'a
+                     ;; collective
+                     ;; suffix
+                     "COLLECTIVE"
+                     (set :count :everything :affix :suffix))
+
+(learn-urkobold-word '("p" "ɭ" "¡" "i")  ; -pl'i
+                     ;; plural
+                     ;; suffix
+                     "PLURAL"
+                     (set :count :everything :affix :suffix))
+
+(learn-urkobold-word '("n" "ə")  ; -n·
+                     ;; indefinite
+                     ;; suffix
+                     "INDEFINITE"
+                     (set :count :everything :affix :suffix))
+
+;;;; nouns
+;;; body parts
+(learn-urkobold-word '("o" "ɹ" "n" "" "t" "ə")  ; ornt·
+                     "head"
+                     (set :count :everything :noun :object
+                          :living :body-part :abstract))
+
+(learn-urkobold-word '("g" "o" "" "ɭ" "¡" "i")  ; gol'i
+                     "eye"
+                     (set :count :everything :noun :object
+                          :living :body-part :sight))
+
+(learn-urkobold-word '("ʑ" "a" "" "ɹ" "o")  ; źaro
+                     "ear"
+                     (set :count :everything :noun :object
+                          :living :body-part :sound))
+
+(learn-urkobold-word '("ŋ" "a" "" "l" "i")  ; ňali
+                     "nose"
+                     (set :count :everything :noun :object
+                          :living :body-part :smell))
+
+(learn-urkobold-word '("m" "u" "" "p" "a")  ; mupa
+                     "mouth"
+                     (set :count :everything :noun :object
+                          :living :body-part :sound :taste))
+
+(learn-urkobold-word '("ɭ" "¡" "a" "" "l" "o")  ; l'alo
+                     "tongue"
+                     (set :count :everything :noun :object
+                          :living :body-part :sound :taste))
+
+(learn-urkobold-word '("o" "" "ɹ" "a" "" "ŋ" "ə")  ; oraň·
+                     "neck"
+                     (set :count :everything :noun :object
+                          :living :body-part))
+
+(learn-urkobold-word '("g" "a" "" "ŋ" "u")  ;gaňu
+                     "throat"
+                     (set :count :everything :noun :object
+                          :living :body-part :sound))
+
+(learn-urkobold-word '("b" "o" "" "ɹ" "ə")  ; bor·
+                     "rump"
+                     (set :count :everything :noun :object
+                          :living :body-part :emotion))
+
+(learn-urkobold-word '("t" "o" "" "ʃ" "ə")  ; toš·
+                     "leg"
+                     (set :count :everything :noun :object
+                          :living :body-part :active))
+
+(learn-urkobold-word '("d" "a" "" "ʃ" "ə")  ; daš·
+                     "arm"
+                     (set :count :everything :noun :object
+                          :living :body-part :active :small))
+
+(learn-urkobold-word '("ɹ" "ə" "" "l" "u")  ; r·lu
+                     "skin"
+                     (set :count :everything :noun :object
+                          :living :body-part :inert))
+
+(learn-urkobold-word '("ɹ" "ɵ" "" "β" "e")  ; röve
+                     "hair/fur"
+                     (set :count :everything :noun :mass
+                          :living :body-part :active))
+
+;;; food
+(learn-urkobold-word '("o" "ɹ" "m" "" "ŋ" "u")  ; ormňu
+                     "bread"
+                     (set :count :everything :noun :object
+                          :food))
+
+(learn-urkobold-word '("ɭ" "¡" "ɵ" "" "k" "a")  ; l'öka
+                     "herb"
+                     (set :count :everything :noun :plant
+                          :food :funny :taste))
+
+(learn-urkobold-word '("ɭ" "¡" "a" "" "ɕ" "m" "a")  ; l'aśma
+                     "fruit"
+                     (set :count :everything :noun :object
+                          :plant :food :taste))
+
+(learn-urkobold-word '("b" "ɭ" "¡" "a" "" "k" "ə")  ; bl'ak·
+                     "nut"
+                     (set :count :everything :noun :object
+                          :plant :food :inert))
+
+(learn-urkobold-word '("k" "a" "" "ʃ" "m" "o")  ; kašmo
+                     "meat/flesh"
+                     (set :count :everything :noun :mass
+                          :person :animal :living :dead :food))
+
+;; animals
+(learn-urkobold-word '("o" "" "ŋ" "a" "" "ʃ" "o")  ; oňašo
+                     "animal"
+                     (set :count :everything :noun :animal
+                          :living))
+
+(learn-urkobold-word '("ʃ" "e" "" "ɕ" "o")  ; šeśo
+                     "fish"
+                     (set :count :everything :noun :animal
+                          :living :food :active))
