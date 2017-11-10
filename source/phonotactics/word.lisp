@@ -72,7 +72,8 @@
   (run-dfsm (dfsm<- dfsm)
             word))
 
-(defun string<-word (word &optional syllables?)
+(defmethod string<-word ((word cons)
+                         &optional syllables?)
   (format nil "~{~A~}"
           (if syllables?
               (mapcar (lambda (glyph)

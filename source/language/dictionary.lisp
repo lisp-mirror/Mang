@@ -32,6 +32,11 @@
                  :origin origin
                  :transformations transformations))
 
+(defmethod string<-word ((word word)
+                         &optional syllables?)
+  (string<-word (form<- word)
+                syllables?))
+
 (defmethod learn (markov (obj word))
   (learn markov (form<- obj)))
 
