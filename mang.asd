@@ -47,7 +47,7 @@
      (:module
       "history"
       :components
-      (
+      ((:file "sound-change")
        ))
      (:module
       "presentation"
