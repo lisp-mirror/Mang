@@ -18,7 +18,7 @@
           :initarg :post
           :initform (create-scanner `(:sequence)))))
 
-;;;; ANNOTATED-STRING<-WORD is necessary(?) to be able tu use CL-PPCRE – it only
+;;;; ANNOTATED-STRING<-WORD is necessary(?) to be able to use CL-PPCRE – it only
 ;;;; works on strings. This means that "#" has to be an illegal character in any
 ;;;; given glyph.
 (defmethod annotated-string<-word ((word cons))

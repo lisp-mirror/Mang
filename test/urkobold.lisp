@@ -466,6 +466,27 @@
                      (set :count :everything :affix :suffix))
 
 ;;;; nouns
+;;; people
+(learn-urkobold-word '("k" "o" "" "ɭ" "¡" "i" "" "d" "ə")  ; kol'id·
+                     "person"
+                     (set :count :everything :noun :person
+                          :living))
+
+(learn-urkobold-word '("ŋ" "a" "" "l" "a")  ; ňala
+                     "woman"
+                     (set :count :everything :noun :person
+                          :living))
+
+(learn-urkobold-word '("ə" "" "m" "o" "" "a" "n")  ; ·moan
+                     "man"
+                     (set :count :everything :noun :person
+                          :living))
+
+(learn-urkobold-word '("g" "a" "" "ʃ" "a")  ; gaša
+                     "child"
+                     (set :count :everything :noun :person
+                          :living))
+
 ;;; body parts
 (learn-urkobold-word '("o" "ɹ" "n" "" "t" "ə")  ; ornt·
                      "head"
@@ -558,7 +579,7 @@
                      (set :count :everything :noun :mass
                           :person :animal :living :dead :food))
 
-;; animals
+;;; animals
 (learn-urkobold-word '("o" "" "ŋ" "a" "" "ʃ" "o")  ; oňašo
                      "animal"
                      (set :count :everything :noun :animal
@@ -568,3 +589,23 @@
                      "fish"
                      (set :count :everything :noun :animal
                           :living :food :active))
+
+;;; speaking
+(learn-urkobold-word '("a" "ŋ" "" "g" "u" "" "ɹ" "ə")  ; aňgur·
+                     "word"
+                     (set :count :everything :noun :abstract))
+
+;;;; adjectives
+(learn-urkobold-word '("l" "e" "" "ɹ" "y" "" "g" "o")  ; lerygo
+                     "sad"
+                     (set :count :everything :adjective :emotion
+                          :sad))
+
+(learn-urkobold-word '("o" "ŋ" "" "a" "n")  ; oňan
+                     "angry"
+                     (set :count :everything :adjective :emotion
+                          :bad))
+
+(learn-urkobold-word '("ɕ" "ɹ" "a" "" "k" "i")  ; śraki
+                     "cut"
+                     (set :count :everything :adjective))

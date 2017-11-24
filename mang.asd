@@ -62,5 +62,6 @@
     :components
     ((:file "urwormdwarf")
      (:file "urkobold")
+     (:file "urdokrin")
      ))
    ))

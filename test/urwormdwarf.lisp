@@ -3,8 +3,8 @@
 ;;;; Dwarf data
 (defparameter *urwormdwarf-phonemes*
   (glyph-system (map ('c (set "b" "d" "m" "n" "v" "z" "g" "ň" "r"))
-                     ('begin (set "b" "d" "m" "n" "v" "g" "ň" "x"))
-                     ('end (set "m" "n" "ň" "r" "x"))
+                     ('begin (set "b" "d" "m" "n" "v" "g" "ň"))
+                     ('end (set "m" "n" "ň" "r"))
                      ('v (set "y" "å" "u"))
                      ('cv (set "ÿ" "o" "ü")))))
 
