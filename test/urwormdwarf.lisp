@@ -2,176 +2,281 @@
 
 ;;;; Dwarf data
 (defparameter *urwormdwarf-phonemes*
-  (glyph-system (map ('c (set "b" "d" "m" "n" "v" "z" "g" "ň" "r"))
-                     ('begin (set "b" "d" "m" "n" "v" "g" "ň"))
-                     ('end (set "m" "n" "ň" "r"))
-                     ('v (set "y" "å" "u"))
-                     ('cv (set "ÿ" "o" "ü")))))
+  (glyph-system (map ('consonant (set "m" "n̪" "ɳ" "ɴ" "b" "d̪" "ɢ" "v" "v̪͆" "ð"
+                                      "ʁ" "ɦ" "r"))
+                     ('begin (set "m" "n̪" "ɴ" "b" "d̪" "ɢ" "v̪͆" "ʁ" "ɦ" "ɮ̪" "r"))
+                     ('middle (set "m" "ɳ" "ɴ" "b" "d̪" "ɢ" "v" "v̪͆" "ð" "ʁ" "ɦ"
+                                   "ɮ̪" "r" "ð"))
+                     ('end (set "m" "n̪" "ɳ" "ɴ" "v̪͆" "ʁ"))
+                     ('unstressed (set "ɨ" "u" "ɒ"))
+                     ('stressed (set "ɨ" "ɨ:" "u" "u:" "ɒ" "ɒ:" "ɨ̰" "ṵ" "ɒ̰")))))
+
+(defparameter *urwormdwarf-romanization*
+  (map ("m" "m")
+       ("n̪" "n")
+       ("ɳ" "ṇ")
+       ("ɴ" "ň")
+       ("b" "b")
+       ("d̪" "d")
+       ("ɢ" "g")
+       ("v" "v")
+       ("v̪͆" "ẑ")
+       ("ð" "z")
+       ("ʁ" "x")
+       ("ɦ" "h")
+       ("ɮ̪" "l")
+       ("r" "r")
+       ("ɨ" "y")
+       ("ɨ:" "ȳ")
+       ("u" "u")
+       ("u:" "ū")
+       ("ɒ" "a")
+       ("ɒ:" "ā")
+       ("ɨ̰" "ÿ")
+       ("ṵ" "ü")
+       ("ɒ̰" "ä")))
 
 (defparameter *urwormdwarf-words*
-  (word-system (set (list `(begin ,(set 'v 'cv)
-                                  ,(set 'end nil)))
-                    (list `(begin ,(set 'v 'cv))
-                          0 1 `(c v ,(set 'end nil)))
-                    (list `(begin ,(set 'v 'cv))
-                          `(c v)
-                          0 1 `(c ,(set 'v 'cv)
-                                  ,(set 'end nil))))
+  (word-system (set (list `(begin stressed ,(set 'end nil)))
+                    (list `(begin stressed)
+                          `(middle unstressed ,(set 'end nil)))
+                    (list `(begin stressed)
+                          `(middle unstressed)
+                          `(middle stressed ,(set 'end nil)))
+                    (list `(begin stressed)
+                          `(middle unstressed)
+                          `(middle stressed)
+                          `(middle unstressed ,(set 'end nil))))
                *urwormdwarf-phonemes*))
 
-#|
 (defparameter *urwormdwarf-store*
-  (let ((template (set (match-everything-generator)
-                       (match-outro-generator 1)
-                       (match-outro-generator
-                        1 :ignore-glyphs
-                        (set ($ (@ (classes<- *urwormdwarf-phonemes*)
-                                   'c))
-                             ""))
-                       (match-outro-generator
-                        1 :ignore-glyphs
-                        (set ($ (@ (classes<- *urwormdwarf-phonemes*)
-                                   'v))
-                             ""))
-                       (match-outro-generator 2 :ignore-glyphs (set ""))
-                       (match-outro-generator 3 :ignore-glyphs (set ""))
-                       (match-outro-generator 4 :ignore-glyphs (set ""))))
-        (dist (uniform-distribution (glyphs<- *urwormdwarf-phonemes*))))
-    (map (:noun
-          (learner template dist))
-         (:verb
-          (learner template dist))
-         (:particle
-          (learner template dist))
-         (:number
-          (learner template dist))
-         (:adjective
-          (learner template dist))
-         (:everything
-          (learner template dist))
-         (:beautiful
-          (learner template dist))
-         (:ugly
-          (learner template dist)))))
+  (let ((dist (uniform-distribution (glyphs<- *urwormdwarf-phonemes*)
+                                    100)))
+    (store (image (lambda (category template)
+                    (values category (learner template dist)))
+                  (map
+                   (:count
+                    (set (match-everything-generator)))
+                   (:everything
+                    (set (match-outro-generator 4
+                                                :ignore-glyphs (set ""))
+                         (match-outro-generator 3)
+                         (match-outro-generator 2
+                                                :ignore-glyphs (set ""))))
+                   (:noun
+                    (set (match-outro-generator 4
+                                                :ignore-glyphs (set ""))
+                         (match-outro-generator 3)
+                         (match-outro-generator 2
+                                                :ignore-glyphs (set ""))))
+                   (:verb
+                    (set (match-outro-generator 4
+                                                :ignore-glyphs (set ""))
+                         (match-outro-generator 3)
+                         (match-outro-generator 2
+                                                :ignore-glyphs (set ""))))
+                   (:short
+                    (set (match-outro-generator 2)))
+                   (:positive
+                    (set (match-outro-generator 5
+                                                :ignore-glyphs (set ""))
+                         (match-outro-generator 4)
+                         (match-outro-generator 3
+                                                :ignore-glyphs (set ""))))
+                   (:negative
+                    (set (match-outro-generator 5
+                                                :ignore-glyphs (set ""))
+                         (match-outro-generator 4)
+                         (match-outro-generator 3
+                                                :ignore-glyphs (set "")))))))))
 
-(defparameter *urwormdwarf-nouns*
-  (learning-markov (& *urwormdwarf-store*)
-                   (set :everything :noun)
-                   :negative (set :verb)))
-(learn *urwormdwarf-nouns* '("n" "y" "" "z" "å" "" "v" "u"))
-(learn *urwormdwarf-nouns* '("x" "å" "" "m" "y" "m"))
-(learn *urwormdwarf-nouns* '("x" "ü" "" "v" "u" "m"))
-(learn *urwormdwarf-nouns* '("d" "å" "" "m" "y"))
-(learn *urwormdwarf-nouns* '("x" "ü" "" "v" "y" "r"))
-(learn *urwormdwarf-nouns* '("m" "u" "" "x" "å"))
-(learn *urwormdwarf-nouns* '("b" "å" "" "r" "y" "ň"))
-(learn *urwormdwarf-nouns* '("v" "å" "" "ň" "å"))
-(learn *urwormdwarf-nouns* '("d" "u" "" "v" "y" "r"))
-(learn *urwormdwarf-nouns* '("x" "å" "" "b" "å" "x"))
-(learn *urwormdwarf-nouns* '("g" "o" "" "m" "å" "" "d" "u" "m"))
-(learn *urwormdwarf-nouns* '("v" "å" "" "m" "u" "" "d" "u" "m"))
-(learn *urwormdwarf-nouns* '("ň" "u" "" "r" "u" "r"))
-(learn *urwormdwarf-nouns* '("m" "ÿ" "" "g" "å" "m"))
-(learn *urwormdwarf-nouns* '("m" "å" "" "ň" "å" "r"))
-(learn *urwormdwarf-nouns* '("m" "u" "" "r" "u" "x"))
-(learn *urwormdwarf-nouns* '("x" "å" "" "z" "y"))
-(learn *urwormdwarf-nouns* '("v" "y" "r"))
-(learn *urwormdwarf-nouns* '("m" "y" "" "b" "å"))
+(defparameter *urwormdwarf-dictionary*
+  (dictionary))
 
-(defparameter *urwormdwarf-verbs*
-  (learning-markov (& *urwormdwarf-store*)
-                   (set :everything :verb)
-                   :negative (set :noun)))
-(learn *urwormdwarf-verbs* '("d" "u" "" "g" "å" "r"))
-(learn *urwormdwarf-verbs* '("m" "u" "" "b" "å" "x"))
-(learn *urwormdwarf-verbs* '("ň" "å" "" "d" "y" "" "z" "u" "n"))
-(learn *urwormdwarf-verbs* '("m" "ÿ" "r"))
-(learn *urwormdwarf-verbs* '("v" "y" "" "g" "å" "r"))
-(learn *urwormdwarf-verbs* '("m" "o" "" "v" "å" "m"))
-(learn *urwormdwarf-verbs* '("b" "ÿ" "" "g" "å" "x"))
-(learn *urwormdwarf-verbs* '("d" "u" "r"))
-(learn *urwormdwarf-verbs* '("g" "u" "" "z" "y" "x"))
-(learn *urwormdwarf-verbs* '("m" "o" "x"))
-(learn *urwormdwarf-verbs* '("m" "u" "m"))
-(learn *urwormdwarf-verbs* '("v" "ÿ" "" "z" "u" "n"))
-(learn *urwormdwarf-verbs* '("b" "å" "" "g" "u" "" "r" "y" "ň"))
-(learn *urwormdwarf-verbs* '("b" "y" "x"))
-(learn *urwormdwarf-verbs* '("v" "å" "" "x" "u" "" "r" "y" "ň"))
-(learn *urwormdwarf-verbs* '("d" "u" "" "d" "u" "" "m" "y"))
-(learn *urwormdwarf-verbs* '("d" "u" "" "v" "å" "" "g" "o" "r"))
-(learn *urwormdwarf-verbs* '("m" "o" "" "g" "u"))
-(learn *urwormdwarf-verbs* '("g" "u" "" "r" "y" "x"))
-(learn *urwormdwarf-verbs* '("m" "å" "" "d" "u" "m"))
-(learn *urwormdwarf-verbs* '("b" "u" "r"))
-(learn *urwormdwarf-verbs* '("v" "u" "" "d" "u" "m"))
-(learn *urwormdwarf-verbs* '("x" "u" "" "g" "å" "" "r" "y" "ň"))
-(learn *urwormdwarf-verbs* '("ň" "o" "" "d" "u" "" "r" "u" "r"))
-(learn *urwormdwarf-verbs* '("d" "u" "" "m" "y" "x"))
-(learn *urwormdwarf-verbs* '("x" "å" "" "r" "y" "ň"))
-(learn *urwormdwarf-verbs* '("x" "å" "n"))
+(defun learn-urwormdwarf-word (form gloss
+                               &optional (learn (set :count :everything)))
+  (let ((word (word form)))
+    (unless (run-dfsm *urwormdwarf-words* form)
+      (error "Form ~S is not a valid urwormdwarf word"
+             form))
+    (unless (empty? (@ *urwormdwarf-dictionary* form))
+      (warn "Homophones for ~S:~% ~S ~S~%~{~{ ~S~}~}"
+            form gloss learn
+            (convert 'list
+                     (image (lambda (entry)
+                              (list (gloss<- entry)
+                                    (learn<- entry)))
+                            (@ *urwormdwarf-dictionary* form)))))
+    (learn-word *urwormdwarf-store* word learn)
+    (setf *urwormdwarf-dictionary*
+          (with *urwormdwarf-dictionary*
+                (dictionary-entry word gloss learn)))))
 
-(defparameter *urwormdwarf-particles*
-  (learning-markov (& *urwormdwarf-store*)
-                   (set :everything)
-                   :negative (set :everything :particle :number)
-                   :learn (set :everything :particle)))
-(learn *urwormdwarf-particles* '("v" "å"))
-(learn *urwormdwarf-particles* '("x" "y"))
-(learn *urwormdwarf-particles* '("ň" "u"))
-(learn *urwormdwarf-particles* '("ň" "å" "x"))
+(defun generate-urwormdwarf-word (categories &optional (negative (set)))
+  (generate-word *urwormdwarf-words* *urwormdwarf-store* categories
+                 :negative negative))
 
-(learn *urwormdwarf-particles* '("d" "u"))
-(learn *urwormdwarf-particles* '("ň" "u" "n"))
-(learn *urwormdwarf-particles* '("d" "u" "m"))
-(learn *urwormdwarf-particles* '("ň" "y"))
-(learn *urwormdwarf-particles* '("b" "y" "m"))
-(learn *urwormdwarf-particles* '("d" "y" "r"))
-(learn *urwormdwarf-particles* '("x" "u" "r"))
-(learn *urwormdwarf-particles* '("m" "u" "" "r" "y" "ň"))
-(learn *urwormdwarf-particles* '("d" "o" "" "b" "å"))
-(learn *urwormdwarf-particles* '("b" "o" "" "m" "å" "ň"))
-(learn *urwormdwarf-particles* '("x" "å"))
-(learn *urwormdwarf-particles* '("x" "y" "ň"))
-(learn *urwormdwarf-particles* '("g" "å" "r"))
-(learn *urwormdwarf-particles* '("v" "u" "" "r" "u"))
-(learn *urwormdwarf-particles* '("m" "å" "" "g" "å" "m"))
-(learn *urwormdwarf-particles* '("v" "u" "" "ň" "u" "r"))
-(learn *urwormdwarf-particles* '("v" "u"))
-(learn *urwormdwarf-particles* '("n" "å"))
-(learn *urwormdwarf-particles* '("v" "å" "m"))
-(learn *urwormdwarf-particles* '("n" "ü" "r"))
+;;;; Nouns
+(learn-urwormdwarf-word '("d̪" "ɒ:" "" "m" "ɨ")  ; dāmy
+                        "person"
+                        (set :count :everything :noun))
 
-(defparameter *urwormdwarf-numbers*
-  (learning-markov (& *urwormdwarf-store*)
-                   (set :everything)
-                   :negative (set :number :particle)
-                   :learn (set :everything :number)))
-(learn *urwormdwarf-numbers* '("b" "å"))
-(learn *urwormdwarf-numbers* '("v" "y" "m"))
-(learn *urwormdwarf-numbers* '("g" "ü" "x"))
-(learn *urwormdwarf-numbers* '("ň" "å" "ň"))
-(learn *urwormdwarf-numbers* '("m" "å" "" "r" "u"))
-(learn *urwormdwarf-numbers* '("g" "o" "" "m" "å" "ň"))
-(learn *urwormdwarf-numbers* '("b" "y" "" "d" "u" "m"))
-(learn *urwormdwarf-numbers* '("m" "ÿ" "x"))
+(learn-urwormdwarf-word '("ɢ" "ṵ" "" "d̪" "ɒ" "ɴ")  ; güdaň
+                        "rock"
+                        (set :count :everything :noun))
 
-(defparameter *urwormdwarf-adjectives*
-  (learning-markov (& *urwormdwarf-store*)
-                   (set :everything :adjective :number)))
-(learn *urwormdwarf-adjectives* '("n" "ÿ" "" "m" "u" "r"))
-(learn *urwormdwarf-adjectives* '("ň" "å" "" "d" "u"))
-(learn *urwormdwarf-adjectives* '("x" "ÿ" "" "m" "y" "n"))
-(learn *urwormdwarf-adjectives* '("v" "å" "" "m" "u" "" "m" "y" "x"))
-(learn *urwormdwarf-adjectives* '("v" "u" "" "d" "å"))
-(learn *urwormdwarf-adjectives* '("v" "ÿ" "x"))
-(learn *urwormdwarf-adjectives* '("n" "u" "" "v" "u" "x"))
-(learn *urwormdwarf-adjectives* '("g" "u" "" "ň" "å" "m"))
-(learn *urwormdwarf-adjectives* '("d" "u" "" "n" "å" "x"))
-(learn *urwormdwarf-adjectives* '("x" "å" "" "r" "u" "r"))
-(learn *urwormdwarf-adjectives* '("d" "u" "" "r" "u"))
-(learn *urwormdwarf-adjectives* '("x" "å" "" "m" "y" "ň"))
-(learn *urwormdwarf-adjectives* '("v" "y" "" "z" "y" "" "r" "o" "m"))
-(learn *urwormdwarf-adjectives* '("d" "u" "" "m" "å" "" "g" "å"))
-(learn *urwormdwarf-adjectives* '("v" "y" "x"))
-(learn *urwormdwarf-adjectives* '("x" "å" "" "ň" "å" "r"))
-|#
+(learn-urwormdwarf-word '("ɢ" "ɒ̰" "" "ɮ̪" "u" "m")  ; gälum
+                        "body"
+                        (set :count :everything :noun))
+
+(learn-urwormdwarf-word '("ɴ" "ɒ:" "" "v̪͆" "ɨ" "v̪͆")  ; ňāẑyẑ
+                        "word"
+                        (set :count :everything :noun))
+
+;;;; Verbs
+(learn-urwormdwarf-word '("ʁ" "ɨ" "ɳ")  ; xyṇ
+                        "be"
+                        (set :count :everything :verb :short))
+
+(learn-urwormdwarf-word '("m" "u:" "" "b" "ɨ")  ; mūby
+                        "live"
+                        (set :count :everything :verb :positive))
+
+(learn-urwormdwarf-word '("ɢ" "ɒ" "" "d̪" "ɨ" "ɴ")  ; gadyň
+                        "die"
+                        (set :count :everything :verb :negative))
+
+(learn-urwormdwarf-word '("m" "ɒ̰" "ʁ")  ; mäx
+                        "quake"
+                        (set :count :everything :verb :negative))
+
+(learn-urwormdwarf-word '("r" "ɒ̰" "" "ɦ" "ɒ" "m")  ; räham
+                        "hear"
+                        (set :count :everything :verb))
+
+(learn-urwormdwarf-word '("v̪͆" "u:" "" "ɳ" "ɒ" "" "ɦ" "ɨ" "ɴ")  ; ẑūṇahyň
+                        "say"
+                        (set :count :everything :verb))
+
+(learn-urwormdwarf-word '("m" "u:" "" "m" "ɨ" "m")  ; mūmym
+                        "feel (emotion)"
+                        (set :count :everything :verb))
+
+(learn-urwormdwarf-word '("ɴ" "ṵ" "" "ɴ" "ɒ")  ; ňüňa
+                        "want"
+                        (set :count :everything :verb :positive :negative))
+
+(learn-urwormdwarf-word '("ʁ" "ṵ" "" "ɴ" "ɨ" "ʁ")  ; xüňyx
+                        "know"
+                        (set :count :everything :verb :positive))
+
+(learn-urwormdwarf-word '("n̪" "ɨ" "" "m" "u" "ɳ")  ; nymuṇ
+                        "eat"
+                        (set :count :everything :verb :positive))
+
+(learn-urwormdwarf-word '("ɮ̪" "u" "" "v̪͆" "ɨ" "ɳ")  ; luẑyṇ
+                        "drink"
+                        (set :count :everything :verb :positive))
+
+(learn-urwormdwarf-word '("v̪͆" "ɒ̰" "" "ɢ" "ɨ" "ʁ")  ; ẑägyx
+                        "touch/feel"
+                        (set :count :everything :verb))
+
+(learn-urwormdwarf-word '("ɴ" "ɒ" "" "b" "u" "n̪")  ; ňabun
+                        "work"
+                        (set :count :everything :verb))
+
+(learn-urwormdwarf-word '("ɢ" "ɨ" "" "v" "ɒ" "n̪")  ; gyvan
+                        "have"
+                        (set :count :everything :verb :positive))
+
+(learn-urwormdwarf-word '("ɴ" "ɒ:" "" "ɦ" "ɨ" "n̪")  ; ňāhyn
+                        "give"
+                        (set :count :everything :verb :positive))
+
+(learn-urwormdwarf-word '("ʁ" "ɨ" "" "ɢ" "ɒ" "v̪͆")  ; xygaẑ
+                        "go"
+                        (set :count :everything :verb))
+
+;;;; Numerals
+(learn-urwormdwarf-word '("d̪" "u:" "ɳ")  ; dūṇ
+                        "one"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("n̪" "ɒ:" "m")  ; nām
+                        "two"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("ɴ" "u:" "ʁ")  ; ňūx
+                        "three"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("d̪" "ṵ" "n̪")  ; dün
+                        "few"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("d̪" "ɒ:" "" "ɦ" "ɒ" "n̪")  ; dāhan
+                        "many (assessable)"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("v̪͆" "ɒ̰" "" "b" "ɨ" "ʁ")  ; ẑäbyx
+                        "many (not assessable)"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("ɢ" "ṵ" "" "m" "ɒ" "ɳ")  ; gümaṇ
+                        "much"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("v̪͆" "u:")  ; ẑū
+                        "all"
+                        (set :count :everything :short))
+
+;;; Pronouns
+
+;;;; Conjunctions
+(learn-urwormdwarf-word '("ɴ" "ɨ" "n̪")  ; ňyn
+                        "and"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("ɮ̪" "u" "ɴ")  ; luň
+                        "or (inclusive)"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("ɦ" "ɨ" "ɳ")  ; hyṇ
+                        "or (exclusive)"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("b" "ɨ:" "m")  ; bȳm
+                        "therefore"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("v̪͆" "u" "ʁ")  ; ẑux
+                        "when"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("v̪͆" "ɒ:" "n̪")  ; ẑān
+                        "before"
+                        (set :count :everything :short))
+
+;;;; Adposition
+(learn-urwormdwarf-word '("ʁ" "ɨ")  ; xy
+                        "near"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("ʁ" "ɒ" "v̪͆")  ; xaẑ
+                        "of"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("b" "ɒ" "" "ɴ" "ɒ" "ɳ")  ; baňaṇ
+                        "towards"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("d̪" "ɨ:" "v̪͆")  ; dȳẑ
+                        "above"
+                        (set :count :everything :short))
+
+(learn-urwormdwarf-word '("n̪" "u:" "m")  ; nūm
+                        "below"
+                        (set :count :everything :short))
+
+;;;; Particles
