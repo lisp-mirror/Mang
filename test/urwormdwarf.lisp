@@ -227,6 +227,10 @@
                         "horned beetle"
                         (set :count :everything :noun :dangerous))
 
+(learn-urwormdwarf-word '("ʐ" "ɒ" "m")  ; žam
+                        "somewhere else"
+                        (set :count :everything :noun :short))
+
 ;;;; Verbs
 (learn-urwormdwarf-word '("ʁ" "ɨ" "ɳ")  ; xyṇ
                         "be"
@@ -484,6 +488,14 @@
 			"oppose"
 			(set :count :everything :verb :negative))
 
+(learn-urwormdwarf-word '("m" "u" "" "ɦ̪͆" "ɨ" "m")  ; muẑym
+                        "be sorry"
+                        (set :count :everything :verb))
+
+(learn-urwormdwarf-word '("ɮ̪" "ɨ" "ɦ̪͆")  ; lyẑ
+                        "need to"
+                        (set :count :everything :verb))
+
 ;;;; Numerals
 (learn-urwormdwarf-word '("d̪" "u:" "ɳ")  ; dūṇ
                         "one"
@@ -603,6 +615,10 @@
 (learn-urwormdwarf-word '("ɦ" "ɒ" "n̪")  ; han
 			"of/genitive"
 			(set :count :everything :short))
+
+(learn-urwormdwarf-word '("ɴ" "ɨ" "ɦ̪͆")  ; ňyẑ
+                        "soon"
+                        (set :count :everything :short))
 
 ;;;; Particles
 (learn-urwormdwarf-word '("d̪" "u" "ɳ")  ; duṇ

@@ -27,3 +27,13 @@
 
 (defmethod annotated-string<-word ((word word))
   (annotated-string<-word (form<- word)))
+
+(defmethod merge-words ((word1 cons)
+                        (word2 cons))
+  (append word1 word2))
+
+(defmethod merge-words ((word1 word)
+                        (word2 word))
+  (word (merge-words (form<- word1)
+                     (form<- word2))
+        :origin (list word1 word2)))
