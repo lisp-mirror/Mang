@@ -64,3 +64,13 @@
                    :remove-empty-subseqs nil
                    :test #'char=)
    :origin word))
+
+(defmethod apply-sound-change ((word dictionary)
+                               (sound-change sound-change))
+  (dictionary (image (lambda (dictionary-entry)
+                       (dictionary-entry
+                        (apply-sound-change (word<- dictionary-entry)
+                                            sound-change)
+                        (gloss<- dictionary-entry)
+                        (learn<- dictionary-entry)))
+                     (content<- word))))
