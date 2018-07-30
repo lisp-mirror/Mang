@@ -48,7 +48,9 @@
                           ,source
                           (:positive-lookahead ,post))
               word)
-      (concatenate 'string
-                   (subseq word 0 begin)
-                   (target<- sound-change)
-                   (subseq word end)))))
+      (if begin
+          (concatenate 'string
+                       (subseq word 0 begin)
+                       (target<- sound-change)
+                       (subseq word end))
+          word))))
