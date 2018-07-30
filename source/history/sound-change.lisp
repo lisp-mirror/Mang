@@ -54,3 +54,13 @@
                        (target<- sound-change)
                        (subseq word end))
           word))))
+
+(defmethod apply-sound-change ((word word)
+                               (sound-change sound-change))
+  (word
+   (split-sequence #\#
+                   (apply-sound-change (annotated-string<-word word)
+                                       sound-change)
+                   :remove-empty-subseqs nil
+                   :test #'char=)
+   :origin word))

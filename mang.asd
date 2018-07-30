@@ -8,7 +8,9 @@
                #:fset
                #:cl-adt
                #:equal
-               #:cl-ppcre-unicode)
+               #:cl-ppcre-unicode
+               #:split-sequence
+               )
   :components
   ((:file "package")
    (:module
