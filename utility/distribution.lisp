@@ -245,6 +245,67 @@
   (uniform-distribution (convert 'list elements)
                         weight))
 
+(defmethod zipf-distribution ((elements null)
+                              (a real)
+                              (b real))
+  (declare (ignore elements a b))
+  <nodist>)
+
+(defmethod zipf-distribution ((elements cons)
+                              (a real)
+                              (b real))
+  (declare (type (real (0))
+                 a b))
+  (let ((dist <nodist>))
+    (loop :for element :in elements
+       :for r :from 1
+       :do (setf dist
+                 (with dist element (/ a (expt r b))))
+       :finally (return dist))))
+
+(defmethod yule-distribution ((elements null)
+                              (a real)
+                              (b real)
+                              (c real))
+  (declare (ignore elements a b c))
+  <nodist>)
+
+(defmethod yule-distribution ((elements cons)
+                              (a real)
+                              (b real)
+                              (c real))
+  (declare (type (real (0))
+                 a b c))
+  (let ((dist <nodist>))
+    (loop :for element :in elements
+       :for r :from 1
+       :do (setf dist
+                 (with dist element (* (/ a (expt r b))
+                                       (expt c r))))
+       :finally (return dist))))
+
+(defmethod beta-distribution ((elements null)
+                              (a real)
+                              (b real)
+                              (c real))
+  (declare (ignore elements a b c))
+  <nodist>)
+
+(defmethod beta-distribution ((elements cons)
+                              (a real)
+                              (b real)
+                              (c real))
+  (declare (type (real (0))
+                 a b c))
+  (let ((n (length elements))
+        (dist <nodist>))
+    (loop :for element :in elements
+       :for r :from 1
+       :do (setf dist
+                 (with dist element (* c (/ (expt (+ n 1 r)
+                                                  b)
+                                            (expt r a))))))))
+
 (defmethod print-object ((object [distribution])
                          stream)
   (format stream "~:@<(DISTRIBUTION~;~{ ~S~}~;)~:@>"
