@@ -21,6 +21,7 @@
      (:file "nfsm-dfsm"
             :depends-on ("set" "distribution"))
      (:file "pointer")
+     (:file "anaphora")
      ))
    (:module
     "source"

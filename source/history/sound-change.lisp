@@ -4,19 +4,19 @@
   ((%source :type function
             :reader source<-
             :initarg :source
-            :initform (create-scanner `(:sequence)))
-   (%target :type (or cons null)
+            :initform `(:sequence))
+   (%target :type string
             :reader target<-
             :initarg :target
             :initform nil)
    (%pre :type function
          :reader pre<-
          :initarg :pre
-         :initform (create-scanner `(:sequence)))
+         :initform `(:sequence))
    (%post :type function
           :reader post<-
           :initarg :post
-          :initform (create-scanner `(:sequence)))))
+          :initform `(:sequence))))
 
 ;;;; ANNOTATED-STRING<-WORD is necessary(?) to be able to use CL-PPCRE – it only
 ;;;; works on strings. This means that "#" has to be an illegal character in any
@@ -37,3 +37,18 @@
   (word (merge-words (form<- word1)
                      (form<- word2))
         :origin (list word1 word2)))
+
+(defmethod apply-sound-change ((word string)
+                               (sound-change sound-change))
+  (let ((pre (pre<- sound-change))
+        (source (source<- sound-change))
+        (post (post<- sound-change)))
+    (multiple-value-bind (begin end)
+        (scan `(:sequence (:positive-lookbehind ,pre)
+                          ,source
+                          (:positive-lookahead ,post))
+              word)
+      (concatenate 'string
+                   (subseq word 0 begin)
+                   (target<- sound-change)
+                   (subseq word end)))))
