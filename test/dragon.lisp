@@ -3,7 +3,7 @@
 (defparameter *dragon-phonemes*
   (glyph-system (map ('c (set "ɳ" "ȵ" "ɴ" "t" "tʼ" "d" "ʈ" "ʈʼ" "ɖ" "q" "ɢ" "ʔ"
                               "θ" "ð" "s" "z" "ʂ" "ʐ" "ɕ" "ʑ" "χ" "ʁ" "h" "h̪͆"
-                              "ɦ̪͆" "t̪θ" "t͡s" "ʈʂ" "t͡ɕ" "q͡χ" "ɬ" "ɮ"))
+                              "ɦ̪͆" "t͡s" "ʈʂ" "q͡χ" "ɬ" "ɮ"))
                      ('p (set "t" "d" "ʈ" "ɖ" "q" "ɢ"))
                      ('l (set "ʁ" "ɬ" "ɮ"))
                      ('n (set "ɳ" "ȵ" "ɴ"))
@@ -81,10 +81,10 @@
        ("ȵ" "N")
        ("ɴ" "Ň")
        ("t" "T")
-       ("tʼ" "T·")
+       ("tʼ" "Ṭ")
        ("d" "D")
-       ("ʈ" "Ṭ")
-       ("ʈʼ" "Ṭ·")
+       ("ʈ" "Ͳ")
+       ("ʈʼ" "Ͳ̣")
        ("ɖ" "Ḍ")
        ("q" "K")
        ("ɢ" "G")
@@ -102,11 +102,9 @@
        ("h" "H")
        ("h̪͆" "Ĥ")
        ("ɦ̪͆" "Ħ")
-       ("t̪θ" "Ŧ")
-       ("t͡s" "T'")
-       ("ʈʂ" "Ṭ'")
-       ("t͡ɕ" "Ť")
-       ("q͡χ" "K'")
+       ("t͡s" "Ṱ")
+       ("ʈʂ" "Ͳ̭")
+       ("q͡χ" "K̭")
        ("ɬ" "L")
        ("ɮ" "Ł")
        ("i" "I")
@@ -160,23 +158,15 @@
                    "voice"
                    (set :everything :noun))
 
-(learn-dragon-word '("ɖ" "ʁ" "a" "" "t͡ɕ" "ɯ")  ; ḌRAŤU
-                   "dragon"
-                   (set :everything :noun :boring :negative))
-
-(learn-dragon-word '("ʈʼ" "i" "" "ɴ" "a")  ; Ṭ·IŇA
+(learn-dragon-word '("ʈʼ" "i" "" "ɴ" "a")  ; Ͳ̣IŇA
                    "friend"
                    (set :everything :noun :positive))
-
-(learn-dragon-word '("t̪θ" "e̞")  ; ŦE
-                   "be (copula)"
-                   (set :everything :verb))
 
 (learn-dragon-word '("q" "e̞")  ; KE
                    "I"
                    (set :everything :noun :boring :positive))
 
-(learn-dragon-word '("h" "e̞" "" "tʼ" "a")  ; HET·A
+(learn-dragon-word '("h" "e̞" "" "tʼ" "a")  ; HEṬA
                    "you (friendly)"
                    (set :everything :noun :interesting :positive))
 
@@ -191,3 +181,11 @@
 (learn-dragon-word '("e̞" "" "χ" "i")  ; EXI
                    "he/she/it (pejorative)"
                    (set :everything :noun :interesting :negative))
+
+(learn-dragon-word '("θ" "ɯ")  ; ŜU
+                   "he/she/it (boring)"
+                   (set :everything :noun :boring))
+
+(learn-dragon-word '("ɖ" "ʁ" "ɯ" "" "ɦ̪͆" "a")  ; DRUĦA
+                   "dragon"
+                   (set :everything :noun :boring :negative))
