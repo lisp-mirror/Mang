@@ -74,3 +74,39 @@
                         (gloss<- dictionary-entry)
                         (learn<- dictionary-entry)))
                      (content<- word))))
+
+(defmethod sound-change ((pre cons)
+                         (source cons)
+                         (post cons)
+                         (target cons)
+                         &key (ignore-syllable-boundaries? nil))
+  (labels ((_to-reg (obj)
+             (etypecase obj
+               (string obj)
+               (set `(:alternation
+                      ,@(convert 'list
+                                 (image #'_to-reg
+                                        obj))))))
+           (_prepare (list)
+             (if list
+                 (destructuring-bind (f &rest r)
+                     list
+                   (if ignore-syllable-boundaries?
+                       `(:sequence ,(_to-reg f)
+                                   ,(if r
+                                        "#"
+                                        :void)
+                                   (:alternation "#" :void)
+                                   ,(_prepare r))
+                       `(:sequence ,(_to-reg f)
+                                   ,(if r
+                                        "#"
+                                        :void)
+                                   ,(_prepare r))))
+                 :void)))
+    (make-instance 'sound-change
+                   :pre `(:sequence ,(_prepare pre)
+                                    "#")
+                   :source (_prepare source)
+                   :post `(:sequence "#" ,(_prepare post))
+                   :target (annotated-string<-word target))))

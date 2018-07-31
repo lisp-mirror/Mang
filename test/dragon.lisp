@@ -7,7 +7,7 @@
                               "t̪θʼ" "t͡s" "t͡sʼ" "ʈʂ" "ʈʂʼ" "t͡ɕ" "t͡ɕʼ"
                               "q͡χ" "ɬ" "ɮ"))
                      ('p (set "t" "d" "ʈ" "ɖ" "q" "ɢ"))
-                     ('l (set "χ" "ʁ" "ɬ" "ɮ"))
+                     ('l (set "ʁ" "ɬ" "ɮ"))
                      ('n (set "ɳ" "ȵ" "ɴ"))
                      ('f (set "θ" "ð" "s" "z" "ʂ" "ʐ" "ɕ" "ʑ" "χ" "ʁ"
                               "h" "h̪͆" "ɦ̪͆"))
@@ -20,12 +20,11 @@
                *dragon-phonemes*))
 
 (defparameter *dragon-store*
-  (let ((dist (yule-distribution '("χ" "h" "ʌ̝" "a" "θ" "t" "ʂ" "ɕ" "h̪͆"
-                                   "q" "s" "ɴ" "ʔ" "ð" "tʼ" "t̪θ" "ʈʂ"
-                                   "ʁ" "ʐ" "ȵ" "d" "ʈʼ" "ɦ̪͆" "ɯ" "t̪θʼ"
-                                   "ɖ" "ɳ" "ɢ" "ʈ" "z" "ʑ" "q͡χ" "e̞"
-                                   "t͡ɕ" "ɖʰ" "t͡ɕʼ" "t͡s" "ʈʂʼ" "t͡sʼ"
-                                   "i" "ɬ" "dʰ" "ɮ" "")
+  (let ((dist (yule-distribution '("χ" "h" "ʌ̝" "a" "θ" "t" "ʂ" "ɕ" "h̪͆" "q" "s"
+                                   "ɴ" "ʔ" "ð" "e̞" "tʼ" "t̪θ" "ʈʂ" "ʁ" "ʐ" "i"
+                                   "ȵ" "d" "ʈʼ" "ɦ̪͆" "ɯ" "t̪θʼ" "ɖ" "ɳ" "ɢ" "ʈ"
+                                   "z" "ʑ" "q͡χ" "t͡ɕ" "ɖʰ" "t͡ɕʼ" "t͡s" "ʈʂʼ" "t͡sʼ"
+                                   "ɬ" "dʰ" "ɮ" "")
                                  100 1.04 1.03))
         (consonants (set ($ (@ (classes<- *dragon-phonemes*)
                                'c))
@@ -49,6 +48,11 @@
                          (match-outro-generator 1 :ignore-glyphs consonants)
                          (match-outro-generator 1 :ignore-glyphs vowels)))
                    (:verb
+                    (set (match-everything-generator)
+                         (match-outro-generator 3 :ignore-glyphs (set ""))
+                         (match-outro-generator 1 :ignore-glyphs consonants)
+                         (match-outro-generator 1 :ignore-glyphs vowels)))
+                   (:adjective
                     (set (match-everything-generator)
                          (match-outro-generator 3 :ignore-glyphs (set ""))
                          (match-outro-generator 1 :ignore-glyphs consonants)
@@ -157,3 +161,14 @@
 					(form<- word)))))))))
 
 ;;;; roots
+(learn-dragon-word '("χ" "ʌ̝" "" "t̪θ" "a")  ; XOŦA
+                   "fly"
+                   (set :everything :verb :boring))
+
+(learn-dragon-word '("ʈʼ" "ʌ̝" "" "χ" "a")  ; Ṭ·OXA
+                   "swim"
+                   (set :everything :verb :interesting))
+
+(learn-dragon-word '("ɢ" "ʌ̝")  ; GO
+                   "be (copula)"
+                   (set :everything :verb))
