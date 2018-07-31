@@ -66,5 +66,6 @@
     ((:file "urwormdwarf")
      (:file "urkobold")
      (:file "urdokrin")
+     (:file "dragon")
      ))
    ))
