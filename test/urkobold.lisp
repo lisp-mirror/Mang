@@ -83,7 +83,13 @@
                *urkobold-phonemes*))
 
 (defparameter *urkobold-store*
-  (let ((dist (uniform-distribution (glyphs<- *urkobold-phonemes*)))
+  (let ((dist (union (yule-distribution '("l" "n" "m" "ɕ" "ɹ" "ŋ" "k" "t" "g"
+                                          "ʑ" "β" "ʃ" "ʒ" "d" "ɸ" "s" "p" "z"
+                                          "b" "")
+                                        19 1.02 1.03)
+                     (yule-distribution '("o" "i" "a" "e" "y" "ə" "u" "ɞ" "¡"
+                                          "")
+                                        8 1.01 1.04)))
         (consonants (set ($ (@ (classes<- *urkobold-phonemes*)
                                'c))
                          ""))
@@ -286,6 +292,24 @@
 (defun generate-urkobold-word (categories &optional (negative (set)))
   (generate-word *urkobold-words* *urkobold-store* categories
                  :negative negative))
+
+(defun print-urkobold-words (n categories
+                             &optional (negative (set)))
+  (let ((words (set)))
+    (loop :for x :below n
+       :do
+       (let ((word (generate-urkobold-word categories negative)))
+	 (when (and (empty? (@ *urkobold-dictionary*
+			       (form<- word)))
+		    (not (@ words word)))
+	   (setf words
+		 (with words word))
+	   (format t "~S ~A~%"
+		   (form<- word)
+		   (string<-word (image (lambda (glyph)
+					  (or (@ *urkobold-romanization* glyph)
+					      glyph))
+					(form<- word)))))))))
 
 ;;;; Affixes
 (learn-urkobold-word '("b" "ɭ" "¡" "a")  ; -bl'a
@@ -884,3 +908,17 @@
                      "nothing"
                      (set :count :everything :noun
                           :abstract :dark :inert))
+
+;;; goat
+;;;
+;;; physical:
+;;; brightly colored
+;;; porcupine quills
+;;;
+;;; behaviour:
+;;; notices and avoids ambushes and traps
+;;; collect materials to build artificial hills to climb on
+(learn-urkobold-word '("o" "" "ŋ" "a" "" "k" "ə")  ; oňak·
+                     "goat"
+                     (set :count :everything :noun
+                          :animal :funny :living :active))

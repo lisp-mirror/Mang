@@ -8,7 +8,9 @@
                #:fset
                #:cl-adt
                #:equal
-               #:cl-ppcre-unicode)
+               #:cl-ppcre-unicode
+               #:split-sequence
+               )
   :components
   ((:file "package")
    (:module
@@ -21,6 +23,7 @@
      (:file "nfsm-dfsm"
             :depends-on ("set" "distribution"))
      (:file "pointer")
+     (:file "anaphora")
      ))
    (:module
     "source"
@@ -63,5 +66,6 @@
     ((:file "urwormdwarf")
      (:file "urkobold")
      (:file "urdokrin")
+     (:file "dragon")
      ))
    ))
