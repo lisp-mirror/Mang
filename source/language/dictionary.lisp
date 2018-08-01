@@ -37,6 +37,16 @@
   (string<-word (form<- word)
                 syllables?))
 
+(defun romanize-word (romanization word)
+  (apply #'concatenate 'string
+         (mapcar (lambda (glyph)
+                   (multiple-value-bind (g found?)
+                       (@ romanization glyph)
+                     (if found?
+                         g
+                         glyph)))
+                 (form<- word))))
+
 (defmethod learn (markov (obj word))
   (learn markov (form<- obj)))
 
