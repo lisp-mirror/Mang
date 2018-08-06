@@ -34,6 +34,7 @@
       :components
       ((:file "glyph")
        (:file "word")
+       (:file "sonority")
        ))
      (:module
       "grammar"
