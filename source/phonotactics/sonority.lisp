@@ -68,11 +68,11 @@
                           (nucleus-index integer)
                           (earliest-start integer)
                           (hierarchy cons))
-  (or (loop :for x :from (1- nucleus-index)
+  (or (loop :for x :downfrom (1- nucleus-index)
          :for y :from (- nucleus-index 2)
          :downto earliest-start
-         :unless (before? (nth x word)
-                          (nth y word)
+         :unless (before? (nth y word)
+                          (nth x word)
                           hierarchy)
          :do (return-from syllable-init
                y))
@@ -85,8 +85,8 @@
   (or (loop :for x :from (1+ nucleus-index)
          :for y :from (+ nucleus-index 2)
          :to latest-end
-         :unless (before? (nth x word)
-                          (nth y word)
+         :unless (before? (nth y word)
+                          (nth x word)
                           hierarchy)
          :do (return-from syllable-coda
                y))
@@ -99,7 +99,7 @@
     (cons 0 (loop :for (prev this)
                :on nuclei
                :if this
-               :collect (syllable-init word this prev hierarchy)))))
+               :collect (1+ (syllable-init word this prev hierarchy))))))
 
 (defmethod syllable-codas ((word cons)
                            (vowels set)
@@ -108,7 +108,7 @@
     (loop :for (this next)
        :on nuclei
        :if next
-       :collect (1+ (syllable-coda word this next hierarchy)))))
+       :collect (syllable-coda word this next hierarchy))))
 
 (defmethod syllabalize ((word cons)
                         (vowels set)
@@ -135,3 +135,29 @@
   (syllabalize (remove "" word
                        :test #'string=)
                vowels hierarchy prefer-open?))
+
+(defmethod clustered-gen ((min-length integer)
+                          (max-length integer)
+                          (vowels set)
+                          (initial-clusters set)
+                          (median-clusters set)
+                          (final-clusters set))
+  (declare (type (integer 1)
+                 min-length max-length))
+  (labels ((_compile (l)
+             (declare (type (integer 0)
+                            l)
+                      (type boolean b?)
+                      (type (or cons null)
+                            acc))
+             (cond
+               ((= l max-length)
+                (list vowels final-clusters))
+               ((= l 0)
+                (list initial-clusters (_compile (1+ l))))
+               ((>= l min-length)
+                (list vowels (set final-clusters
+                                  (list median-clusters (_compile (1+ l))))))
+               (t
+                (list vowels median-clusters (_compile (1+ l)))))))
+    (dfsm<- (_compile 0))))
