@@ -645,6 +645,10 @@
 			"VOC"
 			(set :count :everything :short))
 
+(learn-urwormdwarf-word '("d̪" "ɒ" "ʁ")  ; dax
+                        "other"
+                        (set :count :everything :short))
+
 ;;;; Example sentences
 
 ;;; Hello
