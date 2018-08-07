@@ -41,12 +41,11 @@
   (learn markov (form<- obj)))
 
 (defmethod resyllabalize ((word word)
-                          (vowels set)
                           (hierarchy cons)
                           prefer-open?)
   (declare (type boolean prefer-open?))
   (word (resyllabalize (form<- word)
-                       vowels hierarchy prefer-open?)
+                       hierarchy prefer-open?)
         :origin word))
 
 (defclass dictionary-entry ()

@@ -1,5 +1,6 @@
 (in-package #:mang)
 
+#+nil
 (defmethod before? (a b (sequence cons))
   (destructuring-bind (f &rest r)
       sequence
@@ -19,50 +20,47 @@
           (t
            (before? a b r))))))
 
-(defmethod indices (predicate (sequence null))
-  '())
+(defmethod before? (a b (sequence cons))
+  (labels ((_find (x xs)
+             (when xs
+               (destructuring-bind (f &rest r)
+                   xs
+                 (if (typecase f
+                       (set
+                        (@ f x))
+                       (function
+                        (funcall f x))
+                       (t
+                        (equal? f x)))
+                     (values r t)
+                     (_find x r))))))
+    (nth-value 1 (_find b (_find a sequence)))))
 
-(defmethod indices ((predicate t)
-                    (sequence cons))
-  (labels ((_rec (s i inds)
-             (if s
-                 (destructuring-bind (f &rest r)
-                     s
-                   (if (equal? predicate f)
-                       (_rec r (1+ i)
-                             (cons i inds))
-                       (_rec r (1+ i)
-                             inds)))
-                 (nreverse inds))))
-    (_rec sequence 0 '())))
-
-(defmethod indices ((predicate set)
-                    (sequence cons))
-  (labels ((_rec (s i inds)
-             (if s
-                 (destructuring-bind (f &rest r)
-                     s
-                   (if (@ predicate f)
-                       (_rec r (1+ i)
-                             (cons i inds))
-                       (_rec r (1+ i)
-                             inds)))
-                 (nreverse inds))))
-    (_rec sequence 0 '())))
-
-(defmethod indices ((predicate function)
-                    (sequence cons))
-  (labels ((_rec (s i inds)
-             (if s
-                 (destructuring-bind (f &rest r)
-                     s
-                   (if (funcall predicate f)
-                       (_rec r (1+ i)
-                             (cons i inds))
-                       (_rec r (1+ i)
-                             inds)))
-                 (nreverse inds))))
-    (_rec sequence 0 '())))
+(defmethod nuclei ((word cons)
+                   (hierarchy cons))
+  (labels ((_rec (n l acc)
+             (if (rest l)
+                 (destructuring-bind (p c &rest r)
+                     l
+                   (cond
+                     ((= n 0)
+                      (_rec 1 l (if (before? p c hierarchy)
+                                    acc
+                                    (cons 0 acc))))
+                     (r
+                      (_rec (1+ n)
+                            (cons c r)
+                            (if (or (before? c p hierarchy)
+                                    (before? c (first r)
+                                             hierarchy))
+                                acc
+                                (cons n acc))))
+                     (t
+                      (if (before? c p hierarchy)
+                          (nreverse acc)
+                          (nreverse (cons n acc))))))
+                 (list n))))
+    (_rec 0 word '())))
 
 (defmethod syllable-init ((word cons)
                           (nucleus-index integer)
@@ -93,48 +91,44 @@
       latest-end))
 
 (defmethod syllable-inits ((word cons)
-                           (vowels set)
                            (hierarchy cons))
-  (let ((nuclei (indices vowels word)))
+  (let ((nuclei (nuclei word hierarchy)))
     (cons 0 (loop :for (prev this)
                :on nuclei
                :if this
                :collect (1+ (syllable-init word this prev hierarchy))))))
 
 (defmethod syllable-codas ((word cons)
-                           (vowels set)
                            (hierarchy cons))
-  (let ((nuclei (indices vowels word)))
+  (let ((nuclei (nuclei word hierarchy)))
     (loop :for (this next)
        :on nuclei
        :if next
        :collect (syllable-coda word this next hierarchy))))
 
 (defmethod syllabalize ((word cons)
-                        (vowels set)
                         (hierarchy cons)
                         prefer-open?)
   (declare (type boolean prefer-open?))
   (apply #'append
          (intersperse '("")
                       (if prefer-open?
-                          (let ((inits (syllable-inits word vowels hierarchy)))
+                          (let ((inits (syllable-inits word hierarchy)))
                             (loop :for (index next) :on inits
                                :collect
                                (subseq word index next)))
-                          (let ((codas (cons 0 (syllable-codas word vowels hierarchy))))
+                          (let ((codas (cons 0 (syllable-codas word hierarchy))))
                             (loop :for (prev index) :on codas
                                :collect
                                (subseq word prev index)))))))
 
 (defmethod resyllabalize ((word cons)
-                          (vowels set)
                           (hierarchy cons)
                           prefer-open?)
   (declare (type boolean prefer-open?))
   (syllabalize (remove "" word
                        :test #'string=)
-               vowels hierarchy prefer-open?))
+               hierarchy prefer-open?))
 
 (defmethod clustered-gen ((min-length integer)
                           (max-length integer)
