@@ -265,3 +265,23 @@
 (learn-dragon-word '("e̞" "" "ʂ" "ɯ")  ; ΕΣ̬Υ
                    "know"
                    (set :everything :verb :interesting :positive))
+
+(learn-dragon-word '("ɯ" "" "θ" "ɯ" "" "ʀ" "ŋ" "e̞")  ; ΥΣ̭ΥΓ̩Ν̱Ε
+                   "wash"
+                   (set :everything :verb :positive))
+
+(learn-dragon-word '("ɯ" "" "ɕ" "a" "" "x" "a")  ; ΥΣ̱ΑΧΑ
+                   "help"
+                   (set :everything :verb :positive))
+
+(learn-dragon-word '("ɯ" "" "ʈʼ" "a" "" "ʐ" "a")  ; ΥͲ̣ΑΖ̬Α
+                   "follow"
+                   (set :everything :verb))
+
+(learn-dragon-word '("a" "" "ʂ" "i" "" "x" "a")  ; ΑΣ̬ΙΧΑ
+                   "meet/encounter"
+                   (set :everything :verb :interesting))
+
+(learn-dragon-word '("a" "" "ŋ" "e̞" "" "n" "a")  ; ΑΝ̱ΕΝΑ
+                   "talk"
+                   (set :everything :verb :interesting))
