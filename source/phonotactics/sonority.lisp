@@ -1,25 +1,5 @@
 (in-package #:mang)
 
-#+nil
-(defmethod before? (a b (sequence cons))
-  (destructuring-bind (f &rest r)
-      sequence
-    (if (typep f 'set)
-        (cond
-          ((@ f a)
-           (not (@ f b)))
-          ((@ f b)
-           nil)
-          (t
-           (before? a b r)))
-        (cond
-          ((equal? f a)
-           t)
-          ((equal? f b)
-           nil)
-          (t
-           (before? a b r))))))
-
 (defmethod before? (a b (sequence cons))
   (labels ((_find (x xs)
              (when xs
@@ -140,10 +120,7 @@
                  min-length max-length))
   (labels ((_compile (l)
              (declare (type (integer 0)
-                            l)
-                      (type boolean b?)
-                      (type (or cons null)
-                            acc))
+                            l))
              (cond
                ((= l max-length)
                 (list vowels final-clusters))
