@@ -922,3 +922,8 @@
                      "goat"
                      (set :count :everything :noun
                           :animal :funny :living :active))
+
+(learn-urkobold-word '("g" "o" "" "ʑ" "l" "a" "" "i" "n")  ; goźlain
+                     "fishing rod"
+                     (set :count :everything :noun
+                          :object :food))

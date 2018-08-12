@@ -44,6 +44,13 @@
                          (match-outro-generator 2)
                          (match-outro-generator 1 :ignore-glyphs consonants)
                          (match-outro-generator 1 :ignore-glyphs vowels)))
+                   (:affix
+                    (set (match-everything-generator)
+                         (match-outro-generator 3 :ignore-glyphs (set ""))
+                         (match-outro-generator 2 :ignore-glyphs (set ""))
+                         (match-outro-generator 2)
+                         (match-outro-generator 1 :ignore-glyphs consonants)
+                         (match-outro-generator 1 :ignore-glyphs vowels)))
                    (:noun
                     (set (match-outro-generator 4)
                          (match-outro-generator 3 :ignore-glyphs (set ""))
@@ -152,6 +159,171 @@
 					  (or (@ *dragon-romanization* glyph)
 					      glyph))
 					(form<- word)))))))))
+
+;;;; affixes
+;;; participation
+(learn-dragon-word '("ʈ" "e̞" "" "x" "ɯ")  ;  ͲΕΧΥ
+                   "DRPAC.ACT"  ; direct active participation
+                   (set :everything :affix :interesting))
+
+(learn-dragon-word '("d" "i")  ; ΔΙ
+                   "DRPAC.PASS"  ; direct passive participation
+                   (set :everything :affix :interesting))
+
+;;; sensory
+(learn-dragon-word '("θ" "i")  ; Σ̭Ι
+                   "SENS"  ; sensory
+                   (set :everything :affix :interesting))
+
+;;; deductive
+(learn-dragon-word '("t͡s" "ɯ")  ; Τ̤Υ
+                   "DED"  ; deductive
+                   (set :everything :affix :boring))
+
+;;; hearsay
+(learn-dragon-word '("ɦ̪͆" "a")  ; Ͱ̩Α
+                   "HSY"  ; hearsay
+                   (set :everything :affix :boring))
+
+;;; internal
+(learn-dragon-word '("ʀ" "ɯ")  ; Γ̩Υ
+                   "ITRL"  ; internal
+                   (set :everything :affix))
+
+;;; dubitative
+(learn-dragon-word '("ɯ" "" "θ" "e̞")  ; ΥΣ̭Ε
+                   "DUB"  ; dubitative
+                   (set :everything :affix :negative))
+
+;;; contrafactual
+(learn-dragon-word '("ɯ" "" "x" "ɯ")  ; ΥΧΥ
+                   "CFAC"  ; contrafactual
+                   (set :everything :affix))
+
+;;; infinitive
+(learn-dragon-word '("ɯ")  ; Υ
+                   "INF"
+                   (set :everything :affix))
+
+;;; present
+(learn-dragon-word '("n" "a")  ; ΝΑ
+                   "PRE"
+                   (set :everything :affix))
+
+;;; past
+(learn-dragon-word '("k͡x" "ɯ")  ; Κ̤Υ
+                   "PAS"
+                   (set :everything :affix))
+
+;;; gnomic
+(learn-dragon-word '("e̞" "" "x" "ɯ")  ; ΕΧΥ
+                   "GNO"
+                   (set :everything :affix :interesting :boring))
+
+;;; progressive
+(learn-dragon-word '("θ" "a")  ; Σ̭Α
+                   "PROG"
+                   (set :everything :affix))
+
+;;; frequentative
+(learn-dragon-word '("θ" "e̞")  ; Σ̭Ε
+                   "FREQ"
+                   (set :everything :affix :boring))
+
+;;; inceptive
+(learn-dragon-word '("a")  ; Α
+                   "INCEP"
+                   (set :everything :affix))
+
+;;; perfective
+(learn-dragon-word '("ɯ" "" "z" "a")  ; ΥΖΑ
+                   "PFV"
+                   (set :everything :affix))
+
+;;; volitional
+(learn-dragon-word '("x" "ɯ")  ; ΧΥ
+                   "VOL"
+                   (set :everything :affix :positive))
+
+;;; desiderative
+(learn-dragon-word '("ɯ" "" "ɦ̪͆" "a")  ; ΥͰ̩Α
+                   "DES"
+                   (set :everything :affix :interesting))
+
+;;; frustrative
+(learn-dragon-word '("ŋ" "e̞")  ; Ν̱Ε
+                   "FRUST"
+                   (set :everything :affix :negative))
+
+;;; non-voluntary
+(learn-dragon-word '("ɯ" "" "d" "ɯ")  ; ΥΔΥ
+                   "NVOL"
+                   (set :everything :affix))
+
+;;; subject
+(learn-dragon-word '("x" "i")  ; ΧΙ
+                   "SUB"
+                   (set :everything :affix))
+
+;;; accusative
+(learn-dragon-word '("ɦ̪͆" "ɯ")  ; Ͱ̩Υ
+                   "ACC"
+                   (set :everything :affix))
+
+;;; dative
+(learn-dragon-word '("ʂ" "ɯ")  ; Σ̬Υ
+                   "DAT"
+                   (set :everything :affix))
+
+;;; experiencer
+(learn-dragon-word '("tʼ" "a")  ; Τ̣Α
+                   "EXP"
+                   (set :everything :affix :interesting))
+
+;;; vocative
+(learn-dragon-word '("z" "a")  ; ΖΑ
+                   "VOC"
+                   (set :everything :affix))
+
+;;; proximative
+(learn-dragon-word '("x" "a")  ; ΧΑ
+                   "PROXI"
+                   (set :everything :affix))
+
+;;; allative
+(learn-dragon-word '("tʼ" "a" "" "x" "ɯ")  ; Τ̣ΑΧΥ
+                   "ALL"
+                   (set :everything :affix))
+
+;;; sublative
+(learn-dragon-word '("θ" "ɯ" "" "tʼ" "a")  ; Σ̭ΥΤ̣Α
+                   "SUBL"
+                   (set :everything :affix))
+
+;;; genitive
+(learn-dragon-word '("ɕ" "ɯ" "" "x" "ɯ")  ; Σ̱ΥΧΥ
+                   "GEN"
+                   (set :everything :affix))
+
+;;; temporal
+(learn-dragon-word '("tʼ" "ɯ")  ; Τ̣Υ
+                   "TEMP"
+                   (set :everything :affix))
+
+;;; plural
+(learn-dragon-word '("i" "" "ɖ" "a")  ; ΙΔ̬Α
+                   "PL"
+                   (set :everything :affix))
+
+;;; dimunitive
+(learn-dragon-word '("i" "" "ɮ" "a")  ; ΙΛ̩Α
+                   "DIM"
+                   (set :everything :affix))
+
+;;; augmentative
+(learn-dragon-word '("a" "" "x" "ɯ")  ; ΑΧΥ
+                   "AUG"
+                   (set :everything :affix))
 
 ;;;; roots
 (learn-dragon-word '("h̪͆" "ɯ" "" "ɖ" "a" "" "x" "a")  ; ĤUḌAXA
