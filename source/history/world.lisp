@@ -75,3 +75,11 @@
                                   pop1 pop2
                                   :weight weight)
                  :populations (populations<- world)))
+
+(defmethod rem-population ((world world)
+                           (population string))
+  (make-instance 'world
+                 :graph (rem-node (graph<- world)
+                                  population)
+                 :populations (less (populations<- world)
+                                    population)))
