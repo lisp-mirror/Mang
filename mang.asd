@@ -10,6 +10,7 @@
                #:equal
                #:cl-ppcre-unicode
                #:split-sequence
+               #:fgraph
                )
   :components
   ((:file "package")

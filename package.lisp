@@ -2,7 +2,7 @@
 
 (defpackage #:mang
   (:use #:cl #:cl-adt #:cells #:equal #:cl-ppcre #:cl-ppcre-unicode
-        #:split-sequence)
+        #:split-sequence #:fgraph)
   (:shadowing-import-from
    #:fset
    #:compare #:with #:less #:convert :set #:union #:@ #:filter #:image #:map
