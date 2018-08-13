@@ -52,6 +52,7 @@
       "history"
       :components
       ((:file "sound-change")
+       (:file "world")
        ))
      (:module
       "presentation"
