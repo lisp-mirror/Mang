@@ -2,13 +2,29 @@
 
 (defadt [population]
   <no-population>
-  (<simple-population> dictionary (integer (0))))
+  (<population> dictionary (integer (0))))
 
 (defmatch size<- ([population])
     (integer 0)
   (<no-population> 0)
-  ((<simple-population> _ size)
+  ((<population> _ size)
    size))
+
+(defmatch dictionary<- ([population])
+    dictionary
+  (<no-population>
+   (dictionary))
+  ((<population> dictionary _)
+   dictionary))
+
+(defmatch apply-sound-change ([population] sound-change)
+    [population]
+  ((<no-population> _)
+   <no-population>)
+  (((<population> dictionary size)
+    sound-change)
+   (<population (apply-sound-change dictionary sound-change)
+                size)))
 
 (defclass world ()
   ((%graph :type standard-graph
@@ -58,10 +74,10 @@
            (with (with (less (populations<- world)
                              population-name)
                        descendant1-name
-                       (<simple-population> (dictionary<- pop)
+                       (<population> (dictionary<- pop)
                                             (round (* size descendant1-share div))))
                  descendant2-name
-                 (<simple-population> (dictionary<- pop)
+                 (<population> (dictionary<- pop)
                                       (round (* size descendant2-share div)))))))))
 
 (defmethod connect-populations ((world world)
@@ -83,3 +99,53 @@
                                   population)
                  :populations (less (populations<- world)
                                     population)))
+
+(defmethod realize-sound-change ((sound-change sound-change)
+                                 (starting-pop string)
+                                 (strength real)
+                                 (world world))
+  (declare (type (real (0))
+                 strength))
+  ;; As I have no idea how to correctly model this, the proliferation
+  ;; of sound changes through populations is going to be hacked
+  ;; together in some way that seems sufficiently reasonable
+  (labels
+      ((_rec (to-do done world)
+         (declare (type map to-do)
+                  (type set done)
+                  (type world world))
+         (if (empty? to-do)
+             world
+             (multiple-value-bind (name strength)
+                 (arb to-do)
+               (let* ((graph (graph<- world))
+                      (pops (populations<- world))
+                      (pop (@ pops name)))
+                 (if (>= strength (random 1.0))
+                     (let ((ns (convert 'map
+                                        (neighbours graph)
+                                        :key-fn #'identity
+                                        :value-fn
+                                        (lambda (target)
+                                          (/ strength
+                                             (weight (find-edge graph
+                                                                :source
+                                                                name
+                                                                :target
+                                                                target)))))))
+                       (_rec (less (map-union to-do ns
+                                              :val-fn #'max)
+                                   name)
+                             (with done name)
+                             (make-instance 'world
+                                            :graph graph
+                                            :populations (with pops
+                                                               name
+                                                               (apply-sound-change
+                                                                pop)))))
+                     (_rec (less to-do name)
+                           (with done name)
+                           world)))))))
+    (_rec (map (starting-pop weight))
+          (set)
+          world)))
