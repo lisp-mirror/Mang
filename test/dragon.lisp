@@ -325,6 +325,26 @@
                    "AUG"
                    (set :everything :affix))
 
+;;; degradative
+(learn-dragon-word '("i" "" "h" "a")  ; ΙͰΑ
+                   "DGRD"
+                   (set :everything :affix :negative))
+
+;;; comparative
+(learn-dragon-word '("ɯ" "" "ɖ" "ɯ")  ; ΥΔ̬Υ
+                   "COMP"
+                   (set :everything :affix))
+
+;;; eminentive
+(learn-dragon-word '("z" "e̞" "" "x" "a")  ; ΖΕΧΑ
+                   "EMIN"
+                   (set :everything :affix))
+
+;;; adverbial
+(learn-dragon-word '("ɯ" "" "x" "i")  ; ΥΧΙ
+                   "ADV"
+                   (set :everything :affix))
+
 ;;;; roots
 (learn-dragon-word '("h̪͆" "ɯ" "" "ɖ" "a" "" "x" "a")  ; ĤUḌAXA
                    "voice"
@@ -457,3 +477,23 @@
 (learn-dragon-word '("a" "" "ŋ" "e̞" "" "n" "a")  ; ΑΝ̱ΕΝΑ
                    "talk"
                    (set :everything :verb :interesting))
+
+(learn-dragon-word '("ɯ" "" "x" "e̞" "" "ʐ" "e̞" "" "ʈʼ" "a")  ; ΥΧΕΖ̬ΕͲ̣Α
+                   "life/existence"
+                   (set :everything :noun :interesting :positive))
+
+(learn-dragon-word '("ɯ" "" "ʀ" "a" "" "x" "ɯ")  ; ΥΓ̩ΑΧΥ
+                   "word"
+                   (set :everything :noun :interesting))
+
+(learn-dragon-word '("a" "" "ɦ̪͆" "e̞" "" "ʈʼ" "ɯ" "" "θ" "ɯ")  ; ΑͰ̩ΕͲ̣ΥΣ̭Υ
+                   "difficult"
+                   (set :everything :adjective :interesting :negative))
+
+(learn-dragon-word '("ɯ" "" "tʼ" "a")  ; ΥΤ̣Α
+                   "when/if"
+                   (set :everything))
+
+(learn-dragon-word '("ɯ" "" "h̪͆" "a" "" "θ" "e̞")  ; ΥͰ̭ΑΣ̭Ε
+                   "few"
+                   (set :everything :adjective))
