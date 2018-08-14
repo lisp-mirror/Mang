@@ -71,6 +71,10 @@
      (:file "urkobold")
      (:file "urdokrin")
      (:file "dragon")
-     (:file "falranda")
+     (:file "falranda"
+            :depends-on ("urwormdwarf"
+                         "urkobold"
+                         "urdokrin"
+                         "dragon"))
      ))
    ))
