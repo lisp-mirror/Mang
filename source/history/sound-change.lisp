@@ -22,8 +22,8 @@
 ;;;; works on strings. This means that "#" has to be an illegal character in any
 ;;;; given glyph.
 (defmethod annotated-string<-word ((word cons))
-  (format nil "~{~A~}"
-          (intersperse "#" word)))
+  (format nil "##~{~A#~}#"
+          word))
 
 (defmethod annotated-string<-word ((word word))
   (annotated-string<-word (form<- word)))
@@ -57,23 +57,29 @@
 
 (defmethod apply-sound-change ((word word)
                                (sound-change sound-change))
-  (word
-   (split-sequence #\#
-                   (apply-sound-change (annotated-string<-word word)
-                                       sound-change)
-                   :remove-empty-subseqs nil
-                   :test #'char=)
-   :origin word))
+  (let* ((anno (annotated-string<-word word))
+         (changed (apply-sound-change anno sound-change)))
+    (if (equal? anno changed)
+        word
+        (word
+         (split-sequence #\#
+                         (string-trim '(#\#)
+                                      changed)
+                         :remove-empty-subseqs nil
+                         :test #'char=)
+         :origin word))))
 
 (defmethod apply-sound-change ((word dictionary)
                                (sound-change sound-change))
-  (dictionary (image (lambda (dictionary-entry)
-                       (dictionary-entry
-                        (apply-sound-change (word<- dictionary-entry)
-                                            sound-change)
-                        (gloss<- dictionary-entry)
-                        (learn<- dictionary-entry)))
-                     (content<- word))))
+  (make-instance 'dictionary
+                 :content
+                 (image (lambda (dictionary-entry)
+                          (dictionary-entry
+                           (apply-sound-change (word<- dictionary-entry)
+                                               sound-change)
+                           (gloss<- dictionary-entry)
+                           (learn<- dictionary-entry)))
+                        (content<- word))))
 
 (defmethod sound-change ((pre cons)
                          (source cons)

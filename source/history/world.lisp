@@ -23,8 +23,8 @@
    <no-population>)
   (((<population> dictionary size)
     sound-change)
-   (<population (apply-sound-change dictionary sound-change)
-                size)))
+   (<population> (apply-sound-change dictionary sound-change)
+                 size)))
 
 (defclass world ()
   ((%graph :type standard-graph
@@ -57,28 +57,47 @@
                              (weight real))
   (declare (type (real (0))
                  weight))
-  (let ((pop (@ (populations<- world)
-                population-name)))
+  (let* ((graph (graph<- world))
+         (pop (@ (populations<- world)
+                 population-name))
+         (neighbours (neighbours graph population-name))
+         (weights (convert 'map
+                           neighbours
+                           :key-fn #'identity
+                           :value-fn (lambda (neighbour)
+                                       (edge-property (find-edge graph
+                                                                 :source population-name
+                                                                 :target neighbour)
+                                                      :weight)))))
     (if (equal? pop <no-population>)
         world
-        (let ((size (size<- pop))
-              (div (/ (+ descendant1-share descendant2-share))))
-          (make-instance
-           'world
-           :graph (add-edge (add-nodes (rem-node (graph<- world)
-                                                 population-name)
-                                       descendant1-name descendant2-name)
-                            descendant1-name descendant2-name
-                            :weight weight)
-           :populations
-           (with (with (less (populations<- world)
-                             population-name)
-                       descendant1-name
-                       (<population> (dictionary<- pop)
-                                            (round (* size descendant1-share div))))
-                 descendant2-name
-                 (<population> (dictionary<- pop)
-                                      (round (* size descendant2-share div)))))))))
+        (let* ((size (size<- pop))
+               (div (/ (+ descendant1-share descendant2-share)))
+               (world (make-instance
+                       'world
+                       :graph (add-edge (add-nodes (rem-node graph population-name)
+                                                   descendant1-name descendant2-name)
+                                        descendant1-name descendant2-name
+                                        :weight weight)
+                       :populations
+                       (with (with (less (populations<- world)
+                                         population-name)
+                                   descendant1-name
+                                   (<population> (dictionary<- pop)
+                                                 (round (* size descendant1-share div))))
+                             descendant2-name
+                             (<population> (dictionary<- pop)
+                                           (round (* size descendant2-share div)))))))
+          (image (lambda (neighbour weight)
+                   (setf world
+                         (make-instance 'world
+                                        :graph (add-edge (add-edge (graph<- world)
+                                                                   descendant1-name neighbour
+                                                                   :weight weight)
+                                                         descendant2-name neighbour
+                                                         :weight weight))))
+                 weights)
+          world))))
 
 (defmethod connect-populations ((world world)
                                 (pop1 string)
@@ -87,7 +106,9 @@
   (declare (type (real (0))
                  weight))
   (make-instance 'world
-                 :graph (add-edge (graph<- world)
+                 :graph (add-edge (rem-edge (graph<- world)
+                                            :source pop1
+                                            :target pop2)
                                   pop1 pop2
                                   :weight weight)
                  :populations (populations<- world)))
@@ -121,7 +142,7 @@
                (let* ((graph (graph<- world))
                       (pops (populations<- world))
                       (pop (@ pops name)))
-                 (if (>= strength (random 1.0))
+                 (if (>= strength 1)
                      (let ((ns (map-union (convert 'map
                                                    (neighbours graph name)
                                                    :key-fn #'identity
