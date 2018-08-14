@@ -100,10 +100,10 @@
                  :populations (less (populations<- world)
                                     population)))
 
-(defmethod realize-sound-change ((sound-change sound-change)
+(defmethod realize-sound-change ((world world)
+                                 (sound-change sound-change)
                                  (starting-pop string)
-                                 (strength real)
-                                 (world world))
+                                 (strength real))
   (declare (type (real (0))
                  strength))
   ;; As I have no idea how to correctly model this, the proliferation
@@ -118,12 +118,14 @@
              world
              (multiple-value-bind (name strength)
                  (arb to-do)
+               (format t "~S ~S~%"
+                       to-do done)
                (let* ((graph (graph<- world))
                       (pops (populations<- world))
                       (pop (@ pops name)))
                  (if (>= strength (random 1.0))
                      (let ((ns (convert 'map
-                                        (neighbours graph)
+                                        (neighbours graph name)
                                         :key-fn #'identity
                                         :value-fn
                                         (lambda (target)
@@ -133,8 +135,12 @@
                                                                 name
                                                                 :target
                                                                 target)))))))
+                       (format t "ns: ~S~%"
+                               ns)
                        (_rec (less (map-union to-do ns
-                                              :val-fn #'max)
+                                              (lambda (x y)
+                                                (or (and x y (max x y))
+                                                    0)))
                                    name)
                              (with done name)
                              (make-instance 'world
@@ -142,10 +148,11 @@
                                             :populations (with pops
                                                                name
                                                                (apply-sound-change
-                                                                pop)))))
+                                                                pop sound-change)))))
                      (_rec (less to-do name)
                            (with done name)
                            world)))))))
-    (_rec (map (starting-pop weight))
+    (_rec (map (starting-pop strength)
+               :default 0)
           (set)
           world)))
