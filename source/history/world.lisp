@@ -118,30 +118,33 @@
              world
              (multiple-value-bind (name strength)
                  (arb to-do)
-               (format t "~S ~S~%"
-                       to-do done)
                (let* ((graph (graph<- world))
                       (pops (populations<- world))
                       (pop (@ pops name)))
                  (if (>= strength (random 1.0))
-                     (let ((ns (convert 'map
-                                        (neighbours graph name)
-                                        :key-fn #'identity
-                                        :value-fn
-                                        (lambda (target)
-                                          (/ strength
-                                             (weight (find-edge graph
-                                                                :source
-                                                                name
-                                                                :target
-                                                                target)))))))
-                       (format t "ns: ~S~%"
-                               ns)
-                       (_rec (less (map-union to-do ns
-                                              (lambda (x y)
-                                                (or (and x y (max x y))
-                                                    0)))
-                                   name)
+                     (let ((ns (map-union (convert 'map
+                                                   (neighbours graph name)
+                                                   :key-fn #'identity
+                                                   :value-fn
+                                                   (lambda (target)
+                                                     (/ strength
+                                                        (edge-property
+                                                         (find-edge graph
+                                                                    :source name
+                                                                    :target
+                                                                    target)
+                                                         :weight))))
+                                          to-do
+                                          (lambda (x y)
+                                            (or (and x y (max x y))
+                                                0)))))
+                       (_rec (map-difference-2 ns
+                                               (convert 'map
+                                                        (with done name)
+                                                        :key-fn #'identity
+                                                        :value-fn
+                                                        (lambda (x)
+                                                          (@ ns x))))
                              (with done name)
                              (make-instance 'world
                                             :graph graph
