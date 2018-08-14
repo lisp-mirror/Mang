@@ -160,6 +160,7 @@
 					      glyph))
 					(form<- word)))))))))
 
+
 ;;;; affixes
 ;;; participation
 (learn-dragon-word '("ʈ" "e̞" "" "x" "ɯ")  ;  ͲΕΧΥ
