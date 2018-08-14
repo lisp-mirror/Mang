@@ -71,5 +71,6 @@
      (:file "urkobold")
      (:file "urdokrin")
      (:file "dragon")
+     (:file "falranda")
      ))
    ))
