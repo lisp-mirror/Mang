@@ -462,6 +462,18 @@
                      "TRANSL"
                      (set :count :everything :affix :prefix))
 
+(learn-urkobold-word '("a" "ɸ")  ; af
+                     ;; comparative
+                     ;; suffix
+                     "COMP"
+                     (set :count :everything :affix :suffix :big))
+
+(learn-urkobold-word '("o" "ʑ")  ; oź
+                     ;; superlative
+                     ;; suffix
+                     "SUP"
+                     (set :count :everything :affix :suffix :big))
+
 ;;;; genders
 (learn-urkobold-word '("ɸ" "l" "ə")  ; -fl·
                      ;; person gender
@@ -932,3 +944,13 @@
                      "mossy rock"
                      (set :count :everything :noun
                           :plant :living :inert))
+
+(learn-urkobold-word '("β" "ə" "k")  ; v·k
+                     "tight"
+                     (set :count :everything :adjective
+                          :tactile :small))
+
+(learn-urkobold-word '("m" "i" "" "ɳ" "¡" "a") ;; min'a
+                     "promise"
+                     (set :count :everything :noun
+                          :abstract :good))
