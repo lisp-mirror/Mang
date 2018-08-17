@@ -927,3 +927,8 @@
                      "fishing rod"
                      (set :count :everything :noun
                           :object :food))
+
+(learn-urkobold-word '("ŋ" "a" "l" "ŋ")  ; ňalň
+                     "mossy rock"
+                     (set :count :everything :noun
+                          :plant :living :inert))
