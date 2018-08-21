@@ -916,11 +916,6 @@
                      (set :count :everything :noun
                           :mass :big))
 
-(learn-urkobold-word '("l" "o" "" "ŋ" "o")  ; loňo
-                     "nothing"
-                     (set :count :everything :noun
-                          :abstract :dark :inert))
-
 ;;; goat
 ;;;
 ;;; physical:
@@ -954,3 +949,13 @@
                      "promise"
                      (set :count :everything :noun
                           :abstract :good))
+
+(learn-urkobold-word '("t" "a" "" "p" "o" "" "l" "o")  ; tapolo
+                     "northern"
+                     (set :count :everything :adjective
+                          :abstract))
+
+(learn-urkobold-word '("ɸ" "u" "" "g" "y")  ; fugy
+                     "wind"
+                     (set :count :everything :noun
+                          :abstract :sound :tactile :active))
