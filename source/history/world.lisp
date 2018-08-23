@@ -174,8 +174,7 @@
                                                                (apply-sound-change
                                                                 pop sound-change)))))
                      (_rec (less to-do name)
-                           (with done name)
-                           world)))))))
+                           done world)))))))
     (_rec (map (starting-pop strength)
                :default 0)
           (set)

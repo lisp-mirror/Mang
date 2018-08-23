@@ -462,6 +462,18 @@
                      "TRANSL"
                      (set :count :everything :affix :prefix))
 
+(learn-urkobold-word '("a" "ɸ")  ; af
+                     ;; comparative
+                     ;; suffix
+                     "COMP"
+                     (set :count :everything :affix :suffix :big))
+
+(learn-urkobold-word '("o" "ʑ")  ; oź
+                     ;; superlative
+                     ;; suffix
+                     "SUP"
+                     (set :count :everything :affix :suffix :big))
+
 ;;;; genders
 (learn-urkobold-word '("ɸ" "l" "ə")  ; -fl·
                      ;; person gender
@@ -904,11 +916,6 @@
                      (set :count :everything :noun
                           :mass :big))
 
-(learn-urkobold-word '("l" "o" "" "ŋ" "o")  ; loňo
-                     "nothing"
-                     (set :count :everything :noun
-                          :abstract :dark :inert))
-
 ;;; goat
 ;;;
 ;;; physical:
@@ -937,3 +944,23 @@
                      "what"
                      (set :count :everything :noun
                           :abstract))
+
+(learn-urkobold-word '("β" "ə" "k")  ; v·k
+                     "tight"
+                     (set :count :everything :adjective
+                          :tactile :small))
+
+(learn-urkobold-word '("m" "i" "" "ɳ" "¡" "a") ;; min'a
+                     "promise"
+                     (set :count :everything :noun
+                          :abstract :good))
+
+(learn-urkobold-word '("t" "a" "" "p" "o" "" "l" "o")  ; tapolo
+                     "northern"
+                     (set :count :everything :adjective
+                          :abstract))
+
+(learn-urkobold-word '("ɸ" "u" "" "g" "y")  ; fugy
+                     "wind"
+                     (set :count :everything :noun
+                          :abstract :sound :tactile :active))
