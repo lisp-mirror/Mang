@@ -932,3 +932,8 @@
                      "mossy rock"
                      (set :count :everything :noun
                           :plant :living :inert))
+
+(learn-urkobold-word '("m" "a")  ; ma
+                     "what"
+                     (set :count :everything :noun
+                          :abstract))
