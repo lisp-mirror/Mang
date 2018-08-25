@@ -417,7 +417,7 @@
 (learn-urkobold-word '("t" "e")  ; te-
                      ;; instrumental
                      ;; prefix
-                     "INS"
+                     "INST"
                      (set :count :everything :affix :prefix))
 
 (learn-urkobold-word '("d" "a")  ; da-
@@ -462,17 +462,23 @@
                      "TRANSL"
                      (set :count :everything :affix :prefix))
 
-(learn-urkobold-word '("a" "ɸ")  ; af
+(learn-urkobold-word '("a" "ɸ")  ; -af
                      ;; comparative
                      ;; suffix
                      "COMP"
                      (set :count :everything :affix :suffix :big))
 
-(learn-urkobold-word '("o" "ʑ")  ; oź
+(learn-urkobold-word '("o" "ʑ")  ; -oź
                      ;; superlative
                      ;; suffix
                      "SUP"
                      (set :count :everything :affix :suffix :big))
+
+(learn-urkobold-word '("k" "ɹ" "ə")  ; kr·-
+                     ;; emphatic
+                     ;; prefix
+                     "EMP"
+                     (set :count :everything :affix :prefix :big))
 
 ;;;; genders
 (learn-urkobold-word '("ɸ" "l" "ə")  ; -fl·
@@ -527,7 +533,7 @@
                      (set :count :everything :noun
                           :animal :living :active))
 
-(learn-urkobold-word '("d" "a" "" "ɕ" "ə")  ; daś·
+(learn-urkobold-word '("d" "a" "" "ʃ" "ə")  ; daš·
                      "arm"
                      (set :count :everything :noun
                           :body-part :tactile :living :active))
@@ -964,3 +970,8 @@
                      "wind"
                      (set :count :everything :noun
                           :abstract :sound :tactile :active))
+
+(learn-urkobold-word '("ɸ" "y" "" "n" "ɹ" "a")  ; fynra
+                     "hut"
+                     (set :count :everything :noun
+                          :object :good :inert :big))

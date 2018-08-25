@@ -46,3 +46,13 @@
                     "upper western urdragons" 1
                     "lower western urdragons" 1
                     2))
+
+(defun export-language-for-speak (dict file)
+  (with-open-file (file file
+                        :direction :output
+                        :if-exists :supersede
+                        :if-does-not-exist :create)
+    (export-dictionary file dict " - "
+                       (list (lambda (entry)
+                               (string<-word (word<- entry)))
+                             #'gloss<-))))
