@@ -48,6 +48,7 @@
       ((:file "dictionary")
        (:file "learn"
               :depends-on ("dictionary"))
+       (:file "export")
        ))
      (:module
       "history"
