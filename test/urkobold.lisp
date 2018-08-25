@@ -940,6 +940,11 @@
                      (set :count :everything :noun
                           :plant :living :inert))
 
+(learn-urkobold-word '("m" "a")  ; ma
+                     "what"
+                     (set :count :everything :noun
+                          :abstract))
+
 (learn-urkobold-word '("β" "ə" "k")  ; v·k
                      "tight"
                      (set :count :everything :adjective
