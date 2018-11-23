@@ -51,9 +51,16 @@
                   new-accepting-states)
            (or accepting-states (accepting-states<- fst)))))
 
+(defun add-epsilon-transition (fst state1 state2 &optional out)
+  (modify-fst fst
+              :new-transitions
+              (map (state1 (map (#'true (list out state2 nil))
+                                :default (empty-set)))
+                   :default (empty-map (empty-set)))))
+
 (defun fst-elementary (condition out &key (in-state (gensym "elementary-in"))
                                        (out-state (gensym "elementary-out")))
-  (fst (map (in-state (map (condition (list out out-state t))
+  (fst (map (in-state (map (condition (set (list out out-state t)))
                            :default (empty-set)))
             :default (empty-map (empty-set)))
        :start-state in-state
@@ -66,19 +73,22 @@
               :accepting-states (set out-state)
               :new-transitions
               (map ($ (transitions<- fst2))
+                   ($
+                    (map<-set (constantly (map (#'true
+                                                (set (list nil
+                                                           (start-state<- fst2)
+                                                           nil)))
+                                               :default (empty-set)))
+                              (accepting-states<- fst1)
+                              (empty-set)))
                    ($ (map<-set (constantly (map (#'true
-                                                  (list nil (start-state<- fst2)
-                                                        nil))
-                                                 :default (empty-set)))
-                                (accepting-states<- fst1)
-                                (empty-set)))
-                   ($ (map<-set (constantly (map (#'true
-                                                  (list nil out-state nil))
+                                                  (set (list nil out-state
+                                                             nil)))
                                                  :default (empty-set)))
                                 (accepting-states<- fst2)
                                 (empty-set)))
-                   (in-state (map (#'true (list nil (start-state<- fst1)
-                                                nil))
+                   (in-state (map (#'true (set (list nil (start-state<- fst1)
+                                                     nil)))
                                   :default (empty-set)))
                    :default (empty-map (empty-set)))
               :new-preferred (preferred<- fst2)))
