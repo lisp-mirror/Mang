@@ -25,6 +25,7 @@
             :depends-on ("set" "distribution"))
      (:file "pointer")
      (:file "anaphora")
+     (:file "finite-state-transducer")
      ))
    (:module
     "source"

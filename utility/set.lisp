@@ -82,3 +82,13 @@
   (convert 'list
            (intersection (convert 'set list)
                          set)))
+
+(defmethod map<-set ((f function)
+                     (set set)
+                     &optional default)
+  (map ($ (convert 'map
+                   set
+                   :from-type 'set
+                   :key-fn #'identity
+                   :value-fn f))
+       :default default))
