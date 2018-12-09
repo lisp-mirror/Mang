@@ -94,34 +94,102 @@
               :new-preferred (preferred<- fst2)))
 
 (defun fst-alternate (fst1 fst2 &key (in-state (gensym "alternate-in"))
-                                  (out-state1 (gensym "alternate-out"))
-                                  (out-state2 (gensym "alternate-out")))
+                                  (out-state (gensym "alternate-out")))
   (modify-fst fst1
               :start-state in-state
-              :accepting-states (set out-state1 out-state2)
-              :new-transitions (todo)
+              :accepting-states (set out-state)
+              :new-transitions
+              (map ($ (transitions<- fst2))
+                   (in-state (map (#'true (set (list nil (start-state<- fst1)
+                                                     nil)
+                                               (list nil (start-state<- fst2)
+                                                     nil)))
+                                  :default (empty-set)))
+                   ($ (map<-set (constantly (map (#'true
+                                                  (set (list nil out-state
+                                                             nil)))
+                                                 :default (empty-set)))
+                                (union (accepting-states<- fst1)
+                                       (accepting-states<- fst2))
+                                (empty-set)))
+                   :default (empty-map (empty-set)))
               :new-preferred (preferred<- fst2)))
 
 (defun fst-preferred (preferred fallback &key (in-state (gensym "preferred-in"))
-                                           (out-state1 (gensym "preferred-out"))
-                                           (out-state2 (gensym "fallback-out")))
+                                           (out-state (gensym "preferred-out")))
   (modify-fst preferred
               :start-state in-state
-              :accepting-states (set out-state1 out-state2)
-              :new-transitions (todo)
-              :new-preferred (todo)))
+              :accepting-states (set out-state)
+              :new-transitions
+              (map ($ (transitions<- fallback))
+                   (in-state (map (#'true (set (list nil
+                                                     (start-state<- fallback)
+                                                     nil)))
+                                  :default (empty-set)))
+                   ($ (map<-set (constantly (map (#'true
+                                                  (set (list nil out-state
+                                                             nil)))
+                                                 :default (empty-set)))
+                                (union (accepting-states<- preferred)
+                                       (accepting-states<- fallback))
+                                (empty-set)))
+                   :default (empty-map (empty-set)))
+              :new-preferred
+              (map ($ (preferred<- fallback))
+                   (in-state (map (#'true (set (list nil
+                                                     (start-state<- preferred)
+                                                     nil)))
+                                  :default (empty-set)))
+                   :default (empty-map (empty-set)))))
+
+(defun fst-maybe (fst &key (in-state (gensym "maybe-in"))
+                        (out-state (gensym "maybe-out")))
+  (let ((maybe-before (gensym "maybe-before"))
+        (maybe-after (gensym "maybe-after")))
+    (modify-fst fst
+                :start-state in-state
+                :accepting-states (set out-state)
+                :new-transitions
+                (map (in-state (map (#'true (set (list nil maybe-before nil)))
+                                    :default (empty-set)))
+                     (maybe-before (map (#'true (set (list nil
+                                                           (start-state<- fst)
+                                                           nil)
+                                                     (list nil maybe-after
+                                                           nil)))
+                                        :default (empty-set)))
+                     ($ (map<-set (constantly (map (#'true
+                                                    (set (list nil maybe-after
+                                                               nil)))
+                                                   :default (empty-set)))
+                                  (accepting-states<- fst)
+                                  (empty-set)))
+                     (maybe-after (map (#'true (set (list nil out-state nil)))
+                                       :default (empty-set)))
+                     :default (empty-map (empty-set))))))
 
 (defun fst-repeat (fst &key (in-state (gensym "repeat-in"))
                          (out-state (gensym "repeat-out")))
-  (modify-fst fst
-              :start-state in-state
-              :accepting-states (set out-state)
-              :new-transitions (todo)))
-
-(defun fst-maybe (fst &key (in-state (gensym "maybe-in"))
-                        (out-state1 (gensym "maybe-out"))
-                        (out-state2 (gensym "maybe-not-out")))
-  (modify-fst fst
-              :start-state in-state
-              :accepting-states (set out-state1 out-state2)
-              :new-transitions (todo)))
+  (let ((repeat-before (gensym "repeat-before"))
+        (repeat-after (gensym "repeat-after")))
+    (modify-fst fst
+                :start-state in-state
+                :accepting-states (set out-state)
+                :new-transitions
+                (map (in-state (map (#'true (set (list nil repeat-before nil)))
+                                    :default (empty-set)))
+                     (repeat-before (map (#'true (set (list nil
+                                                            (start-state<- fst)
+                                                            nil)))
+                                         :default (empty-set)))
+                     ($ (map<-set (constantly (map (#'true
+                                                    (set (list nil repeat-after
+                                                               nil)))
+                                                   :default (empty-set)))
+                                  (accepting-states<- fst)
+                                  (empty-set)))
+                     (repeat-after (map (#'true (set (list nil repeat-before
+                                                           nil)
+                                                     (list nil out-state nil)))
+                                        :default (empty-set)))
+                     :default (empty-map (empty-set))))))
