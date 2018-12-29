@@ -320,3 +320,15 @@
 (learn-urdokrin-word '("ɴ" "a" "ç")  ; ňah
                      "tongue"
                      (set :count :everything :noun))
+
+(learn-urdokrin-word '("q" "a" "" "m" "a")  ; kama
+                     "ground"
+                     (set :count :everything :noun :material :immobile))
+
+(learn-urdokrin-word '("q" "a" "" "ɰ" "ɒ" "j")  ; karåj
+                     "be.red"
+                     (set :count :everything :verb :material))
+
+(learn-urdokrin-word '("j" "ɒ" "" "q" "a" "ç")  ; jåkah
+                     "be.blue"
+                     (set :count :everything :verb :material))
