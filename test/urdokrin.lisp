@@ -332,3 +332,11 @@
 (learn-urdokrin-word '("j" "ɒ" "" "q" "a" "ç")  ; jåkah
                      "be.blue"
                      (set :count :everything :verb :material))
+
+(learn-urdokrin-word '("qɰ" "a" "" "j" "a")  ; kraja
+                     "be.black"
+                     (set :count :everything :verb :material))
+
+(learn-urdokrin-word '("m" "a" "" "χ" "a" "j")  ; maxaj
+                     "be.white"
+                     (set :count :everything :verb :material))
