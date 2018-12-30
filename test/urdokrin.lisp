@@ -185,6 +185,10 @@
                      "this"
                      (set :count :everything))
 
+(learn-urdokrin-word '("qʋ" "a" "c")  ; kvat
+                     "that"
+                     (set :count :everything))
+
 (learn-urdokrin-word '("ç" "i" "" "q" "a" "c")  ; hikat
                      "fresh water"
                      (set :count :everything :noun :mobile :material :positive))
@@ -340,3 +344,11 @@
 (learn-urdokrin-word '("m" "a" "" "χ" "a" "j")  ; maxaj
                      "be.white"
                      (set :count :everything :verb :material))
+
+(learn-urdokrin-word '("j" "a" "" "ɸ" "ɛ" "q")  ; jafek
+                     "take"
+                     (set :count :everything :verb))
+
+(learn-urdokrin-word '("q" "u" "c")  ; kut
+                     "need"
+                     (set :count :everything :verb :negative))
