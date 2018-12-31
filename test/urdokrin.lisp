@@ -352,3 +352,11 @@
 (learn-urdokrin-word '("q" "u" "c")  ; kut
                      "need"
                      (set :count :everything :verb :negative))
+
+(learn-urdokrin-word '("c" "i" "q")  ; tik
+                     "see"
+                     (set :count :everything :verb))
+
+(learn-urdokrin-word '("j" "ɛ" "c")  ; jet
+                     "do"
+                     (set :count :everything :verb))
