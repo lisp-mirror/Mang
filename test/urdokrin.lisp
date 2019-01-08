@@ -360,3 +360,11 @@
 (learn-urdokrin-word '("j" "ɛ" "c")  ; jet
                      "do"
                      (set :count :everything :verb))
+
+(learn-urdokrin-word '("ç" "i" "" "p" "a")  ; hipa
+                     "talk"
+                     (set :count :everything :verb :mysterious))
+
+(learn-urdokrin-word '("q" "o" "j")  ; koj
+                     "hear"
+                     (set :count :everything :verb))
