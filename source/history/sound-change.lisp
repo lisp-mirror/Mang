@@ -1,118 +1,57 @@
 (in-package #:mang)
 
-(defclass sound-change ()
-  ((%source :type function
-            :reader source<-
-            :initarg :source
-            :initform `(:sequence))
-   (%target :type string
-            :reader target<-
-            :initarg :target
-            :initform nil)
-   (%pre :type function
-         :reader pre<-
-         :initarg :pre
-         :initform `(:sequence))
-   (%post :type function
-          :reader post<-
-          :initarg :post
-          :initform `(:sequence))))
+(defun save-glyph (condition)
+  (declare (special *registry*))
+  (let ((register (gensym "register")))
+    (values (lambda (glyph)
+              (when (funcall condition glyph)
+                (setf (gethash register *registry*)
+                      glyph)
+                t))
+            register)))
 
-;;;; ANNOTATED-STRING<-WORD is necessary(?) to be able to use CL-PPCRE – it only
-;;;; works on strings. This means that "#" has to be an illegal character in any
-;;;; given glyph.
-(defmethod annotated-string<-word ((word cons))
-  (format nil "##~{~A#~}#"
-          word))
+(defun load-register (register)
+  (declare (special *registry*))
+  (lambda ()
+    (gethash register *registry*)))
 
-(defmethod annotated-string<-word ((word word))
-  (annotated-string<-word (form<- word)))
+(defun load-category-replace (register source target)
+  (declare (special *registry*))
+  (lambda ()
+    (elt target (position (gethash register *registry*)
+                          source))))
 
-(defmethod merge-words ((word1 cons)
-                        (word2 cons))
-  (append word1 word2))
+(defun load-replace-feature (register feature value)
+  (declare (special *registry*))
+  (lambda ()
+    (with (gethash register *registry*)
+          feature value)))
 
-(defmethod merge-words ((word1 word)
-                        (word2 word))
-  (word (merge-words (form<- word1)
-                     (form<- word2))
-        :origin (list word1 word2)))
-
-(defmethod apply-sound-change ((word string)
-                               (sound-change sound-change))
-  (let ((pre (pre<- sound-change))
-        (source (source<- sound-change))
-        (post (post<- sound-change)))
-    (multiple-value-bind (begin end)
-        (scan `(:sequence (:positive-lookbehind ,pre)
-                          ,source
-                          (:positive-lookahead ,post))
-              word)
-      (if begin
-          (concatenate 'string
-                       (subseq word 0 begin)
-                       (target<- sound-change)
-                       (subseq word end))
-          word))))
+(defun sound-change (replacement-fst pre post)
+  (declare (special *registry*))
+  (let ((start (gensym "start-sound-change"))
+        (finish (gensym "finish-sound-change"))
+        (inner1 (gensym "sound-change-inner-in"))
+        (inner2 (gensym "sound-change-inner-out")))
+    (modify-fst
+     (add-epsilon-transitions
+      (fst-preferred
+       (multiple-value-bind (condition register)
+           (save-glyph (constantly t))
+         (fst-elementary condition (load-register register)))
+       replacement-fst
+       :in-state inner1
+       :out-state inner2)
+      start finish
+      start inner1
+      inner2 inner1
+      inner2 finish))))
 
 (defmethod apply-sound-change ((word word)
-                               (sound-change sound-change))
-  (let* ((anno (annotated-string<-word word))
-         (changed (apply-sound-change anno sound-change)))
-    (if (equal? anno changed)
-        word
-        (word
-         (split-sequence #\#
-                         (string-trim '(#\#)
-                                      changed)
-                         :remove-empty-subseqs nil
-                         :test #'char=)
-         :origin word))))
-
-(defmethod apply-sound-change ((word dictionary)
-                               (sound-change sound-change))
-  (make-instance 'dictionary
-                 :content
-                 (image (lambda (dictionary-entry)
-                          (dictionary-entry
-                           (apply-sound-change (word<- dictionary-entry)
-                                               sound-change)
-                           (gloss<- dictionary-entry)
-                           (learn<- dictionary-entry)))
-                        (content<- word))))
-
-(defmethod sound-change ((pre cons)
-                         (source cons)
-                         (post cons)
-                         (target cons)
-                         &key (ignore-syllable-boundaries? nil))
-  (labels ((_to-reg (obj)
-             (etypecase obj
-               (string obj)
-               (set `(:alternation
-                      ,@(convert 'list
-                                 (image #'_to-reg
-                                        obj))))))
-           (_prepare (list)
-             (if list
-                 (destructuring-bind (f &rest r)
-                     list
-                   (if ignore-syllable-boundaries?
-                       `(:sequence ,(_to-reg f)
-                                   ,(if r
-                                        "#"
-                                        :void)
-                                   (:alternation "#" :void)
-                                   ,(_prepare r))
-                       `(:sequence ,(_to-reg f)
-                                   ,(if r
-                                        "#"
-                                        :void)
-                                   ,(_prepare r))))
-                 :void)))
-    (make-instance 'sound-change
-                   :pre `(:sequence ,(_prepare pre)
-                                    "#")
-                   :source (_prepare source)
-                   :post `(:sequence "#" ,(_prepare post))
-                   :target (annotated-string<-word target))))
+                               (sound-change fst))
+  (let ((*registry* (make-hash-table :test 'eq)))
+    (declare (special *registry*))
+    (word (mapcar #'funcall
+                  (run-fst sound-change (form<- word))
+                  :origin word
+                  :transformations (transformations<- word)))))

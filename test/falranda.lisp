@@ -22,31 +22,6 @@
                        ,@(rest change))))
          (push ,g!new-world ,place)))))
 
-(apply-world-changes *falranda*
-  (split-population "urdragons"
-                    "western urdragons" 1
-                    "eastern urdragons" 1
-                    2)
-  (realize-sound-change (sound-change `(,(set "ɦ̪͆" "h̪͆"))
-                                      '("a")
-                                      '("")
-                                      '("ɯ")
-                                      :ignore-syllable-boundaries? nil)
-                        "western urdragons"
-                        2)
-  (realize-sound-change (sound-change `(,(set "ɦ̪͆" "h̪͆"))
-                                      '("e̞")
-                                      '("")
-                                      '("i")
-                                      :ignore-syllable-boundaries? nil)
-                        "eastern urdragons"
-                        2)
-  (connect-populations "western urdragons" "eastern urdragons" 3)
-  (split-population "western urdragons"
-                    "upper western urdragons" 1
-                    "lower western urdragons" 1
-                    2))
-
 (defun export-language-for-speak (dict file)
   (with-open-file (file file
                         :direction :output

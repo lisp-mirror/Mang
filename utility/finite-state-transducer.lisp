@@ -58,6 +58,14 @@
                                 :default (empty-set)))
                    :default (empty-map (empty-set)))))
 
+(defun add-epsilon-transitions (fst &rest transitions &key &allow-other-keys)
+  (declare (type fst fst))
+  (let ((fst fst))
+    (loop :for (source target)
+       :on transitions
+       :do (setf fst (add-epsilon-transition fst source target))
+       :finally (return fst))))
+
 (defun fst-elementary (condition out &key (in-state (gensym "elementary-in"))
                                        (out-state (gensym "elementary-out")))
   (fst (map (in-state (map (condition (set (list out out-state t)))
