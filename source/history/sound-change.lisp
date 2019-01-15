@@ -27,7 +27,13 @@
     (with (gethash register *registry*)
           feature value)))
 
-(defun sound-change (replacement-fst pre post)
+(defun load-blend-features (base-register supplement-register features)
+  (declare (special *registry*))
+  (lambda ()
+    (map-union (gethash base-register *registry*)
+               (filter features (gethash supplement-register *registry*)))))
+
+(defun sound-change (to-replace replacement pre post)
   (declare (special *registry*))
   (let ((start (gensym "start-sound-change"))
         (finish (gensym "finish-sound-change"))
@@ -36,10 +42,10 @@
     (modify-fst
      (add-epsilon-transitions
       (fst-preferred
+       (build-sca-fst to-replace replacement pre post)
        (multiple-value-bind (condition register)
            (save-glyph (constantly t))
          (fst-elementary condition (load-register register)))
-       replacement-fst
        :in-state inner1
        :out-state inner2)
       start finish
