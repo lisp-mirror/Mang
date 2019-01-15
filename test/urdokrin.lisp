@@ -368,3 +368,7 @@
 (learn-urdokrin-word '("q" "o" "j")  ; koj
                      "hear"
                      (set :count :everything :verb))
+
+(learn-urdokrin-word '("ɰ" "a" "" "m" "i")  ; rami
+                     "hair"
+                     (set :count :everything :noun :material))
