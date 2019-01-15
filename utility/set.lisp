@@ -92,3 +92,14 @@
                    :key-fn #'identity
                    :value-fn f))
        :default default))
+
+(defmethod cross-product ((f function)
+                          (set1 set)
+                          (set2 set))
+  (reduce #'union
+          (image (lambda (item1)
+                   (image (lambda (item2)
+                            (funcall f item1 item2))
+                          set2))
+                 set1)
+          :initial-value (empty-set)))

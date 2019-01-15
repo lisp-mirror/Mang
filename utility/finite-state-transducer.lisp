@@ -193,3 +193,74 @@
                                                      (list nil out-state nil)))
                                         :default (empty-set)))
                      :default (empty-map (empty-set))))))
+
+#|
+fst has type
+ `(map state (map (-> glyph bool)
+                  (set '(list state bool))))
+So, to get the transition for the current state:
+(@ fst state)
+Then to get the set of applicable transitions:
+(all-fitting glyph *)
+(range *)
+(reduce #'union * :initial-value (empty-set))
+|#
+
+(defun fst-applicable-transitions (fst state glyph)
+  (declare (type fst fst)
+           (type symbol state))
+  (reduce #'union
+          (range (all-fitting (@ (transitions<- fst)
+                                 state)
+                              glyph))
+          :initial-value (empty-set)))
+
+#|
+For a given state and input, find all solutions:
+(fst-solutions fst state input)
+For a set of states, find all solutions for the given input:
+(image (lambda (state)
+         *)
+       states)
+For a given state and the current glyph, find all possible transitions:
+(fst-applicable-transitions fst state glyph)
+Append the output of the transitions to all the possible solutions:
+(let ((transitions *))
+  (cross-product #'append
+                 (image #'first
+                        transitions)
+                 (image (lambda (transition)
+                          (fst-solutions fst (second transition)
+                                         (if (third transition)
+                                             (rest input)
+                                             input)))
+                        transitions)))
+|#
+
+(defun fst-solutions (fst state input)
+  (declare (type fst fst)
+           (type symbol state)
+           (type (or cons null)
+                 input))
+  (let ((glyph (first input)))
+    ([d]if (empty? (fst-applicable-transitions fst state glyph))
+        (if (and (empty? input)
+                 (@ (accepting-states<- fst)
+                    state))
+            (set '())
+            (empty-set))
+      (cross-product #'append
+                     (image #'first
+                            it)
+                     (reduce #'union
+                             (image (lambda (transition)
+                                      (fst-solutions fst (second transition)
+                                                     (if (third transition)
+                                                         (rest input)
+                                                         input)))
+                                    it)
+                             :initial-value (empty-set))))))
+
+(defun run-fst (fst input)
+  (fst-solutions fst (start-state<- fst)
+                 input))
