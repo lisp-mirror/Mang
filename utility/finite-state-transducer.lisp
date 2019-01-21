@@ -66,6 +66,11 @@
        :do (setf fst (add-epsilon-transition fst source target))
        :finally (return fst))))
 
+(defun empty-fst (&optional (state (gensym "state")))
+  (fst (empty-map (empy-map (empty-set)))
+       :start-state state
+       :accepting-states (set state)))
+
 (defun fst-elementary (condition out &key (in-state (gensym "elementary-in"))
                                        (out-state (gensym "elementary-out")))
   (fst (map (in-state (map (condition (set (list out out-state t)))
@@ -100,6 +105,14 @@
                                   :default (empty-set)))
                    :default (empty-map (empty-set)))
               :new-preferred (preferred<- fst2)))
+
+(defun fst-sequence* (&rest fsts)
+  (if fsts
+      (destructuring-bind (current &rest rest)
+          fsts
+        (fst-sequence current (apply #'fst-sequence*
+                                     rest)))
+      (empty-fst)))
 
 (defun fst-alternate (fst1 fst2 &key (in-state (gensym "alternate-in"))
                                   (out-state (gensym "alternate-out")))
