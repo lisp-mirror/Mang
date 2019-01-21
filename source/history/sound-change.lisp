@@ -10,28 +10,15 @@
                 t))
             register)))
 
-(defun load-register (register)
+(defun load-register (base-register source-cat target-cat register-features
+                      constant-features)
   (declare (special *registry*))
-  (lambda ()
-    (gethash register *registry*)))
-
-(defun load-category-replace (register source target)
-  (declare (special *registry*))
-  (lambda ()
-    (elt target (position (gethash register *registry*)
-                          source))))
-
-(defun load-replace-feature (register feature value)
-  (declare (special *registry*))
-  (lambda ()
-    (with (gethash register *registry*)
-          feature value)))
-
-(defun load-blend-features (base-register supplement-register features)
-  (declare (special *registry*))
-  (lambda ()
-    (map-union (gethash base-register *registry*)
-               (filter features (gethash supplement-register *registry*)))))
+  (map-union (elt target-cat (position (gethash base-register *registry*)
+                                       source-cat))
+             (map-union (image (lambda (k v)
+                                 (values k (gethash v *registry*)))
+                               register-features)
+                        constant-features)))
 
 (defun sound-change (to-replace replacement pre post)
   (declare (special *registry*))
