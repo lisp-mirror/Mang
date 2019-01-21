@@ -55,8 +55,6 @@
       "history"
       :components
       ((:file "sound-change")
-       (:file "world"
-              :depends-on ("sound-change"))
        ))
      (:module
       "presentation"
@@ -73,10 +71,5 @@
      (:file "urkobold")
      (:file "urdokrin")
      (:file "dragon")
-     (:file "falranda"
-            :depends-on ("urwormdwarf"
-                         "urkobold"
-                         "urdokrin"
-                         "dragon"))
      ))
    ))
