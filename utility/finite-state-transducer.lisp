@@ -67,13 +67,14 @@
        :finally (return fst))))
 
 (defun empty-fst (&optional (state (gensym "state")))
-  (fst (empty-map (empy-map (empty-set)))
+  (fst (empty-map (empty-map (empty-set)))
        :start-state state
        :accepting-states (set state)))
 
 (defun fst-elementary (condition out &key (in-state (gensym "elementary-in"))
-                                       (out-state (gensym "elementary-out")))
-  (fst (map (in-state (map (condition (set (list out out-state t)))
+                                       (out-state (gensym "elementary-out"))
+                                       (consume? t))
+  (fst (map (in-state (map (condition (set (list out out-state consume?)))
                            :default (empty-set)))
             :default (empty-map (empty-set)))
        :start-state in-state

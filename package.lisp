@@ -15,5 +15,8 @@
    #:cells
    #:self
    )
+  (:shadowing-import-from
+   #:gmap
+   #:gmap)
   (:export
    ))
