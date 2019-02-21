@@ -975,3 +975,8 @@
                      "hut"
                      (set :count :everything :noun
                           :object :good :inert :big))
+
+(learn-urkobold-word '("ʑ" "n" "a" "" "b" "e")  ; źnabe
+                     "snake"
+                     (set :count :everything :noun
+                          :animal :living :active :small))
