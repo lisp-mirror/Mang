@@ -22,3 +22,8 @@
                               (fields cons))
   (export-dictionary stream (content<- dictionary)
                      delimiter fields))
+
+(defmethod export-dictionary (stream (dictionary dictionary)
+                              (delimiter string)
+                              (field function))
+  (export-dictionary stream dictionary delimiter (list field)))
