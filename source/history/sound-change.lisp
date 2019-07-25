@@ -114,8 +114,35 @@
                                    :category-register category-register
                                    :category category)
                        :consume nil)))
-    ;; TODO
     ;; save
+    (:save
+     (destructuring-bind (phoneme-register category-register)
+         args
+       (fst-elementary #'true
+                       (save-glyph :phoneme-register phoneme-register))))
+    (:save-by-category
+     (destructuring-bind (category phoneme-register category-register)
+         args
+       (fst-elementary (lambda (phoneme)
+                         (in-category? phoneme category))
+                       (save-glyph :phoneme-register phoneme-register
+                                   :category-register category-register
+                                   :category category))))
+    (:save-by-features
+     (destructuring-bind (features phoneme-register)
+         args
+       (fst-elementary (lambda (phoneme)
+                         (has-features? phoneme features))
+                       (save-glyph :phoneme-register phoneme-register))))
+    (:save-by-category-and-features
+     (destructuring-bind (category features phoneme-register category-register)
+         args
+       (fst-elementary (lambda (phoneme)
+                         (and (in-category? phoneme category)
+                              (has-features? phoneme features)))
+                       (save-glyph :phoneme-register phoneme-register
+                                   :category-register category-register
+                                   :category category))))
     ;; TODO
     ;; general
     (:sequence
