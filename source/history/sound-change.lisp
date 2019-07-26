@@ -99,59 +99,65 @@
          args
        (fst-elementary #'true
                        (constantly `(,phoneme))
-                       :consume nil)))
+                       :consume? nil)))
     (:load-phoneme  ; .1[+round,front2]
      (destructuring-bind (register &key (features (empty-map))
                                    (features-from-register (empty-map)))
          args
        (fst-elementary #'true
-                       (load-glyph :phoneme-register register
-                                   :constant-features features
-                                   :features-from-register
-                                   features-from-register)
-                       :consume nil)))
+                       (lambda ()
+                         (load-glyph :phoneme-register register
+                                     :constant-features features
+                                     :features-from-register
+                                     features-from-register))
+                       :consume? nil)))
     (:load-category  ; C1[-voice]
      (destructuring-bind (phoneme-register category-register category
                                            &key (features (empty-map))
                                            (features-from-register (empty-map)))
          args
        (fst-elementary #'true
-                       (load-glyph :phoneme-register phoneme-register
-                                   :category-register category-register
-                                   :category category
-                                   :constant-features features
-                                   :features-from-register
-                                   features-from-register)
-                       :consume nil)))
+                       (lambda ()
+                         (load-glyph :phoneme-register phoneme-register
+                                     :category-register category-register
+                                     :category category
+                                     :constant-features features
+                                     :features-from-register
+                                     features-from-register))
+                       :consume? nil)))
     ;; save
     (:save  ; .1
      (destructuring-bind (phoneme-register category-register)
          args
        (fst-elementary #'true
-                       (save-glyph :phoneme-register phoneme-register))))
+                       (lambda ()
+                         (save-glyph :phoneme-register phoneme-register)))))
     (:save-by-category  ; C1
      (destructuring-bind (category phoneme-register category-register)
          args
        (fst-elementary (lambda (phoneme)
                          (in-category? phoneme category))
-                       (save-glyph :phoneme-register phoneme-register
-                                   :category-register category-register
-                                   :category category))))
+                       (lambda ()
+                         (save-glyph :phoneme-register phoneme-register
+                                     :category-register category-register
+                                     :category category)))))
     (:save-by-features  ; .1[+back]
      (destructuring-bind (features phoneme-register)
          args
        (fst-elementary (lambda (phoneme)
                          (has-features? phoneme features))
-                       (save-glyph :phoneme-register phoneme-register))))
+                       (lambda ()
+                         (save-glyph :phoneme-register phoneme-register)))))
     (:save-by-category-and-features  ; V1[+back]
      (destructuring-bind (category features phoneme-register category-register)
          args
        (fst-elementary (lambda (phoneme)
                          (and (in-category? phoneme category)
                               (has-features? phoneme features)))
-                       (save-glyph :phoneme-register phoneme-register
-                                   :category-register category-register
-                                   :category category))))
+                       (lambda ()
+                         (save-glyph :phoneme-register phoneme-register
+                                     :category-register category-register
+                                     :category category)))))
     ;; general
     (:sequence
      (if args
