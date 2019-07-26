@@ -94,33 +94,42 @@
 (defun fst<-spec (type &rest args)
   (ecase type
     ;; load
-    (:constant
+    (:constant  ; t
      (destructuring-bind (phoneme)
          args
        (fst-elementary #'true
                        (constantly `(,phoneme))
                        :consume nil)))
-    (:load-phoneme
-     (destructuring-bind (register)
+    (:load-phoneme  ; .1[+round,front2]
+     (destructuring-bind (register &key (features (empty-map))
+                                   (features-from-register (empty-map)))
          args
        (fst-elementary #'true
-                       (load-glyph :phoneme-register register)
+                       (load-glyph :phoneme-register register
+                                   :constant-features features
+                                   :features-from-register
+                                   features-from-register)
                        :consume nil)))
-    (:load-category
-     (destructuring-bind (phoneme-register category-register category)
+    (:load-category  ; C1[-voice]
+     (destructuring-bind (phoneme-register category-register category
+                                           &key (features (empty-map))
+                                           (features-from-register (empty-map)))
          args
        (fst-elementary #'true
                        (load-glyph :phoneme-register phoneme-register
                                    :category-register category-register
-                                   :category category)
+                                   :category category
+                                   :constant-features features
+                                   :features-from-register
+                                   features-from-register)
                        :consume nil)))
     ;; save
-    (:save
+    (:save  ; .1
      (destructuring-bind (phoneme-register category-register)
          args
        (fst-elementary #'true
                        (save-glyph :phoneme-register phoneme-register))))
-    (:save-by-category
+    (:save-by-category  ; C1
      (destructuring-bind (category phoneme-register category-register)
          args
        (fst-elementary (lambda (phoneme)
@@ -128,13 +137,13 @@
                        (save-glyph :phoneme-register phoneme-register
                                    :category-register category-register
                                    :category category))))
-    (:save-by-features
+    (:save-by-features  ; .1[+back]
      (destructuring-bind (features phoneme-register)
          args
        (fst-elementary (lambda (phoneme)
                          (has-features? phoneme features))
                        (save-glyph :phoneme-register phoneme-register))))
-    (:save-by-category-and-features
+    (:save-by-category-and-features  ; V1[+back]
      (destructuring-bind (category features phoneme-register category-register)
          args
        (fst-elementary (lambda (phoneme)
@@ -143,7 +152,6 @@
                        (save-glyph :phoneme-register phoneme-register
                                    :category-register category-register
                                    :category category))))
-    ;; TODO
     ;; general
     (:sequence
      (if args
@@ -154,57 +162,16 @@
                          (apply #'fst<-spec
                                 :sequence rest)))
          (empty-fst)))
+    (:alternative
+     (if args
+         (destructuring-bind (current &rest rest)
+             args
+           (fst-alternate (apply #'fst<-spec
+                                 current)
+                          (apply #'fst<-spec
+                                 :alternative rest)))
+         (empty-fst)))
     ))
-
-#+nil
-(defun save-glyph (condition)
-  (declare (special *registry*))
-  (let ((register (gensym "register")))
-    (values (lambda (glyph)
-              (when (funcall condition glyph)
-                (setf (gethash register *registry*)
-                      glyph)
-                t))
-            register)))
-#+nil
-(defun load-register (base-register source-cat target-cat register-features
-                      constant-features)
-  (declare (special *registry*))
-  (map-union (elt target-cat (position (gethash base-register *registry*)
-                                       source-cat))
-             (map-union (image (lambda (k v)
-                                 (values k (gethash v *registry*)))
-                               register-features)
-                        constant-features)))
-#+nil
-(defun fst<-lhs-spec (spec)
-  (if (consp spec)
-      (destructuring-bind (type &rest args)
-          spec
-        (case type
-          ))
-      (fst-elementary (lambda (glyph)
-                        (equal? glyph spec)))))
-#+nil
-(defun sound-change (to-replace replacement pre post)
-  (declare (special *registry*))
-  (let ((start (gensym "start-sound-change"))
-        (finish (gensym "finish-sound-change"))
-        (inner1 (gensym "sound-change-inner-in"))
-        (inner2 (gensym "sound-change-inner-out")))
-    (modify-fst
-     (add-epsilon-transitions
-      (fst-preferred
-       (build-sca-fst to-replace replacement pre post)
-       (multiple-value-bind (condition register)
-           (save-glyph (constantly t))
-         (fst-elementary condition (load-register register)))
-       :in-state inner1
-       :out-state inner2)
-      start finish
-      start inner1
-      inner2 inner1
-      inner2 finish))))
 
 (defmethod apply-sound-change ((word word)
                                (sound-change fst))
