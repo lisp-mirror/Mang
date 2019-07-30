@@ -52,11 +52,14 @@
            (or accepting-states (accepting-states<- fst)))))
 
 (defun add-epsilon-transition (fst state1 state2 &optional out)
-  (modify-fst fst
-              :new-transitions
-              (map (state1 (map (#'true (list out state2 nil))
-                                :default (empty-set)))
-                   :default (empty-map (empty-set)))))
+  (let ((out (if (functionp out)
+                 out
+                 (constantly out))))
+    (modify-fst fst
+                :new-transitions
+                (map (state1 (map (#'true (list out state2 nil))
+                                  :default (empty-set)))
+                     :default (empty-map (empty-set))))))
 
 (defun add-epsilon-transitions (fst &rest transitions &key &allow-other-keys)
   (declare (type fst fst))
@@ -74,11 +77,18 @@
 (defun fst-elementary (condition out &key (in-state (gensym "elementary-in"))
                                        (out-state (gensym "elementary-out"))
                                        (consume? t))
-  (fst (map (in-state (map (condition (set (list out out-state consume?)))
-                           :default (empty-set)))
-            :default (empty-map (empty-set)))
-       :start-state in-state
-       :accepting-states (set out-state)))
+  (let ((out (if (functionp out)
+                 out
+                 (constantly out)))
+        (condition (if (functionp condition)
+                       condition
+                       (lambda (x)
+                         (equal? x condition)))))
+    (fst (map (in-state (map (condition (set (list out out-state consume?)))
+                             :default (empty-set)))
+              :default (empty-map (empty-set)))
+         :start-state in-state
+         :accepting-states (set out-state))))
 
 (defun fst-sequence (fst1 fst2 &key (in-state (gensym "sequence-in"))
                                  (out-state (gensym "sequence-out")))
@@ -89,19 +99,21 @@
               (map ($ (transitions<- fst2))
                    ($
                     (map<-set (constantly (map (#'true
-                                                (set (list nil
+                                                (set (list (constantly nil)
                                                            (start-state<- fst2)
                                                            nil)))
                                                :default (empty-set)))
                               (accepting-states<- fst1)
                               (empty-set)))
                    ($ (map<-set (constantly (map (#'true
-                                                  (set (list nil out-state
+                                                  (set (list (constantly nil)
+                                                             out-state
                                                              nil)))
                                                  :default (empty-set)))
                                 (accepting-states<- fst2)
                                 (empty-set)))
-                   (in-state (map (#'true (set (list nil (start-state<- fst1)
+                   (in-state (map (#'true (set (list (constantly nil)
+                                                     (start-state<- fst1)
                                                      nil)))
                                   :default (empty-set)))
                    :default (empty-map (empty-set)))
@@ -122,13 +134,16 @@
               :accepting-states (set out-state)
               :new-transitions
               (map ($ (transitions<- fst2))
-                   (in-state (map (#'true (set (list nil (start-state<- fst1)
+                   (in-state (map (#'true (set (list (constantly nil)
+                                                     (start-state<- fst1)
                                                      nil)
-                                               (list nil (start-state<- fst2)
+                                               (list (constantly nil)
+                                                     (start-state<- fst2)
                                                      nil)))
                                   :default (empty-set)))
                    ($ (map<-set (constantly (map (#'true
-                                                  (set (list nil out-state
+                                                  (set (list (constantly nil)
+                                                             out-state
                                                              nil)))
                                                  :default (empty-set)))
                                 (union (accepting-states<- fst1)
@@ -144,12 +159,13 @@
               :accepting-states (set out-state)
               :new-transitions
               (map ($ (transitions<- fallback))
-                   (in-state (map (#'true (set (list nil
+                   (in-state (map (#'true (set (list (constantly nil)
                                                      (start-state<- fallback)
                                                      nil)))
                                   :default (empty-set)))
                    ($ (map<-set (constantly (map (#'true
-                                                  (set (list nil out-state
+                                                  (set (list (constantly nil)
+                                                             out-state
                                                              nil)))
                                                  :default (empty-set)))
                                 (union (accepting-states<- preferred)
@@ -158,7 +174,7 @@
                    :default (empty-map (empty-set)))
               :new-preferred
               (map ($ (preferred<- fallback))
-                   (in-state (map (#'true (set (list nil
+                   (in-state (map (#'true (set (list (constantly nil)
                                                      (start-state<- preferred)
                                                      nil)))
                                   :default (empty-set)))
@@ -172,21 +188,25 @@
                 :start-state in-state
                 :accepting-states (set out-state)
                 :new-transitions
-                (map (in-state (map (#'true (set (list nil maybe-before nil)))
+                (map (in-state (map (#'true (set (list (constantly nil)
+                                                       maybe-before nil)))
                                     :default (empty-set)))
-                     (maybe-before (map (#'true (set (list nil
+                     (maybe-before (map (#'true (set (list (constantly nil)
                                                            (start-state<- fst)
                                                            nil)
-                                                     (list nil maybe-after
+                                                     (list (constantly nil)
+                                                           maybe-after
                                                            nil)))
                                         :default (empty-set)))
                      ($ (map<-set (constantly (map (#'true
-                                                    (set (list nil maybe-after
+                                                    (set (list (constantly nil)
+                                                               maybe-after
                                                                nil)))
                                                    :default (empty-set)))
                                   (accepting-states<- fst)
                                   (empty-set)))
-                     (maybe-after (map (#'true (set (list nil out-state nil)))
+                     (maybe-after (map (#'true (set (list (constantly nil)
+                                                          out-state nil)))
                                        :default (empty-set)))
                      :default (empty-map (empty-set))))))
 
@@ -198,21 +218,25 @@
                 :start-state in-state
                 :accepting-states (set out-state)
                 :new-transitions
-                (map (in-state (map (#'true (set (list nil repeat-before nil)))
+                (map (in-state (map (#'true (set (list (constantly nil)
+                                                       repeat-before nil)))
                                     :default (empty-set)))
-                     (repeat-before (map (#'true (set (list nil
+                     (repeat-before (map (#'true (set (list (constantly nil)
                                                             (start-state<- fst)
                                                             nil)))
                                          :default (empty-set)))
                      ($ (map<-set (constantly (map (#'true
-                                                    (set (list nil repeat-after
+                                                    (set (list (constantly nil)
+                                                               repeat-after
                                                                nil)))
                                                    :default (empty-set)))
                                   (accepting-states<- fst)
                                   (empty-set)))
-                     (repeat-after (map (#'true (set (list nil repeat-before
+                     (repeat-after (map (#'true (set (list (constantly nil)
+                                                           repeat-before
                                                            nil)
-                                                     (list nil out-state nil)))
+                                                     (list (constantly nil)
+                                                           out-state nil)))
                                         :default (empty-set)))
                      :default (empty-map (empty-set))))))
 
@@ -238,7 +262,9 @@
             (set '())
             (empty-set))
       (cross-product #'append
-                     (image #'first
+                     (image (lambda (transition)
+                              (funcall (first transition)
+                                       glyph))
                             it)
                      (reduce #'union
                              (image (lambda (transition)
