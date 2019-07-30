@@ -16,51 +16,41 @@
                  (has-features? phoneme features))
                category))
 
-(defun save-glyph (&key
+(defun save-glyph (phoneme &key
                      phoneme-register
                      category category-register
                      features)
   (declare (special *registry*)
            (type symbol phoneme-register category-register)
            (type (or map null)
-                 features))
+                 features)
+           (type map phoneme))
   (assert (or (not category)
               category-register))
   (if category
       (if features
-          (lambda (phoneme)
-            (declare (special *registry*)
-                     (type map phoneme))
-            (when (and (in-category? phoneme category)
-                       (has-features? phoneme features))
-              (setf (gethash category-register *registry*)
-                    category
-                    (gethash phoneme-register *registry*)
-                    phoneme)
-              t))
-          (lambda (phoneme)
-            (declare (special *registry*)
-                     (type map phoneme))
-            (when (in-category? phoneme category)
-              (setf (gethash category-register *registry*)
-                    category
-                    (gethash phoneme-register *registry*)
-                    phoneme)
-              t)))
+          (when (and (in-category? phoneme category)
+                     (has-features? phoneme features))
+            (setf (gethash category-register *registry*)
+                  category
+                  (gethash phoneme-register *registry*)
+                  phoneme)
+            '())
+          (when (in-category? phoneme category)
+            (setf (gethash category-register *registry*)
+                  category
+                  (gethash phoneme-register *registry*)
+                  phoneme)
+            '()))
       (if features
-          (lambda (phoneme)
-            (declare (special *registry*)
-                     (type map phoneme))
-            (when (has-features? phoneme features)
-              (setf (gethash phoneme-register *registry*)
-                    phoneme)
-              t))
-          (lambda (phoneme)
-            (declare (special *registry*)
-                     (type map phoneme))
+          (when (has-features? phoneme features)
             (setf (gethash phoneme-register *registry*)
                   phoneme)
-            t))))
+            '())
+          (progn
+            (setf (gethash phoneme-register *registry*)
+                  phoneme)
+            '()))))
 
 (defun load-glyph (&key
                      phoneme-register phoneme
@@ -105,59 +95,69 @@
                                    (features-from-register (empty-map)))
          args
        (fst-elementary #'true
-                       (lambda ()
-                         (load-glyph :phoneme-register register
-                                     :constant-features features
-                                     :features-from-register
-                                     features-from-register))
-                       :consume? nil)))
+                       (list
+                        (lambda ()
+                          (load-glyph :phoneme-register register
+                                      :constant-features features
+                                      :features-from-register
+                                      features-from-register))
+                        :consume? nil))))
     (:load-category  ; C1[-voice]
      (destructuring-bind (phoneme-register category-register category
                                            &key (features (empty-map))
                                            (features-from-register (empty-map)))
          args
        (fst-elementary #'true
-                       (lambda ()
-                         (load-glyph :phoneme-register phoneme-register
-                                     :category-register category-register
-                                     :category category
-                                     :constant-features features
-                                     :features-from-register
-                                     features-from-register))
-                       :consume? nil)))
+                       (list
+                        (lambda ()
+                          (load-glyph :phoneme-register phoneme-register
+                                      :category-register category-register
+                                      :category category
+                                      :constant-features features
+                                      :features-from-register
+                                      features-from-register))
+                        :consume? nil))))
     ;; save
     (:save  ; .1
-     (destructuring-bind (phoneme-register category-register)
+     (destructuring-bind (phoneme-register)
          args
        (fst-elementary #'true
-                       (lambda ()
-                         (save-glyph :phoneme-register phoneme-register)))))
+                       (list
+                        (lambda ()
+                          (save-glyph phoneme
+                                      :phoneme-register phoneme-register))))))
     (:save-by-category  ; C1
      (destructuring-bind (category phoneme-register category-register)
          args
        (fst-elementary (lambda (phoneme)
                          (in-category? phoneme category))
-                       (lambda ()
-                         (save-glyph :phoneme-register phoneme-register
-                                     :category-register category-register
-                                     :category category)))))
+                       (list
+                        (lambda ()
+                          (save-glyph phoneme
+                                      :phoneme-register phoneme-register
+                                      :category-register category-register
+                                      :category category))))))
     (:save-by-features  ; .1[+back]
      (destructuring-bind (features phoneme-register)
          args
        (fst-elementary (lambda (phoneme)
                          (has-features? phoneme features))
-                       (lambda ()
-                         (save-glyph :phoneme-register phoneme-register)))))
+                       (list
+                        (lambda ()
+                          (save-glyph phoneme
+                                      :phoneme-register phoneme-register))))))
     (:save-by-category-and-features  ; V1[+back]
      (destructuring-bind (category features phoneme-register category-register)
          args
        (fst-elementary (lambda (phoneme)
                          (and (in-category? phoneme category)
                               (has-features? phoneme features)))
-                       (lambda ()
-                         (save-glyph :phoneme-register phoneme-register
-                                     :category-register category-register
-                                     :category category)))))
+                       (list
+                        (lambda ()
+                          (save-glyph phoneme
+                                      :phoneme-register phoneme-register
+                                      :category-register category-register
+                                      :category category))))))
     ;; general
     (:sequence
      (if args
@@ -182,8 +182,11 @@
 (defmethod apply-sound-change ((word word)
                                (sound-change fst))
   (let ((*registry* (make-hash-table :test 'eq)))
-    (declare (special *registry*))
-    (word (mapcar #'funcall
-                  (run-fst sound-change (form<- word))
-                  :origin word
-                  :transformations (transformations<- word)))))
+    (declare (special *registry*)
+             (type hash-table *registry*))
+    (image (lambda (solution)
+             (word (mapcar #'funcall
+                           solution)
+                   :origin word
+                   :transformations (transformations<- word)))
+           (run-fst sound-change (form<- word)))))
