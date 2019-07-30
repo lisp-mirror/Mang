@@ -190,3 +190,59 @@
                    :origin word
                    :transformations (transformations<- word)))
            (run-fst sound-change (form<- word)))))
+
+(defparameter +identifier-parse-tree+
+  `(:greedy-repetition
+    0 nil
+    (:alternation
+     (:char-class (:range #\A #\Z))
+     (:char-class (:range #\a #\z)))))
+
+(defparameter +category-parse-tree+
+  `(:alternation
+    (:register (:alternation (:char-class (:range #\A #\Z))
+                             (:char-class (:range #\a #\z))))
+    (:sequence
+     "<"
+     (:register ,+identifier-parse-tree+)
+     ">")))
+
+(defparameter +number-parse-tree+
+  `(:greedy-repetition 1 nil (:char-class :digit-class)))
+
+(defparameter +feature-reference-parse-tree+
+  `(:sequence ,+identifier-parse-tree+
+              ,+number-parse-tree+))
+
+(defparameter +binary-feature-parse-tree+
+  `(:sequence (:alternation "+" "-")
+              ,+identifier-parse-tree+))
+
+(defparameter +feature-parse-tree+
+  `(:alternation ,+feature-reference-parse-tree+ ,+binary-feature-parse-tree+))
+
+(defparameter +features-list-parse-tree+
+  `(:sequence
+    "["
+    (:register
+     (:sequence
+      ,+feature-parse-tree+
+      (:greedy-repetition 0 nil
+                          (:sequence
+                           ","
+                           ,+feature-parse-tree+))))
+    "]"))
+
+(defparameter +phoneme-matcher-parse-tree+
+  `(:sequence
+    (:alternation ,+category-parse-tree+
+                  ".")
+    (:alternation ,+number-parse-tree+ :void)
+    (:alternation ,+features-list-parse-tree+ :void)
+    (:alternation (:register "*")
+                  :void)))
+
+(defparameter +sound-change-token-parse-tree+
+  `(:alternation
+    ,+phoneme-matcher-parse-tree+
+    "(" ")" "*" "?" "->" "→" "/" "_"))
