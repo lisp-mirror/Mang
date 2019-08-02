@@ -130,8 +130,8 @@
    <nodist>)
   (((<distribution> _ l w v r _)
     predicate)
-   (let ((l (distribution-keep l predicate))
-         (r (distribution-keep r predicate)))
+   (bind ((l (distribution-keep l predicate))
+          (r (distribution-keep r predicate)))
      (if (@ predicate v)
          (<distribution> (weight l)
                          l w v r (weight r))
@@ -186,7 +186,7 @@
   ((d1 (<distribution> _ <nodist> _ _ <nodist> _))
    (normalize d1))
   ((d1 d2)
-   (let ((d2 (normalize d2)))
+   (bind ((d2 (normalize d2)))
      (labels ((_rec (d1 d2)
                 (match (d1 d2)
                     [distribution]
@@ -198,8 +198,8 @@
                     (<distribution> lw2 l2 w2 v2 r2 rw2))
                    (ecase (compare v1 v2)
                      (:equal
-                      (let ((l (_rec l1 l2))
-                            (r (_rec r1 r2)))
+                      (bind ((l (_rec l1 l2))
+                             (r (_rec r1 r2)))
                         (<distribution> (weight l)
                                         l (* w1 (- 1 w2))
                                         v1 r (weight r))))
@@ -214,7 +214,7 @@
        (_rec d1 d2)))))
 
 (defun distribution (&rest args)
-  (let ((dist <nodist>))
+  (bind ((dist <nodist>))
     (loop :for (weight event) :on args :by #'cddr
        :do (setf dist
                  (with dist event weight))
@@ -234,7 +234,7 @@
 
 (defmethod uniform-distribution ((elements cons)
                                  &optional (weight 1))
-  (let ((dist <nodist>))
+  (bind ((dist <nodist>))
     (loop :for element :in elements
        :do (setf dist
                  (with dist element weight))
@@ -256,7 +256,7 @@
                               (b real))
   (declare (type (real (0))
                  a b))
-  (let ((dist <nodist>))
+  (bind ((dist <nodist>))
     (loop :for element :in elements
        :for r :from 1
        :do (setf dist
@@ -276,7 +276,7 @@
                               (c real))
   (declare (type (real (0))
                  a b c))
-  (let ((dist <nodist>))
+  (bind ((dist <nodist>))
     (loop :for element :in elements
        :for r :from 1
        :do (setf dist
@@ -297,8 +297,8 @@
                               (c real))
   (declare (type (real (0))
                  a b c))
-  (let ((n (length elements))
-        (dist <nodist>))
+  (bind ((n (length elements))
+         (dist <nodist>))
     (loop :for element :in elements
        :for r :from 1
        :do (setf dist
@@ -322,7 +322,7 @@
     index)
    (if (< index lw)
        (extract l index)
-       (let ((index (- index lw)))
+       (bind ((index (- index lw)))
          (if (< index w)
              v
              (extract r (- index w)))))))

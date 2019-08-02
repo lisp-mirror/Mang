@@ -40,8 +40,8 @@
 (defun romanize-word (romanization word)
   (apply #'concatenate 'string
          (mapcar (lambda (glyph)
-                   (multiple-value-bind (g found?)
-                       (@ romanization glyph)
+                   (bind (((:values g found?)
+                           (@ romanization glyph)))
                      (if found?
                          g
                          glyph)))
@@ -126,7 +126,7 @@
 (defmethod with ((collection dictionary)
                  (value1 dictionary-entry)
                  &optional value2)
-  (let ((content (content<- collection)))
+  (bind ((content (content<- collection)))
     (if value2  ; this use of value2 is probably very unclean
         (if (@ content value1)
             (values collection nil)

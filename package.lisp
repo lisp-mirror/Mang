@@ -18,5 +18,8 @@
   (:shadowing-import-from
    #:gmap
    #:gmap)
+  (:shadowing-import-from
+   #:metabang-bind
+   #:bind)
   (:export
    ))

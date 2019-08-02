@@ -3,8 +3,8 @@
 (defmethod before? (a b (sequence cons))
   (labels ((_find (x xs)
              (when xs
-               (destructuring-bind (f &rest r)
-                   xs
+               (bind (((f &rest r)
+                       xs))
                  (if (typecase f
                        (set
                         (@ f x))
@@ -20,8 +20,8 @@
                    (hierarchy cons))
   (labels ((_rec (n l acc)
              (if (rest l)
-                 (destructuring-bind (p c &rest r)
-                     l
+                 (bind (((p c &rest r)
+                         l))
                    (cond
                      ((= n 0)
                       (_rec 1 l (if (before? p c hierarchy)
@@ -72,7 +72,7 @@
 
 (defmethod syllable-inits ((word cons)
                            (hierarchy cons))
-  (let ((nuclei (nuclei word hierarchy)))
+  (bind ((nuclei (nuclei word hierarchy)))
     (cons 0 (loop :for (prev this)
                :on nuclei
                :if this
@@ -80,7 +80,7 @@
 
 (defmethod syllable-codas ((word cons)
                            (hierarchy cons))
-  (let ((nuclei (nuclei word hierarchy)))
+  (bind ((nuclei (nuclei word hierarchy)))
     (loop :for (this next)
        :on nuclei
        :if next
@@ -93,11 +93,12 @@
   (apply #'append
          (intersperse '("")
                       (if prefer-open?
-                          (let ((inits (syllable-inits word hierarchy)))
+                          (bind ((inits (syllable-inits word hierarchy)))
                             (loop :for (index next) :on inits
                                :collect
                                (subseq word index next)))
-                          (let ((codas (cons 0 (syllable-codas word hierarchy))))
+                          (bind ((codas (cons 0 (syllable-codas word
+                                                                hierarchy))))
                             (loop :for (prev index) :on codas
                                :collect
                                (subseq word prev index)))))))

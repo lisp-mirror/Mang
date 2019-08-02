@@ -4,7 +4,7 @@
                               (delimiter string)
                               (fields cons))
   (unless (empty? dictionary)
-    (let ((entry (arb dictionary)))
+    (bind ((entry (arb dictionary)))
       (loop :for (field delim?)
          :on fields
          :do

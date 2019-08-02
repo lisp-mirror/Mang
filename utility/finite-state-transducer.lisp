@@ -52,9 +52,9 @@
            (or accepting-states (accepting-states<- fst)))))
 
 (defun add-epsilon-transition (fst state1 state2 &optional out)
-  (let ((out (if (functionp out)
-                 out
-                 (constantly out))))
+  (bind ((out (if (functionp out)
+                  out
+                  (constantly out))))
     (modify-fst fst
                 :new-transitions
                 (map (state1 (map (#'true (list out state2 nil))
@@ -63,7 +63,7 @@
 
 (defun add-epsilon-transitions (fst &rest transitions &key &allow-other-keys)
   (declare (type fst fst))
-  (let ((fst fst))
+  (bind ((fst fst))
     (loop :for (source target)
        :on transitions
        :do (setf fst (add-epsilon-transition fst source target))
@@ -77,13 +77,13 @@
 (defun fst-elementary (condition out &key (in-state (gensym "elementary-in"))
                                        (out-state (gensym "elementary-out"))
                                        (consume? t))
-  (let ((out (if (functionp out)
-                 out
-                 (constantly out)))
-        (condition (if (functionp condition)
-                       condition
-                       (lambda (x)
-                         (equal? x condition)))))
+  (bind ((out (if (functionp out)
+                  out
+                  (constantly out)))
+         (condition (if (functionp condition)
+                        condition
+                        (lambda (x)
+                          (equal? x condition)))))
     (fst (map (in-state (map (condition (set (list out out-state consume?)))
                              :default (empty-set)))
               :default (empty-map (empty-set)))
@@ -182,8 +182,8 @@
 
 (defun fst-maybe (fst &key (in-state (gensym "maybe-in"))
                         (out-state (gensym "maybe-out")))
-  (let ((maybe-before (gensym "maybe-before"))
-        (maybe-after (gensym "maybe-after")))
+  (bind ((maybe-before (gensym "maybe-before"))
+         (maybe-after (gensym "maybe-after")))
     (modify-fst fst
                 :start-state in-state
                 :accepting-states (set out-state)
@@ -212,8 +212,8 @@
 
 (defun fst-repeat (fst &key (in-state (gensym "repeat-in"))
                          (out-state (gensym "repeat-out")))
-  (let ((repeat-before (gensym "repeat-before"))
-        (repeat-after (gensym "repeat-after")))
+  (bind ((repeat-before (gensym "repeat-before"))
+         (repeat-after (gensym "repeat-after")))
     (modify-fst fst
                 :start-state in-state
                 :accepting-states (set out-state)
@@ -254,7 +254,7 @@
            (type symbol state)
            (type (or cons null)
                  input))
-  (let ((glyph (first input)))
+  (bind ((glyph (first input)))
     ([d]if (empty? (fst-applicable-transitions fst state glyph))
         (if (and (empty? input)
                  (@ (accepting-states<- fst)

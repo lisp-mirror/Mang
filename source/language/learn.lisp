@@ -7,8 +7,8 @@
 
 (defmethod learn ((markov map)
                   (obj cons))
-  (let ((init (butlast obj))
-        (to-learn (last obj)))
+  (bind ((init (butlast obj))
+         (to-learn (last obj)))
     (map-union (learn markov init)
                (image (lambda (predicate dist)
                         (declare (ignore dist))
@@ -73,8 +73,8 @@
 
 (defmethod lookup ((collection store)
                    (key set))
-  (let ((categories (categories<- collection))
-        (result (empty-map <nodist>)))
+  (bind ((categories (categories<- collection))
+         (result (empty-map <nodist>)))
     (do-set (category key result)
       (setf result
             (map-union (markov<- (@ categories category))
@@ -90,9 +90,9 @@
 (defmethod learn-word ((store store)
                        (word word)
                        (learn set))
-  (let ((categories (categories<- store)))
+  (bind ((categories (categories<- store)))
     (do-set (category learn store)
-      (let ((learner (@ categories category)))
+      (bind ((learner (@ categories category)))
         (when learner
           (learn learner word))))))
 
@@ -102,8 +102,8 @@
 ;;; that is already generated) which again return a boolean.
 (defmethod learn ((markov-template set)
                   (obj cons))
-  (let ((intro (butlast obj))
-        (to-learn (last obj)))
+  (bind ((intro (butlast obj))
+         (to-learn (last obj)))
     (map-union
      (learn markov-template intro)
      (with-default
@@ -118,7 +118,7 @@
      #'union)))
 
 ;;;; Here's a few functions to use in markov templates
-(let ((memoized (empty-map)))
+(bind ((memoized (empty-map)))
   (defun match-outro-generator (length &key to-learn-predicate
                                          (ignore-glyphs (empty-set)))
     (declare (type (integer (0))
@@ -129,32 +129,33 @@
     (if to-learn-predicate
         (lambda (intro to-learn)
           (if (@ to-learn-predicate to-learn)
-              (let* ((parameters (list length intro ignore-glyphs))
+              (bind ((parameters (list length intro ignore-glyphs))
                      (found (@ memoized parameters)))
                 (if found
                     found
-                    (let ((matcher (let ((outro (without (outro length intro)
-                                                         ignore-glyphs)))
-                                     (set (lambda (future)
-                                            (postfix? outro
-                                                      (without future
-                                                               ignore-glyphs)))))))
+                    (bind ((matcher (bind ((outro (without (outro length intro)
+                                                           ignore-glyphs)))
+                                      (set
+                                       (lambda (future)
+                                         (postfix? outro
+                                                   (without future
+                                                            ignore-glyphs)))))))
                       (setf memoized
                             (with memoized parameters matcher))
                       matcher)))
               (empty-set)))
         (lambda (intro to-learn)
           (declare (ignore to-learn))
-          (let* ((parameters (list length intro ignore-glyphs))
+          (bind ((parameters (list length intro ignore-glyphs))
                  (found (@ memoized parameters)))
             (if found
                 found
-                (let ((matcher (let ((outro (without (outro length intro)
-                                                     ignore-glyphs)))
-                                 (set (lambda (future)
-                                        (postfix? outro
-                                                  (without future
-                                                           ignore-glyphs)))))))
+                (bind ((matcher (bind ((outro (without (outro length intro)
+                                                       ignore-glyphs)))
+                                  (set (lambda (future)
+                                         (postfix? outro
+                                                   (without future
+                                                            ignore-glyphs)))))))
                   (setf memoized
                         (with memoized parameters matcher))
                   matcher)))))))

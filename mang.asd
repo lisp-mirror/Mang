@@ -11,6 +11,7 @@
                #:cl-ppcre-unicode
                #:split-sequence
                #:fgraph
+               #:metabang-bind
                )
   :components
   ((:file "package")

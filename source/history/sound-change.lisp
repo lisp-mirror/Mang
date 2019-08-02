@@ -33,7 +33,7 @@
   (assert (if phoneme-register
               (not phoneme)
               phoneme))
-  (let ((phoneme (or phoneme (gethash phoneme-register *registry*))))
+  (bind ((phoneme (or phoneme (gethash phoneme-register *registry*))))
     (map-union
      (map-union
       (if category
@@ -174,7 +174,7 @@
 
 (defmethod apply-sound-change ((word word)
                                (sound-change fst))
-  (let ((*registry* (make-hash-table :test 'eq)))
+  (bind ((*registry* (make-hash-table :test 'eq)))
     (declare (special *registry*)
              (type hash-table *registry*))
     (image (lambda (solution)

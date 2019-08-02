@@ -10,7 +10,7 @@
   (labels ((_rec (states acc)
              (if (empty? states)
                  acc
-                 (let* ((state (arb states))
+                 (bind ((state (arb states))
                         (next (set-difference (@ transitions state)
                                               acc)))
                    (_rec (union (less states state)
@@ -21,7 +21,7 @@
 (defun reachable-states (states transition transitions)
   (if (empty? states)
       (empty-set)
-      (let ((state (arb states)))
+      (bind ((state (arb states)))
         (union (@ (@ transitions state)
                   transition)
                (reachable-states (less states state)
@@ -53,8 +53,8 @@
 ;;;; The epsilon transitions are a map from states to sets of states reachable
 ;;;; without any transition from the former state.
 (defmethod nfsm<- (obj)
-  (let ((in-state (gensym "in"))
-        (out-state (gensym "out")))
+  (bind ((in-state (gensym "in"))
+         (out-state (gensym "out")))
     (values in-state out-state
             (map (in-state (map (obj (set out-state))
                                 :default (empty-set)))
@@ -62,10 +62,10 @@
             (empty-map (empty-set)))))
 
 (defmethod nfsm<- ((set set))
-  (let ((in (gensym "in"))
-        (out (gensym "out"))
-        (transitions (empty-map (empty-map (empty-set))))
-        (eps-transitions (empty-map (empty-set))))
+  (bind ((in (gensym "in"))
+         (out (gensym "out"))
+         (transitions (empty-map (empty-map (empty-set))))
+         (eps-transitions (empty-map (empty-set))))
     (do-set (inner set (values in out transitions eps-transitions))
       (multiple-value-bind (inner-in inner-out inner-transitions
                                      inner-eps-transitions)
@@ -84,7 +84,7 @@
 
 (defmethod nfsm<- ((nothing null))
   (declare (ignore nothing))
-  (let ((state (gensym "state")))
+  (bind ((state (gensym "state")))
     (values state state (empty-map (empty-map (empty-set)))
             (empty-map (empty-set)))))
 
@@ -115,29 +115,29 @@
                  eps-transitions)))
 
 (defmethod nfsm<- ((cons cons))
-  (let ((car (car cons))
-        (cdr (cdr cons)))
+  (bind ((car (car cons))
+         (cdr (cdr cons)))
     (if (and car cdr)
-        (multiple-value-bind (car-in car-out car-transition-table
-                                     car-eps-transitions)
-            (nfsm<- (car cons))
-          (multiple-value-bind (cdr-in cdr-out cdr-transition-table
-                                       cdr-eps-transitions)
-              (nfsm<- (cdr cons))
-            (multiple-value-bind (cdr-transition-table cdr-eps-transitions)
+        (bind (((:values car-in car-out car-transition-table
+                         car-eps-transitions)
+                (nfsm<- (car cons)))
+               ((:values cdr-in cdr-out cdr-transition-table
+                         cdr-eps-transitions)
+                (nfsm<- (cdr cons)))
+               ((:values cdr-transition-table cdr-eps-transitions)
                 (replace-state cdr-in car-out cdr-transition-table
-                               cdr-eps-transitions)
-              (values car-in cdr-out (map-union car-transition-table
-                                                cdr-transition-table
-                                                (lambda (x y)
-                                                  (map-union x y #'union)))
-                      (map-union car-eps-transitions
-                                 cdr-eps-transitions
-                                 #'union)))))
+                               cdr-eps-transitions)))
+          (values car-in cdr-out (map-union car-transition-table
+                                            cdr-transition-table
+                                            (lambda (x y)
+                                              (map-union x y #'union)))
+                  (map-union car-eps-transitions
+                             cdr-eps-transitions
+                             #'union)))
         (nfsm<- (or car cdr)))))
 
 (defun dfsm-simplify-state-names (dfsm start-state accepting-states)
-  (let* ((failure (gensym "failure"))
+  (bind ((failure (gensym "failure"))
          (start (gensym "start"))
          (accepting (convert 'map
                              (image (lambda (accepting-state)
@@ -150,12 +150,12 @@
                         ($ accepting)))
          (new-dfsm (empty-map (empty-map failure))))
     (do-map (in transitions dfsm)
-      (let ((in-simple (or (@ registry in)
-                           (gensym "state"))))
+      (bind ((in-simple (or (@ registry in)
+                            (gensym "state"))))
         (setf registry (with registry in in-simple))
         (do-map (category target transitions)
-          (let ((target-simple (or (@ registry target)
-                                   (gensym "state"))))
+          (bind ((target-simple (or (@ registry target)
+                                    (gensym "state"))))
             (setf registry (with registry target target-simple))
             (setf new-dfsm
                   (with new-dfsm in-simple
@@ -166,15 +166,15 @@
 
 (defun dfsm<-nfsm (start-state transition-map epsilon-transitions
                    accepting-state)
-  (let ((inputs (expand (lambda (state transitions)
-                          (declare (ignore state))
-                          (domain transitions))
-                        transition-map)))
+  (bind ((inputs (expand (lambda (state transitions)
+                           (declare (ignore state))
+                           (domain transitions))
+                         transition-map)))
     (labels
         ((_rec (todo done acc)
            (if (empty? todo)
                acc
-               (let ((current (arb todo)))
+               (bind ((current (arb todo)))
                  (if (@ current done)
                      (_rec (less todo current)
                            done acc)
@@ -192,7 +192,7 @@
                                    current)
                              (with done current)
                              (with acc current new))))))))
-      (let* ((start-state (transition-closure (set start-state)
+      (bind ((start-state (transition-closure (set start-state)
                                               epsilon-transitions))
              (dfsm (_rec (set start-state)
                          (empty-set)
@@ -203,14 +203,14 @@
                                                           (domain dfsm)))))))
 
 (defun collapse-states (transition-table)
-  (let ((valuable-states (empty-map))
-        (redirections (empty-map))
-        (new-transition-table (empty-map (empty-map (empty-set)))))
+  (bind ((valuable-states (empty-map))
+         (redirections (empty-map))
+         (new-transition-table (empty-map (empty-map (empty-set)))))
     (do-map (state transitions transition-table)
       (unless (@ valuable-states transitions)
         (setf valuable-states
               (with valuable-states transitions state)))
-      (let ((new-state (@ valuable-states transitions)))
+      (bind ((new-state (@ valuable-states transitions)))
         (setf redirections
               (with redirections state new-state))
         (setf new-transition-table
@@ -222,24 +222,22 @@
            new-transition-table)))
 
 (defun collapse-states* (transition-table)
-  (let ((collapsed (collapse-states transition-table)))
+  (bind ((collapsed (collapse-states transition-table)))
     (if (equal? transition-table collapsed)
         collapsed
         (collapse-states* collapsed))))
 
 (defun prune-failure-dfsm (transitions failure)
-  (let ((new-transitions
-         (image (lambda (state transitions)
-                  (values state
-                          (filter (lambda (transition target)
-                                    (declare (ignore transition))
-                                    (not (equal? target failure)))
-                                  transitions)))
-                (filter (lambda (state transitions)
-                          (declare (ignore transitions))
-                          (not (equal? state failure)))
-                        transitions))))
-    new-transitions))
+  (image (lambda (state transitions)
+           (values state
+                   (filter (lambda (transition target)
+                             (declare (ignore transition))
+                             (not (equal? target failure)))
+                           transitions)))
+         (filter (lambda (state transitions)
+                   (declare (ignore transitions))
+                   (not (equal? state failure)))
+                 transitions)))
 
 (defclass dfsm ()
   ((%transition-table :type map
@@ -254,24 +252,25 @@
                       :reader accepting-states<-)))
 
 (defmethod dfsm<- (obj)
-  (multiple-value-bind (in out transitions eps-transitions)
-      (nfsm<- obj)
-    (multiple-value-bind (transitions in outs failure)
-        (dfsm<-nfsm in transitions eps-transitions out)
-      (make-instance 'dfsm
-                     :transition-table (collapse-states* (prune-failure-dfsm transitions failure))
-                     :start-state in
-                     :accepting-states outs))))
+  (bind (((:values in out transitions eps-transitions)
+          (nfsm<- obj))
+         ((:values transitions in outs failure)
+          (dfsm<-nfsm in transitions eps-transitions out)))
+    (make-instance 'dfsm
+                   :transition-table
+                   (collapse-states* (prune-failure-dfsm transitions failure))
+                   :start-state in
+                   :accepting-states outs)))
 
 (defmethod generate ((generator dfsm)
                      (markov map)
                      &optional negative)
   (declare (type (or map null)
                  negative))
-  (let ((transition-map (transition-table<- generator))
-        (accepting (accepting-states<- generator)))
+  (bind ((transition-map (transition-table<- generator))
+         (accepting (accepting-states<- generator)))
     (labels ((_rec (state acc)
-               (let ((transitions (domain (@ transition-map state))))
+               (bind ((transitions (domain (@ transition-map state))))
                  (if (or (empty? transitions)
                          ;; the following part of the check should be changed –
                          ;; as it is now, the generator simply prefers shorter
@@ -280,7 +279,7 @@
                               (= (random 6)
                                  0)))
                      acc
-                     (let* ((dist (keep transitions
+                     (bind ((dist (keep transitions
                                         (if negative
                                             (diminish
                                              (filtering-combine acc markov
@@ -308,7 +307,7 @@
 ;;;; should be considered a bug.
 (defmethod run-dfsm ((dfsm dfsm)
                      (word cons))
-  (let ((transition-table (transition-table<- dfsm)))
+  (bind ((transition-table (transition-table<- dfsm)))
     (labels ((_rec (state word)
                (if word
                    (_rec (@ (@ transition-table state)
@@ -321,13 +320,14 @@
 
 (defmethod run-dfsm ((dfsm dfsm)
                      (word string))
-  (let ((transition-table (transition-table<- dfsm))
-        (accepting-states (accepting-states<- dfsm)))
+  (bind ((transition-table (transition-table<- dfsm))
+         (accepting-states (accepting-states<- dfsm)))
     (labels ((_rec (state word)
-               (let* ((transitions (@ transition-table state))
+               (bind ((transitions (@ transition-table state))
                       (valid-transitions (filter (lambda (transition)
-                                                   (let ((pos (search transition
-                                                                      word)))
+                                                   (bind
+                                                       ((pos (search transition
+                                                                     word)))
                                                      (and pos (= pos 0))))
                                                  (domain transitions))))
                  (cond
@@ -337,9 +337,9 @@
                    ((empty? valid-transitions)
                     (empty-set))
                    (t
-                    (let ((results (empty-set)))
+                    (bind ((results (empty-set)))
                       (do-set (transition valid-transitions results)
-                        (let ((found
+                        (bind ((found
                                (_rec (@ transitions transition)
                                      (subseq word (length transition)))))
                           (setf results

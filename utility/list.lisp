@@ -14,7 +14,7 @@
                           obj)))))
 
 (defun var-repeat (min max obj &optional (intersperse nil intersperse?))
-  (let ((collected (empty-set)))
+  (bind ((collected (empty-set)))
     (if intersperse?
         (loop :for n :from min :to max
            :do (setf collected
@@ -218,8 +218,7 @@
 
 (defmethod filter ((fn collection)
                    (collection cons))
-  (destructuring-bind (curr &rest rest)
-      collection
+  (bind (((curr &rest rest) collection))
     (if (@ fn curr)
         (cons curr (filter fn rest))
         (filter fn rest))))
@@ -231,8 +230,7 @@
 
 (defmethod without ((collection cons)
                     (items set))
-  (destructuring-bind (curr &rest rest)
-      collection
+  (bind (((curr &rest rest) collection))
     (if (@ items curr)
         (without rest items)
         (cons curr (without rest items)))))

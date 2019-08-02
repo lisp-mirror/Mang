@@ -4,14 +4,14 @@
   (set '()))
 
 (defmethod word-forms<-spec ((spec cons))
-  (destructuring-bind (min/repeat/syllable &rest spec)
-      spec
+  (bind (((min/repeat/syllable &rest spec)
+          spec))
     (if (integerp min/repeat/syllable)
-        (destructuring-bind (max/syllable &rest spec)
-            spec
+        (bind (((max/syllable &rest spec)
+                spec))
           (if (integerp max/syllable)
-              (destructuring-bind (syllable &rest spec)
-                  spec
+              (bind (((syllable &rest spec)
+                      spec))
                 (expand (lambda (tail)
                           (image (lambda (intro)
                                    (append intro tail))

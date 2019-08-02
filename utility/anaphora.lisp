@@ -1,7 +1,7 @@
 (in-package #:mang)
 
 (defmacro [a]if (test then &body else)
-  `(let ((it ,test))
+  `(bind ((it ,test))
      (if it
          ,then
          (progn
@@ -10,7 +10,7 @@
 (defmacro [d]if ((predicate it &rest args)
                                  then
                  &body else)
-  `(let ((it ,it))
+  `(bind ((it ,it))
      (if (,predicate it ,@args)
          ,then
          (progn

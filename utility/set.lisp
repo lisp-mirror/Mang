@@ -49,7 +49,7 @@
   (size (origin obj map)))
 
 (defun filtering-combine (obj map add mult initial-value)
-  (let ((result initial-value))
+  (bind ((result initial-value))
     (do-map (k v (all-fitting map obj)
                result)
       (declare (ignore k))
