@@ -231,3 +231,21 @@
     ,+number-parse-tree+
     ,+features-list-parse-tree+
     "." "(" ")" "*" "?" "->" "→" "/" "_"))
+
+(defun tokenize-by (parse-tree string &optional allow-whitespace?)
+  (bind ((parse-tree (if allow-whitespace?
+                         `(:alternation
+                           ,parse-tree
+                           (:greedy-repetition
+                            0 nil :whitespace-char-class))
+                         parse-tree)))
+    (if (string= string "")
+        '()
+        (bind (((:values start end)
+                (scan parse-tree string))
+               (token (subseq string start end))
+               (rest (subseq string end)))
+          (if (= start 0)
+              (cons token (tokenize-by parse-tree rest))
+              (list* `(:tokenize-error ,(subseq string 0 start))
+                     token (tokenize-by parse-tree rest)))))))
