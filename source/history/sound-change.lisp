@@ -184,6 +184,9 @@
                    :transformations (transformations<- word)))
            (run-fst sound-change (form<- word)))))
 
+(defparameter +whitespace+
+  `(:greedy-repetition 0 nil :whitespace-char-class))
+
 (defparameter +identifier-parse-tree+
   `(:greedy-repetition
     0 nil
@@ -217,12 +220,15 @@
 (defparameter +features-list-parse-tree+
   `(:sequence
     "["
-    (:sequence
-     ,+feature-parse-tree+
-     (:greedy-repetition 0 nil
-                         (:sequence
-                          ","
-                          ,+feature-parse-tree+)))
+    ,+whitespace+
+    ,+feature-parse-tree+
+    (:greedy-repetition 0 nil
+                        (:sequence
+                         ,+whitespace+
+                         ","
+                         ,+whitespace+
+                         ,+feature-parse-tree+))
+    ,+whitespace+
     "]"))
 
 (defparameter +sound-change-token-parse-tree+
@@ -230,22 +236,19 @@
     ,+category-parse-tree+
     ,+number-parse-tree+
     ,+features-list-parse-tree+
-    "." "(" ")" "*" "?" "->" "→" "/" "_"))
+    "." "(" "|" ")" "*" "?" "->" "→" "/" "_" "#"))
 
-(defun tokenize-by (parse-tree string &optional allow-whitespace?)
-  (bind ((parse-tree (if allow-whitespace?
-                         `(:alternation
-                           ,parse-tree
-                           (:greedy-repetition
-                            0 nil :whitespace-char-class))
-                         parse-tree)))
+(defun tokenize-by (parse-tree string)
+  (let ((string (regex-replace-all +whitespace+ string "")))
     (if (string= string "")
         '()
         (bind (((:values start end)
-                (scan parse-tree string))
-               (token (subseq string start end))
-               (rest (subseq string end)))
-          (if (= start 0)
-              (cons token (tokenize-by parse-tree rest))
-              (list* `(:tokenize-error ,(subseq string 0 start))
-                     token (tokenize-by parse-tree rest)))))))
+                (scan parse-tree string)))
+          (if (= start end)
+              (list `(:tokenize-error ,string))
+              (bind ((token (subseq string start end))
+                     (rest (subseq string end)))
+                (if (= start 0)
+                    (cons token (tokenize-by parse-tree rest))
+                    (list* `(:tokenize-error ,(subseq string 0 start))
+                           token (tokenize-by parse-tree rest)))))))))
