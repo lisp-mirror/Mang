@@ -184,100 +184,53 @@
                    :transformations (transformations<- word)))
            (run-fst sound-change (form<- word)))))
 
-(defparameter +whitespace+
-  `(:greedy-repetition 0 nil :whitespace-char-class))
+(defun parse-identifier ()
+  (some (parse-unicode-property "Alphabetic")))
 
-(defparameter +identifier-parse-tree+
-  `(:greedy-repetition
-    0 nil
-    (:alternation
-     (:char-class (:range #\A #\Z))
-     (:char-class (:range #\a #\z)))))
+(defun parse-category (categories)
+  (declare (type set categories))
+  (// (>>!
+        _ (parse-constant "<")
+        name (parse-identifier)
+        _ (parse-constant ">")
+        (succeed name))
+      (parse-prefix-set categories)))
 
-(defparameter +category-parse-tree+
-  `(:alternation
-    (:alternation (:char-class (:range #\A #\Z))
-                  (:char-class (:range #\a #\z)))
-    (:sequence
-     "<"
-     ,+identifier-parse-tree+
-     ">")))
+(defun parse-number ()
+  (some (parse-unicode-property "Number")))
 
-(defparameter +number-parse-tree+
-  `(:greedy-repetition 1 nil (:char-class :digit-class)))
+(defun parse-register ()
+  (// (parse-number)
+      (>>!
+        _ (parse-constant "{")
+        name (parse-identifier)
+        _ (parse-constant "}")
+        (succeed name))))
 
-(defparameter +feature-reference-parse-tree+
-  `(:sequence ,+identifier-parse-tree+
-              ,+number-parse-tree+))
+(defun parse-binary-feature (features)
+  (>>!
+    sign (// (<$ t (parse-constant "+"))
+             (parse-constant "-"))
+    feature (parse-prefix-set features)
+    (succeed `(:signed-feature ,sign ,feature))))
 
-(defparameter +binary-feature-parse-tree+
-  `(:sequence (:alternation "+" "-")
-              ,+identifier-parse-tree+))
+(defun parse-register-feature (features)
+  (>>!
+    feature (parse-prefix-set features)
+    register (parse-register)
+    (succeed `(:register-feature ,register ,feature))))
 
-(defparameter +feature-parse-tree+
-  `(:alternation ,+feature-reference-parse-tree+ ,+binary-feature-parse-tree+))
+(defun parse-feature (features)
+  (// (parse-binary-feature features)
+      (parse-register-feature features)))
 
-(defparameter +features-list-parse-tree+
-  `(:sequence
-    "["
-    ,+whitespace+
-    ,+feature-parse-tree+
-    (:greedy-repetition 0 nil
-                        (:sequence
-                         ,+whitespace+
-                         ","
-                         ,+whitespace+
-                         ,+feature-parse-tree+))
-    ,+whitespace+
-    "]"))
-
-(defparameter +sound-change-token-parse-tree+
-  `(:alternation
-    ,+category-parse-tree+
-    ,+number-parse-tree+
-    ,+features-list-parse-tree+
-    "." "(" "|" ")" "*" "?" "->" "→" "/" "_" "#"))
-
-(defun tokenize-by (parse-tree string)
-  (let ((string (regex-replace-all +whitespace+ string "")))
-    (if (string= string "")
-        '()
-        (bind (((:values start end)
-                (scan parse-tree string)))
-          (if (= start end)
-              (list `(:tokenize-error ,string))
-              (bind ((token (subseq string start end))
-                     (rest (subseq string end)))
-                (if (= start 0)
-                    (cons token (tokenize-by parse-tree rest))
-                    (list* `(:tokenize-error ,(subseq string 0 start))
-                           token (tokenize-by parse-tree rest)))))))))
-
-(defun parse-sound-change (string categories)
-  (bind (((:values end-before begin-after)
-          (scan `(:alternation "→" "->")
-                string))
-         ((:values end-after begin-pre)
-          (scan `(:alternation "/")
-                string))
-         ((:values end-pre begin-post)
-          (scan `(:alternation "_")
-                string)))
-    (assert end-before)
-    (bind ((before (subseq string 0 end-before))
-           (after (subseq string begin-after end-after)))
-      (if end-after
-          (progn
-            (assert (<= begin-after end-after))
-            (assert end-pre)
-            (assert (<= begin-pre end-pre))
-            (bind ((pre (subseq string begin-pre end-pre))
-                   (post (subseq string begin-post)))
-              `(:sequence ,(parse-pre pre categories)
-                          ,(parse-before before categories)
-                          ,(parse-after after categories)
-                          ,(parse-post post categories))))
-          (progn
-            (assert (not end-pre))
-            `(:sequence ,(parse-before before)
-                        ,(parse-after after)))))))
+(defun parse-feature-set (features)
+  (>>!
+    _ (parse-constant "[")
+    feature (parse-feature features)
+    features (many (>> (parse-constant ",")
+                       (parse-feature features))
+                   (empty-set)
+                   (lambda (val set)
+                     (with set val)))
+    (succeed (with features feature))))

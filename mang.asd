@@ -8,6 +8,7 @@
                #:fset
                #:cl-adt
                #:equal
+               #:cl-unicode
                #:cl-ppcre-unicode
                #:split-sequence
                #:fgraph
@@ -27,6 +28,7 @@
      (:file "pointer")
      (:file "anaphora")
      (:file "finite-state-transducer")
+     (:file "parser-combinator")
      ))
    (:module
     "source"
@@ -64,6 +66,7 @@
       (
        ))
      ))
+   #+nil
    (:module
     "test"
     :depends-on ("package" "source")
