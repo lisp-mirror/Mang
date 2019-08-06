@@ -184,13 +184,6 @@
                    :transformations (transformations<- word)))
            (run-fst sound-change (form<- word)))))
 
-(defun parse-whitespace ()
-  (many (parse-unicode-property "Whitespace")
-        nil (constantly nil)))
-
-(defun parse-identifier ()
-  (some (parse-unicode-property "Alphabetic")))
-
 (defun parse-category (categories)
   (declare (type set categories))
   (// (>>!
@@ -199,9 +192,6 @@
         _ (parse-constant ">")
         (succeed name))
       (parse-prefix-set categories)))
-
-(defun parse-number ()
-  (some (parse-unicode-property "Number")))
 
 (defun parse-register ()
   (// (parse-number)

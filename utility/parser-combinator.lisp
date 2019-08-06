@@ -163,3 +163,13 @@
         (values (subseq s (length it))
                 it t)
       (values s nil nil))))
+
+(defun parse-whitespace ()
+  (many (parse-unicode-property "Whitespace")
+        nil (constantly nil)))
+
+(defun parse-identifier ()
+  (some (parse-unicode-property "Alphabetic")))
+
+(defun parse-number ()
+  (some (parse-unicode-property "Number")))
