@@ -208,7 +208,7 @@
     sign (// (<$ t (parse-constant "+"))
              (parse-constant "-"))
     feature (parse-prefix-set features)
-    (succeed `(:signed-feature ,sign ,feature))))
+    (succeed `(:binary-feature ,sign ,feature))))
 
 (defun parse-register-feature (features)
   (>>!
