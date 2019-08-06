@@ -184,6 +184,10 @@
                    :transformations (transformations<- word)))
            (run-fst sound-change (form<- word)))))
 
+(defun parse-whitespace ()
+  (many (parse-unicode-property "Whitespace")
+        nil (constantly nil)))
+
 (defun parse-identifier ()
   (some (parse-unicode-property "Alphabetic")))
 
@@ -203,7 +207,9 @@
   (// (parse-number)
       (>>!
         _ (parse-constant "{")
+        _ (parse-whitespace)
         name (parse-identifier)
+        _ (parse-whitespace)
         _ (parse-constant "}")
         (succeed name))))
 
@@ -217,6 +223,7 @@
 (defun parse-register-feature (features)
   (>>!
     feature (parse-prefix-set features)
+    _ (parse-whitespace)
     register (parse-register)
     (succeed `(:register-feature ,register ,feature))))
 
@@ -227,10 +234,15 @@
 (defun parse-feature-set (features)
   (>>!
     _ (parse-constant "[")
+    _ (parse-whitespace)
     feature (parse-feature features)
-    features (many (>> (parse-constant ",")
+    features (many (>> (parse-whitespace)
+                       (parse-constant ",")
+                       (parse-whitespace)
                        (parse-feature features))
                    (empty-set)
                    (lambda (val set)
                      (with set val)))
+    _ (parse-whitespace)
+    _ (parse-constant "]")
     (succeed (with features feature))))

@@ -107,6 +107,9 @@
             `(>>* ,parser ,var (>>! ,@bindings))))
       (first bindings)))
 
+(defun ?? (p d)
+  (// p (succeed d)))
+
 (defun some (p &optional (d "")
                  (f (lambda (a b)
                       (concatenate 'string
