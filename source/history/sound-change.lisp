@@ -129,9 +129,11 @@
 
 ;;; String -> (String, (writes, reads, registers-written), Bool)
 (defun parse-before-match (written-registers categories features category-map)
-  (declare (type set written-registers categories features))
+  (declare (type set written-registers categories features)
+           (type map category-map))
   (>>!
-    category (parse-category categories)
+    category (// (parse-category categories)
+                 (parse-constant "."))
     register (<? (parse-register))
     features (<? (parse-feature-set features))
     (succeed
@@ -147,10 +149,48 @@
 
 (defun parse-before (categories features category-map
                      &optional (written-registers (empty-set)))
+  (declare (type set written-registers categories features)
+           (type map category-map))
   (<? (>>* (parse-before-match written-registers categories features
                                category-map)
            result
            (bind (((writes reads registers-written)
                    result))
-             (parse-before categories features category-map
-                           (union written-registers registers-written))))))
+             (cons (list writes reads)
+                   (parse-before categories features category-map
+                                 (union written-registers
+                                        registers-written)))))))
+
+;;; TODO: Add syntax (P|F) for categories
+(defun parse-after-match (written-registers categories features category-map)
+  (declare (type set written-registers categories features)
+           (type map category-map))
+  (>>!
+    category (// (parse-category categories)
+                 (parse-constant "."))
+    register (<? (parse-register))
+    features (<? (parse-feature-set features))
+    (succeed
+     (bind ((binary-features (filter (lambda (feature)
+                                       (eq (first feature)
+                                           :binary-feature))
+                                     features))
+            (register-features (filter (lambda (feature)
+                                         (eq (first feature)
+                                             :register-feature))
+                                       features)))
+       (todo)))))
+
+(defun parse-after (categories features category-map
+                    &optional (written-registers (empty-set)))
+  (declare (type set written-registers categories features)
+           (type map category-map))
+  (<? (>>* (parse-after-match written-registers categories features
+                              category-map)
+           result
+           (bind (((writes reads registers-written)
+                   result))
+             (cons (list writes reads)
+                   (parse-after categories features category-map
+                                (union written-registers
+                                       registers-written)))))))
