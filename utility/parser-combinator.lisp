@@ -1,5 +1,8 @@
 (in-package #:mang)
 
+;;; Parser err ret = String -> (String, Either err ret)
+;;; String -> (String, err/ret, Bool)
+
 (defun succeed (x)
   (lambda (s)
     (values s x t)))
@@ -52,8 +55,8 @@
                                      parsers)))
       parser))
 
-(defmacro //* (left arg right)
-  `(//= ,left (lambda (,arg)
+(defmacro //* (left var right)
+  `(//= ,left (lambda (,var)
                 ,right)))
 
 (defmacro //! (&body bindings)
@@ -66,7 +69,7 @@
             `(//* ,parser ,var (//! ,@bindings))))
       (first bindings)))
 
-(defun >>= (xa fa)
+(defun >>= (xa fa)  ; fa :: a -> Parser ret err
   (lambda (s)
     (bind (((:values ns r success?)
             (funcall xa s)))
@@ -82,8 +85,8 @@
                                      parsers)))
       parser))
 
-(defmacro >>* (left arg right)
-  `(>>= ,left (lambda (,arg)
+(defmacro >>* (left var right)
+  `(>>= ,left (lambda (,var)
                 ,right)))
 
 (defmacro >>! (&body bindings)
@@ -145,7 +148,8 @@
         (values (subseq s 1)
                 (subseq s 0 1)
                 t)
-      (values s nil nil))))
+        (values s (subseq s 0 1)
+                nil))))
 
 (defun parse-prefix-set (prefix-set)
   (declare (type set prefix-set))
