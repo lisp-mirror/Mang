@@ -97,7 +97,9 @@
       (first bindings)))
 
 (defun <?> (p &optional (d #'identity))
-  (//* p x (funcall d x)))
+  (//!
+    x p
+    (suceed (funcall d x))))
 
 (defun <? (p &optional d)
   (<?> p (constantly d)))
