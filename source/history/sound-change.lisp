@@ -45,133 +45,6 @@
              features-from-register))
      constant-features)))
 
-(defun fst<-spec (spec)
-  (destructuring-bind (type &rest args)
-      spec
-    (ecase type
-      ;; load
-      (:constant  ; t
-       (destructuring-bind (phoneme)
-           args
-         (fst-elementary #'true
-                         phoneme
-                         :consume? nil)))
-      (:load-phoneme  ; .1[+round,front2]
-       (destructuring-bind (register &key (features (empty-map))
-                                     (features-from-register (empty-map)))
-           args
-         (fst-elementary #'true
-                         (lambda (glyph)
-                           (declare (ignore glyph))
-                           (load-glyph :phoneme-register register
-                                       :constant-features features
-                                       :features-from-register
-                                       features-from-register))
-                         :consume? nil)))
-      (:load-category  ; C1[-voice]
-       (destructuring-bind (phoneme-register category-register category
-                                             &key (features (empty-map))
-                                             (features-from-register
-                                              (empty-map)))
-         args
-         (fst-elementary #'true
-                         (lambda (glyph)
-                           (declare (ignore glyph))
-                           (load-glyph :phoneme-register phoneme-register
-                                       :category-register category-register
-                                       :category category
-                                       :constant-features features
-                                       :features-from-register
-                                       features-from-register))
-                         :consume? nil)))
-      ;; save
-      (:save  ; .1
-       (destructuring-bind (phoneme-register)
-           args
-         (fst-elementary (lambda (glyph)
-                           (declare (special *registry*))
-                           (setf (gethash phoneme-register *registry*)
-                                 glyph)
-                           t)
-                         '())))
-      (:save-by-category  ; C1
-       (destructuring-bind (category phoneme-register category-register)
-           args
-         (fst-elementary (lambda (glyph)
-                         (declare (special *registry*))
-                         (when (@ category glyph)
-                           (setf (gethash phoneme-register *registry*)
-                                 glyph
-                                 (gethash category-register *registry*)
-                                 (position glyph category
-                                           :test #'equal?))
-                           t))
-                         '())))
-      (:save-by-features  ; .1[+back]
-       (destructuring-bind (features phoneme-register)
-           args
-         (fst-elementary (lambda (glyph)
-                           (declare (special *registry*))
-                           (when (has-features? glyph features)
-                             (setf (gethash phoneme-register *registry*)
-                                   glyph)
-                             t))
-                         '())))
-      (:save-by-category-and-features  ; V1[+back]
-       (destructuring-bind (category features phoneme-register
-                                     category-register)
-           args
-         (fst-elementary (lambda (glyph)
-                           (declare (special *registry*))
-                           (when (and (@ category glyph)
-                                      (has-features? glyph features))
-                             (setf (gethash phoneme-register *registry*)
-                                   glyph
-                                   (gethash category-register *registry*)
-                                   (position glyph category
-                                             :test #'equal?))
-                             t))
-                         '())))
-      ;; filter
-      (:filter-by-category  ; C
-       (destructuring-bind (category)
-           args
-         (fst-elementary (lambda (glyph)
-                           (@ category glyph))
-                         '())))
-      (:filter-by-features  ; .[+voice]
-       (destructuring-bind (features)
-           args
-         (fst-elementary (lambda (glyph)
-                           (has-features? glyph features))
-                         '())))
-      (:filter-by-category-and-features  ; C[+labial]
-       (destructuring-bind (category features)
-           args
-         (fst-elementary (lambda (glyph)
-                           (and (@ category glyph)
-                                (has-features? glyph features)))
-                         '())))
-      ;; general
-      (:sequence
-       (if args
-           (destructuring-bind (current &rest rest)
-               args
-             (fst-sequence (apply #'fst<-spec
-                                  current)
-                           (apply #'fst<-spec
-                                  :sequence rest)))
-           (empty-fst)))
-      (:alternative
-       (if args
-           (destructuring-bind (current &rest rest)
-               args
-             (fst-alternate (apply #'fst<-spec
-                                   current)
-                            (apply #'fst<-spec
-                                   :alternative rest)))
-           (empty-fst))))))
-
 (defmethod apply-sound-change ((word word)
                                (sound-change fst))
   (bind ((*registry* (make-hash-table :test 'eq)))
@@ -184,6 +57,7 @@
                    :transformations (transformations<- word)))
            (run-fst sound-change (form<- word)))))
 
+;;;; Parser
 (defun parse-category (categories)
   (declare (type set categories))
   (// (>>!
@@ -252,3 +126,31 @@
     _ (parse-whitespace)
     _ (parse-constant "]")
     (succeed (with features feature))))
+
+;;; String -> (String, (writes, reads, registers-written), Bool)
+(defun parse-before-match (written-registers categories features category-map)
+  (declare (type set written-registers categories features))
+  (>>!
+    category (parse-category categories)
+    register (<? (parse-register))
+    features (<? (parse-feature-set features))
+    (succeed
+     (bind ((binary-features (filter (lambda (feature)
+                                       (eq (first feature)
+                                           :binary-feature))
+                                     features))
+            (register-features (filter (lambda (feature)
+                                         (eq (first feature)
+                                             :register-feature))
+                                       features)))
+       (todo)))))
+
+(defun parse-before (categories features category-map
+                     &optional (written-registers (empty-set)))
+  (<? (>>* (parse-before-match written-registers categories features
+                               category-map)
+           result
+           (bind (((writes reads registers-written)
+                   result))
+             (parse-before categories features category-map
+                           (union written-registers registers-written))))))

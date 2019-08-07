@@ -8,30 +8,6 @@
   (lambda (s)
     (values s e nil)))
 
-(defun <$/ (r e a)
-  (lambda (s)
-    (bind (((:values ns _ success?)
-            (funcall a s)))
-      (if success?
-          (values ns r t)
-          (values s e nil)))))
-
-(defun <$ (r a)
-  (lambda (s)
-    (bind (((:values ns nr success?)
-            (funcall a s)))
-      (if success?
-          (values ns r t)
-          (values s nr nil)))))
-
-(defun </ (e a)
-  (lambda (s)
-    (bind (((:values ns r success?)
-            (funcall a s)))
-      (if success?
-          (values ns r t)
-          (values s e nil)))))
-
 (defun <$/> (fs fe a)
   (lambda (s)
     (bind (((:values ns r success?)
@@ -46,6 +22,19 @@
 
 (defun </> (fe a)
   (<$/> #'identity fe a))
+
+(defun <$/ (s e a)
+  (<$/> (constantly s)
+        (constantly e)
+        a))
+
+(defun <$ (s a)
+  (<$> (constantly s)
+       a))
+
+(defun </ (e a)
+  (</> (constantly e)
+       a))
 
 (defun //= (xa fa)
   (lambda (s)
@@ -107,8 +96,11 @@
             `(>>* ,parser ,var (>>! ,@bindings))))
       (first bindings)))
 
-(defun ?? (p d)
-  (// p (succeed d)))
+(defun <?> (p &optional (d #'identity))
+  (//* p x (funcall d x)))
+
+(defun <? (p &optional d)
+  (<?> p (constantly d)))
 
 (defun some (p &optional (d "")
                  (f (lambda (a b)
