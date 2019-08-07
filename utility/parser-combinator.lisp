@@ -99,7 +99,7 @@
 (defun <?> (p &optional (d #'identity))
   (//!
     x p
-    (suceed (funcall d x))))
+    (succeed (funcall d x))))
 
 (defun <? (p &optional d)
   (<?> p (constantly d)))
