@@ -8,7 +8,7 @@
   (lambda (s)
     (values s e nil)))
 
-(defun <$/> (fs fe a)
+(defun <$~> (fs fe a)
   (lambda (s)
     (bind (((:values ns r success?)
             (funcall a s)))
@@ -18,13 +18,13 @@
               success?))))
 
 (defun <$> (fs a)
-  (<$/> fs #'identity a))
+  (<$~> fs #'identity a))
 
-(defun </> (fe a)
-  (<$/> #'identity fe a))
+(defun <~> (fe a)
+  (<$~> #'identity fe a))
 
-(defun <$/ (s e a)
-  (<$/> (constantly s)
+(defun <$~ (s e a)
+  (<$~> (constantly s)
         (constantly e)
         a))
 
@@ -32,8 +32,8 @@
   (<$> (constantly s)
        a))
 
-(defun </ (e a)
-  (</> (constantly e)
+(defun <~ (e a)
+  (<~> (constantly e)
        a))
 
 (defun //= (xa fa)
