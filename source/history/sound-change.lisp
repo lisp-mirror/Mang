@@ -127,70 +127,59 @@
     _ (parse-constant "]")
     (succeed (with features feature))))
 
-;;; String -> (String, (writes, reads, registers-written), Bool)
-(defun parse-before-match (written-registers categories features category-map)
-  (declare (type set written-registers categories features)
+(defun parse-emitter (categories features category-map)
+  (declare (type set categories features)
            (type map category-map))
   (>>!
-    category (// (parse-category categories)
-                 (parse-constant "."))
-    register (<? (parse-register))
+    category (parse-category categories)
     features (<? (parse-feature-set features))
-    (succeed
-     (bind ((binary-features (filter (lambda (feature)
-                                       (eq (first feature)
-                                           :binary-feature))
-                                     features))
-            (register-features (filter (lambda (feature)
-                                         (eq (first feature)
-                                             :register-feature))
-                                       features)))
-       (todo)))))
+    register (<? (parse-register))
+    (succeed `(:emitter ,(@ category-map category)
+                        ,features ,register))))
 
-(defun parse-before (categories features category-map
-                     &optional (written-registers (empty-set)))
-  (declare (type set written-registers categories features)
+(defun parse-sequence-emitter (categories features category-map)
+  (declare (type set categories features)
            (type map category-map))
-  (<? (>>* (parse-before-match written-registers categories features
-                               category-map)
-           result
-           (bind (((writes reads registers-written)
-                   result))
-             (cons (list writes reads)
-                   (parse-before categories features category-map
-                                 (union written-registers
-                                        registers-written)))))))
+  (<$> (lambda (sequence)
+         (cons :sequence sequence))
+       (some (parse-emitter categories features category-map)
+             '() #'cons)))
 
-;;; TODO: Add syntax (P|F) for categories
-(defun parse-after-match (written-registers categories features category-map)
-  (declare (type set written-registers categories features)
+(defun parse-registerless-matcher (categories features category-map)
+  (declare (type set categories features)
            (type map category-map))
   (>>!
-    category (// (parse-category categories)
-                 (parse-constant "."))
-    register (<? (parse-register))
+    category (parse-category categories)
     features (<? (parse-feature-set features))
-    (succeed
-     (bind ((binary-features (filter (lambda (feature)
-                                       (eq (first feature)
-                                           :binary-feature))
-                                     features))
-            (register-features (filter (lambda (feature)
-                                         (eq (first feature)
-                                             :register-feature))
-                                       features)))
-       (todo)))))
+    (succeed `(:matcher ,(@ category-map category)
+                        ,features nil))))
 
-(defun parse-after (categories features category-map
-                    &optional (written-registers (empty-set)))
-  (declare (type set written-registers categories features)
+(defun parse-alternative-matcher (categories features category-map)
+  (declare (type set categories features)
            (type map category-map))
-  (<? (>>* (parse-after-match written-registers categories features
-                              category-map)
-           result
-           (bind (((writes reads registers-written)
-                   result))
-             (cons (list writes reads)
-                   (parse-after categories features category-map
-                                (union written-registers
-                                       registers-written)))))))
+  (>>!
+    _ (parse-constant "(")
+    first (parse-registerless-matcher categories features category-map)
+    rest (some (>> (parse-constant "|")
+                   (parse-registerless-matcher categories features category-map))
+               '() #'cons)
+    _ (parse-constant ")")
+    register (<? (parse-register))
+    (succeed `(:alternative ,register ,first ,@rest))))
+
+(defun parse-matcher (categories features category-map)
+  (declare (type set categories features)
+           (type map category-map))
+  (>>!
+    category (parse-category categories)
+    features (<? (parse-feature-set features))
+    register (<? (parse-register))
+    (succeed `(:matcher ,(@ category-map category)
+                        ,features ,register))))
+
+(defun parse-sequence-matcher (categories features category-map)
+  (<$> (lambda (sequence)
+         (cons :sequence sequence))
+       (some (// (parse-matcher categories features category-map)
+                 (parse-alternative-matcher categories features category-map))
+             '() #'cons)))
