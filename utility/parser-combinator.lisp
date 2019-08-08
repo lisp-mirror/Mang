@@ -12,6 +12,7 @@
     (values e s nil)))
 
 (defun <$~> (fs fe a)
+  (declare (type function fs fe))
   (lambda (s)
     (bind (((:values r ns success?)
             (funcall a s)))
@@ -21,9 +22,11 @@
               ns success?))))
 
 (defun <$> (fs a)
+  (declare (type function fs))
   (<$~> fs #'identity a))
 
 (defun <~> (fe a)
+  (declare (type function fe))
   (<$~> #'identity fe a))
 
 (defun <$~ (s e a)
@@ -40,6 +43,7 @@
        a))
 
 (defun //= (xa fa)
+  (declare (type function xa fa))
   (lambda (s)
     (bind (((:values r ns success?)
             (funcall xa s)))
@@ -69,7 +73,8 @@
             `(//* ,parser ,var (//! ,@bindings))))
       (first bindings)))
 
-(defun >>= (xa fa)  ; fa :: a -> Parser ret err
+(defun >>= (xa fa)
+  (declare (type function xa fa))
   (lambda (s)
     (bind (((:values r ns success?)
             (funcall xa s)))
@@ -100,6 +105,7 @@
       (first bindings)))
 
 (defun <?> (p &optional (d #'identity))
+  (declare (type function p d))
   (//!
     x p
     (succeed (funcall d x))))
@@ -111,6 +117,7 @@
                  (f (lambda (a b)
                       (concatenate 'string
                                    a b))))
+  (declare (type function p d f))
   (>>!
     x p
     xs (// (some p d f)
@@ -121,6 +128,7 @@
                  (f (lambda (a b)
                       (concatenate 'string
                                    a b))))
+  (declare (type function p d f))
   (// (some p d f)
       (succeed d)))
 
