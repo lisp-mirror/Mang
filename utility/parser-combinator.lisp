@@ -5,20 +5,20 @@
 
 (defun succeed (x)
   (lambda (s)
-    (values s x t)))
+    (values x s t)))
 
 (defun fail (e)
   (lambda (s)
-    (values s e nil)))
+    (values e s nil)))
 
 (defun <$~> (fs fe a)
   (lambda (s)
-    (bind (((:values ns r success?)
+    (bind (((:values r ns success?)
             (funcall a s)))
-      (values ns (if success?
-                     (funcall fs r)
-                     (funcall fe r))
-              success?))))
+      (values (if success?
+                  (funcall fs r)
+                  (funcall fe r))
+              ns success?))))
 
 (defun <$> (fs a)
   (<$~> fs #'identity a))
@@ -41,10 +41,10 @@
 
 (defun //= (xa fa)
   (lambda (s)
-    (bind (((:values ns r success?)
+    (bind (((:values r ns success?)
             (funcall xa s)))
       (if success?
-          (values ns r t)
+          (values r ns t)
           (funcall (funcall fa r)
                    s)))))
 
@@ -71,12 +71,12 @@
 
 (defun >>= (xa fa)  ; fa :: a -> Parser ret err
   (lambda (s)
-    (bind (((:values ns r success?)
+    (bind (((:values r ns success?)
             (funcall xa s)))
       (if success?
           (funcall (funcall fa r)
                    ns)
-          (values ns r nil)))))
+          (values r ns nil)))))
 
 (defun >> (parser &rest parsers)
   (declare (type function parser))
@@ -128,28 +128,28 @@
   (lambda (s)
     (declare (type string s))
     (if (string= s "")
-        (values "" nil t)
-        (values "" nil nil))))
+        (values nil "" t)
+        (values nil "" nil))))
 
 (defun parse-constant (string)
   (declare (type string string))
   (lambda (s)
     (declare (type string s))
     (if (prefix? string s)
-        (values (subseq s (length string))
-                nil t)
-        (values string nil nil))))
+        (values nil (subseq s (length string))
+                t)
+        (values nil string nil))))
 
 (defun parse-unicode-property (property)
   (lambda (s)
     (declare (type string s))
     (if (has-property (elt s 0)
                       property)
-        (values (subseq s 1)
-                (subseq s 0 1)
+        (values (subseq s 0 1)
+                (subseq s 1)
                 t)
-        (values s (subseq s 0 1)
-                nil))))
+        (values (subseq s 0 1)
+                s nil))))
 
 (defun parse-prefix-set (prefix-set)
   (declare (type set prefix-set))
@@ -158,9 +158,9 @@
     ([a]if (find-if (lambda (prefix)
                       (prefix? prefix s))
                     prefix-set)
-        (values (subseq s (length it))
-                it t)
-      (values s nil nil))))
+        (values it (subseq s (length it))
+                t)
+      (values nil s nil))))
 
 (defun parse-whitespace ()
   (many (parse-unicode-property "Whitespace")
