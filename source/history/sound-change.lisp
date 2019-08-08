@@ -127,59 +127,86 @@
     _ (parse-constant "]")
     (succeed (with features feature))))
 
-(defun parse-emitter (categories features category-map)
-  (declare (type set categories features)
+(defun parse-registerless-filter (type categories features category-map)
+  (declare (type symbol type)
+           (type set categories features)
+           (type map category-map))
+  (>>!
+    category (parse-category categories)
+    features (<? (parse-feature-set features))
+    (succeed `(,type ,(@ category-map category)
+                     ,(image #'rest
+                             (filter (lambda (feature)
+                                       (eq (first feature)
+                                           :binary-feature))
+                                     features))
+                     ,(image #'rest
+                             (filter (lambda (feature)
+                                       (eq (first feature)
+                                           :register-feature))
+                                     features))
+                     nil))))
+
+(defun parse-filter (type categories features category-map)
+  (declare (type symbol type)
+           (type set categories features)
            (type map category-map))
   (>>!
     category (parse-category categories)
     features (<? (parse-feature-set features))
     register (<? (parse-register))
-    (succeed `(:emitter ,(@ category-map category)
-                        ,features ,register))))
+    (succeed `(,type ,(@ category-map category)
+                     ,(image #'rest
+                             (filter (lambda (feature)
+                                       (eq (first feature)
+                                           :binary-feature))
+                                     features))
+                     ,(image #'rest
+                             (filter (lambda (feature)
+                                       (eq (first feature)
+                                           :register-feature))
+                                     features))
+                     ,register))))
 
-(defun parse-sequence-emitter (categories features category-map)
+(defun parse-flat-filter-sequence (type categories features category-map)
   (declare (type set categories features)
            (type map category-map))
   (<$> (lambda (sequence)
          (cons :sequence sequence))
-       (some (parse-emitter categories features category-map)
+       (some (parse-filter type categories features category-map)
              '() #'cons)))
 
-(defun parse-registerless-matcher (categories features category-map)
-  (declare (type set categories features)
-           (type map category-map))
-  (>>!
-    category (parse-category categories)
-    features (<? (parse-feature-set features))
-    (succeed `(:matcher ,(@ category-map category)
-                        ,features nil))))
-
-(defun parse-alternative-matcher (categories features category-map)
+(defun parse-alternative-filter (type categories features category-map)
   (declare (type set categories features)
            (type map category-map))
   (>>!
     _ (parse-constant "(")
-    first (parse-registerless-matcher categories features category-map)
+    first (parse-registerless-filter type categories features category-map)
     rest (some (>> (parse-constant "|")
-                   (parse-registerless-matcher categories features category-map))
+                   (parse-registerless-filter type categories features
+                                              category-map))
                '() #'cons)
     _ (parse-constant ")")
     register (<? (parse-register))
     (succeed `(:alternative ,register ,first ,@rest))))
 
-(defun parse-matcher (categories features category-map)
-  (declare (type set categories features)
-           (type map category-map))
-  (>>!
-    category (parse-category categories)
-    features (<? (parse-feature-set features))
-    register (<? (parse-register))
-    (succeed `(:matcher ,(@ category-map category)
-                        ,features ,register))))
-
-(defun parse-sequence-matcher (categories features category-map)
+(defun parse-filter-sequence (type categories features category-map)
   (<$> (lambda (sequence)
          (cons :sequence sequence))
-       (some (// (parse-matcher categories features category-map)
-                 (parse-alternative-matcher categories features category-map))
+       (some (// (parse-filter type categories features category-map)
+                 (parse-alternative-filter type categories features
+                                           category-map))
              '() #'cons)))
+
+#+nil
+(defun annotate-writes (term &optional (open-registers (empty-set))
+                               (closed-registers (empty-set)))
+  (bind (((type &rest args)
+          term))
+    (case type
+      ((:alternative :sequence)
+       )
+      (:matcher
+       )
+      (t
+       (values term open-registers closed-registers)))))
