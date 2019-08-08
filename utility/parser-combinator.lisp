@@ -117,7 +117,7 @@
                  (f (lambda (a b)
                       (concatenate 'string
                                    a b))))
-  (declare (type function p d f))
+  (declare (type function p f))
   (>>!
     x p
     xs (// (some p d f)
@@ -128,7 +128,7 @@
                  (f (lambda (a b)
                       (concatenate 'string
                                    a b))))
-  (declare (type function p d f))
+  (declare (type function p f))
   (// (some p d f)
       (succeed d)))
 
