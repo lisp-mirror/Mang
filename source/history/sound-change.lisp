@@ -198,15 +198,25 @@
                                            category-map))
              '() #'cons)))
 
-#+nil
 (defun annotate-writes (term &optional (open-registers (empty-set))
                                (closed-registers (empty-set)))
   (bind (((type &rest args)
           term))
     (case type
-      ((:alternative :sequence)
+      (:sequence
+       (bind (((curr &rest rest)
+               args)
+              ((:values nrterm nwterm nopen nclosed)
+               (annotate-writes curr open-registers closed-registers))
+              ((:values rrterm rwterm ropen rclosed)
+               (annotate-writes `(:sequence ,@rest)
+                                nopen nclosed)))
+         (values `(:sequence ,nrterm ,@rrterm)
+                 `(:sequence ,nwterm ,@rwterm)
+                 ropen rclosed)))
+      (:alternative
        )
       (:matcher
        )
       (t
-       (values term open-registers closed-registers)))))
+       (values term nil open-registers closed-registers)))))
