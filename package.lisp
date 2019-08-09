@@ -1,8 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:mang
-  (:use #:cl #:cl-adt #:cells #:equal #:cl-ppcre #:cl-ppcre-unicode
-        #:split-sequence #:fgraph)
+  (:use #:cl #:cl-adt #:cells #:equal #:cl-ppcre #:split-sequence #:fgraph)
   (:shadow #:// #:some)
   (:shadowing-import-from
    #:fset

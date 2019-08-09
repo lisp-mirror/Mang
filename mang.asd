@@ -9,7 +9,6 @@
                #:cl-adt
                #:equal
                #:cl-unicode
-               #:cl-ppcre-unicode
                #:split-sequence
                #:fgraph
                #:metabang-bind
