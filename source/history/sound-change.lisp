@@ -204,18 +204,30 @@
           term))
     (case type
       (:sequence
-       (bind (((curr &rest rest)
-               args)
-              ((:values nrterm nwterm nopen nclosed)
-               (annotate-writes curr open-registers closed-registers))
-              ((:values rrterm rwterm ropen rclosed)
-               (annotate-writes `(:sequence ,@rest)
-                                nopen nclosed)))
-         (values `(:sequence ,nrterm ,@rrterm)
-                 `(:sequence ,nwterm ,@rwterm)
-                 ropen rclosed)))
+       (if args
+           (bind (((curr &rest rest)
+                   args)
+                  ((:values nrterm nwterm nopen nclosed)
+                   (annotate-writes curr open-registers closed-registers))
+                  ((:values rrterm rwterm ropen rclosed)
+                   (annotate-writes `(:sequence ,@rest)
+                                    nopen nclosed)))
+             (values `(:sequence ,nrterm ,@rrterm)
+                     `(:sequence ,nwterm ,@rwterm)
+                     ropen rclosed))))
       (:alternative
-       )
+       (if args
+           (bind (((curr &rest rest)
+                   args)
+                  ((:values nrterm nwterm nopen nclosed)
+                   (annotate-writes curr open-registers closed-registers))
+                  ((:values rrterm rwterm ropen rclosed)
+                   (annotate-writes `(:alternative ,@rest)
+                                    open-registers closed-registers)))
+             (values `(:alternative ,nrterm ,@rrterm)
+                     `(:alternative ,nwterm ,@rwterm)
+                     (union nopen ropen)
+                     (union nclosed rclosed)))))
       (:matcher
        )
       (t
