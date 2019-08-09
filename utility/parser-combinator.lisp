@@ -106,9 +106,7 @@
 
 (defun <?> (p &optional (d #'identity))
   (declare (type function p d))
-  (//!
-    x p
-    (succeed (funcall d x))))
+  (//* p x (succeed (funcall d x))))
 
 (defun <? (p &optional d)
   (<?> p (constantly d)))
