@@ -60,15 +60,18 @@
       parser))
 
 (defmacro //* (left var right)
-  `(//= ,left (lambda (,var)
-                ,right)))
+  (let ((g!arg (gensym "arg")))
+    `(//= ,left (lambda (,g!arg)
+                  (bind ((,var ,g!arg))
+                    ,right)))))
 
 (defmacro //! (&body bindings)
   (if (rest bindings)
       (bind (((var parser &rest bindings)
               bindings))
-        (if (string= (symbol-name var)
-                     "_")
+        (if (and (symbolp var)
+                 (string= (symbol-name var)
+                          "_"))
             `(// ,parser (//! ,@bindings))
             `(//* ,parser ,var (//! ,@bindings))))
       (first bindings)))
@@ -91,18 +94,41 @@
       parser))
 
 (defmacro >>* (left var right)
-  `(>>= ,left (lambda (,var)
-                ,right)))
+  (let ((g!arg (gensym "arg")))
+    `(>>= ,left (lambda (,g!arg)
+                  (bind ((,var ,g!arg))
+                    ,right)))))
 
 (defmacro >>! (&body bindings)
   (if (rest bindings)
       (bind (((var parser &rest bindings)
               bindings))
-        (if (string= (symbol-name var)
-                     "_")
+        (if (and (symbolp var)
+                 (string= (symbol-name var)
+                          "_"))
             `(>> ,parser (>>! ,@bindings))
             `(>>* ,parser ,var (>>! ,@bindings))))
       (first bindings)))
+
+(defun ??== (ptest xthen xelse)
+  (declare (type function ptest xthen xelse))
+  (lambda (s)
+    (bind (((:values r ns success?)
+            (funcall ptest s)))
+      (funcall (funcall (if success?
+                            xthen
+                            xelse)
+                        r)
+               ns))))
+
+(defun ??= (ptest xthen pelse)
+  (declare (type function ptest xthen pelse))
+  (??== ptest xthen (constantly pelse)))
+
+(defun ?? (ptest pthen pelse)
+  (declare (type function ptest pthen pelse))
+  (??= ptest (constantly pthen)
+       pelse))
 
 (defun <?> (p &optional (d #'identity))
   (declare (type function p d))
@@ -137,6 +163,24 @@
         (values nil "" t)
         (values nil "" nil))))
 
+(defun parse-anything ()
+  (lambda (s)
+    (declare (type string s))
+    (if (length> s 0)
+        (values (subseq s 0 1)
+                (subseq s 1)
+                t)
+        (values nil s nil))))
+
+(defun parse-to (parser)
+  (?? parser
+      (succeed "")
+      (>>!
+        first (parse-anything)
+        rest (parse-to parser)
+        (succeed (concatenate 'string
+                              first rest)))))
+
 (defun parse-constant (string)
   (declare (type string string))
   (lambda (s)
@@ -144,7 +188,7 @@
     (if (prefix? string s)
         (values nil (subseq s (length string))
                 t)
-        (values nil string nil))))
+        (values nil s nil))))
 
 (defun parse-unicode-property (property)
   (lambda (s)
