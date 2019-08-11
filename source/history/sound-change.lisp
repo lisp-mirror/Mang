@@ -1,6 +1,6 @@
 (in-package #:mang)
 
-;;; [+obstruent,-voice]1V2/~1<-[front<-2]V2<-[round<-3]/V3_
+;;; .[+obstruent,-voice]1V2/.1[front2]V[round3]2/V3_
 
 (defun has-features? (phoneme features)
   (declare (type map phoneme features))
@@ -127,108 +127,31 @@
     _ (parse-constant "]")
     (succeed (with features feature))))
 
-(defun parse-registerless-filter (type categories features category-map)
-  (declare (type symbol type)
-           (type set categories features)
-           (type map category-map))
-  (>>!
-    category (parse-category categories)
-    features (<? (parse-feature-set features))
-    (succeed `(,type ,(@ category-map category)
-                     ,(image #'rest
-                             (filter (lambda (feature)
-                                       (eq (first feature)
-                                           :binary-feature))
-                                     features))
-                     ,(image #'rest
-                             (filter (lambda (feature)
-                                       (eq (first feature)
-                                           :register-feature))
-                                     features))
-                     nil))))
-
-(defun parse-filter (type categories features category-map)
-  (declare (type symbol type)
-           (type set categories features)
-           (type map category-map))
-  (>>!
-    category (parse-category categories)
-    features (<? (parse-feature-set features))
-    register (<? (parse-register))
-    (succeed `(,type ,(@ category-map category)
-                     ,(image #'rest
-                             (filter (lambda (feature)
-                                       (eq (first feature)
-                                           :binary-feature))
-                                     features))
-                     ,(image #'rest
-                             (filter (lambda (feature)
-                                       (eq (first feature)
-                                           :register-feature))
-                                     features))
-                     ,register))))
-
-(defun parse-flat-filter-sequence (type categories features category-map)
-  (declare (type set categories features)
-           (type map category-map))
-  (<$> (lambda (sequence)
-         (cons :sequence sequence))
-       (some (parse-filter type categories features category-map)
-             '() #'cons)))
-
-(defun parse-alternative-filter (type categories features category-map)
+(defun parse-sound-change (categories features category-map)
   (declare (type set categories features)
            (type map category-map))
   (>>!
-    _ (parse-constant "(")
-    first (parse-registerless-filter type categories features category-map)
-    rest (some (>> (parse-constant "|")
-                   (parse-registerless-filter type categories features
-                                              category-map))
-               '() #'cons)
-    _ (parse-constant ")")
-    register (<? (parse-register))
-    (succeed `(:alternative ,register ,first ,@rest))))
-
-(defun parse-filter-sequence (type categories features category-map)
-  (<$> (lambda (sequence)
-         (cons :sequence sequence))
-       (some (// (parse-filter type categories features category-map)
-                 (parse-alternative-filter type categories features
-                                           category-map))
-             '() #'cons)))
-
-(defun annotate-writes (term &optional (open-registers (empty-set))
-                               (closed-registers (empty-set)))
-  (bind (((type &rest args)
-          term))
-    (case type
-      (:sequence
-       (if args
-           (bind (((curr &rest rest)
-                   args)
-                  ((:values nrterm nwterm nopen nclosed)
-                   (annotate-writes curr open-registers closed-registers))
-                  ((:values rrterm rwterm ropen rclosed)
-                   (annotate-writes `(:sequence ,@rest)
-                                    nopen nclosed)))
-             (values `(:sequence ,nrterm ,@rrterm)
-                     `(:sequence ,nwterm ,@rwterm)
-                     ropen rclosed))))
-      (:alternative
-       (if args
-           (bind (((curr &rest rest)
-                   args)
-                  ((:values nrterm nwterm nopen nclosed)
-                   (annotate-writes curr open-registers closed-registers))
-                  ((:values rrterm rwterm ropen rclosed)
-                   (annotate-writes `(:alternative ,@rest)
-                                    open-registers closed-registers)))
-             (values `(:alternative ,nrterm ,@rrterm)
-                     `(:alternative ,nwterm ,@rwterm)
-                     (union nopen ropen)
-                     (union nclosed rclosed)))))
-      (:matcher
-       )
-      (t
-       (values term nil open-registers closed-registers)))))
+    before (parse-to (// (parse-constant "->")
+                         (parse-constant "→")))
+    after (parse-to (// (parse-constant "/")
+                        (parse-eof)))
+    pre (<? (parse-to (parse-constant "_")))
+    post (<? (parse-to (parse-constant (parse-eof))))
+    (succeed
+     (bind (((pre-write/comp pre-emit open-registers closed-registers)
+             (funcall (parse-pre categories features category-map)
+                      pre))
+            ((before-write/comp open-registers closed-registers)
+             (funcall (parse-before categories features category-map
+                                    open-registers closed-registers)
+                      before))
+            ((after-emit open-registers closed-registers)
+             (funcall (parse-after categories features category-map
+                                   open-registers closed-registers)
+                      after))
+            ((post-write/comp post-emit)
+             (funcall (parse-post categories features category-map
+                                  open-registers closed-registers)
+                      post)))
+       `(:sequence ,pre-write/comp ,before-write/comp ,post-write/comp
+                   ,pre-emit ,after-emit ,post-emit)))))
