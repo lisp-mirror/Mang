@@ -127,6 +127,32 @@
     _ (parse-constant "]")
     (succeed (with features feature))))
 
+;;; -> pre-write/comp pre-emit open-registers closed-registers
+(defun parse-pre (categories features category-map)
+  (declare (type set categories features)
+           (type map category-map))
+  (todo categories features category-map))
+
+;;; -> before-write/comp open-registers closed-registers
+(defun parse-before (categories features category-map open-registers
+                     closed-registers)
+  (declare (type set categories features closed-registers)
+           (type map category-map open-registers))
+  (todo categories features category-map open-registers closed-registers))
+
+;;; -> post-write/comp post-emit closed-registes
+(defun parse-post (categories features category-map open-registers
+                   closed-registers)
+  (declare (type set categories features closed-registers)
+           (type map category-map open-registers))
+  (todo categories features category-map open-registers closed-registers))
+
+;;; -> after-emit
+(defun parse-after (categories features category-map closed-registers)
+  (declare (type set categories features closed-registers)
+           (type map category-map))
+  (todo categories features category-map closed-registers))
+
 (defun parse-sound-change (categories features category-map)
   (declare (type set categories features)
            (type map category-map))
@@ -145,13 +171,13 @@
              (funcall (parse-before categories features category-map
                                     open-registers closed-registers)
                       before))
-            ((after-emit open-registers closed-registers)
-             (funcall (parse-after categories features category-map
-                                   open-registers closed-registers)
-                      after))
-            ((post-write/comp post-emit)
+            ((post-write/comp post-emit closed-registers)
              (funcall (parse-post categories features category-map
                                   open-registers closed-registers)
-                      post)))
+                      post))
+            ((after-emit)
+             (funcall (parse-after categories features category-map
+                                   closed-registers)
+                      after)))
        `(:sequence ,pre-write/comp ,before-write/comp ,post-write/comp
                    ,pre-emit ,after-emit ,post-emit)))))
