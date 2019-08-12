@@ -10,7 +10,6 @@
                #:equal
                #:cl-unicode
                #:split-sequence
-               #:fgraph
                #:metabang-bind
                )
   :components
