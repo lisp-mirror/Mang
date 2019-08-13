@@ -156,6 +156,15 @@
   (// (some p d f)
       (succeed d)))
 
+(defun >< (p)
+  (declare (type function p))
+  (lambda (s)
+    (bind (((r ns success?)
+            (funcapp p s)))
+      (if success?
+          (values r s t)
+          (values r ns nil)))))
+
 (defun parse-eof ()
   (lambda (s)
     (declare (type string s))
