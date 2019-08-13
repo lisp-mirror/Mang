@@ -194,10 +194,15 @@
   (>>!
     before (parse-to (// (parse-constant "->")
                          (parse-constant "→")))
-    after (parse-to (// (parse-constant "/")
+    after (parse-to (// (>< (parse-constant "/"))
                         (parse-eof)))
-    pre (<? (parse-to (parse-constant "_")))
-    post (<? (parse-to (parse-eof)))
+    (pre post)
+    (<? (>>!
+          _ (parse-constant "/")
+          pre (parse-to (parse-constant "_"))
+          post (parse-to (parse-eof))
+          (succeed `(,pre ,post)))
+        `(() ()))
     (succeed
      (bind (((pre-write/comp pre-emit open-registers closed-registers)
              (funcall (parse-pre categories features valued-features
