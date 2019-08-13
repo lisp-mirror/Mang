@@ -11,6 +11,12 @@
   (lambda (s)
     (values e s nil)))
 
+(defun ^$ (p x)
+  (lambda (s)
+    (bind (((:values r _ success?)
+            (funcall p x)))
+      (values r s success?))))
+
 (defun <$~> (fs fe a)
   (declare (type function fs fe))
   (lambda (s)
