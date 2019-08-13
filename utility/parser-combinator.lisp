@@ -162,7 +162,7 @@
   (// (some p d f)
       (succeed d)))
 
-(defun >< (p)
+(defun ^< (p)
   (declare (type function p))
   (lambda (s)
     (bind (((r ns success?)

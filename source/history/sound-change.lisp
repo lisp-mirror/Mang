@@ -194,7 +194,7 @@
   (>>!
     before (parse-to (// (parse-constant "->")
                          (parse-constant "→")))
-    after (parse-to (// (>< (parse-constant "/"))
+    after (parse-to (// (^< (parse-constant "/"))
                         (parse-eof)))
     (pre post)
     (<? (>>!
