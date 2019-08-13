@@ -166,7 +166,7 @@
   (declare (type function p))
   (lambda (s)
     (bind (((r ns success?)
-            (funcapp p s)))
+            (funcall p s)))
       (if success?
           (values r s t)
           (values r ns nil)))))
@@ -215,8 +215,7 @@
             (values (subseq s 0 1)
                     (subseq s 1)
                     t)
-            (values (subseq s 0 1)
-                    s nil))
+            (values nil s nil))
         (values "" s nil))))
 
 (defun parse-prefix-set (prefix-set)
