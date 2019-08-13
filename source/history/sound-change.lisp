@@ -197,7 +197,7 @@
     after (parse-to (// (parse-constant "/")
                         (parse-eof)))
     pre (<? (parse-to (parse-constant "_")))
-    post (<? (parse-to (parse-constant (parse-eof))))
+    post (<? (parse-to (parse-eof)))
     (succeed
      (bind (((pre-write/comp pre-emit open-registers closed-registers)
              (funcall (parse-pre categories features valued-features
