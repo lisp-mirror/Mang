@@ -202,7 +202,7 @@
           pre (parse-to (parse-constant "_"))
           post (parse-to (parse-eof))
           (succeed `(,pre ,post)))
-        `(() ()))
+        `((:empty) (:empty)))
     (pre-write/comp pre-emit open-registers closed-registers)
     (^$ (parse-pre categories features valued-features category-map)
         pre)
