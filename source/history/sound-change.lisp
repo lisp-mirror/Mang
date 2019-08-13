@@ -203,25 +203,24 @@
           post (parse-to (parse-eof))
           (succeed `(,pre ,post)))
         `(() ()))
-    (succeed
-     (bind (((pre-write/comp pre-emit open-registers closed-registers)
-             (funcall (parse-pre categories features valued-features
+    (pre-write/comp pre-emit open-registers closed-registers)
+    (succeed (funcall (parse-pre categories features valued-features
                                  category-map)
                       pre))
-            ((before-write/comp open-registers closed-registers)
-             (funcall (parse-before categories features valued-features
+    (before-write/comp open-registers closed-registers)
+    (succeed (funcall (parse-before categories features valued-features
                                     category-map
                                     open-registers closed-registers)
                       before))
-            ((post-write/comp post-emit closed-registers)
-             (funcall (parse-post categories features valued-features
+    (post-write/comp post-emit closed-registers)
+    (succeed (funcall (parse-post categories features valued-features
                                   category-map
                                   open-registers closed-registers)
                       post))
-            ((after-emit)
-             (funcall (parse-after categories features valued-features
+    after-emit
+    (succeed (funcall (parse-after categories features valued-features
                                    category-map
                                    closed-registers)
-                      after)))
-       `(:sequence ,pre-write/comp ,before-write/comp ,post-write/comp
-                   ,pre-emit ,after-emit ,post-emit)))))
+                      after))
+    (succeed `(:sequence ,pre-write/comp ,before-write/comp ,post-write/comp
+                         ,pre-emit ,after-emit ,post-emit))))
