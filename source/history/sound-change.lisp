@@ -168,7 +168,9 @@
            (type map valued-features category-map))
   (>>!
     category (parse-category categories)
+    _ (parse-whitespace)
     features (<? (parse-feature-set features valued-features))
+    _ (parse-whitespace)
     register (<? (parse-register))
     (if (@ closed-registers register)
         (succeed
@@ -183,6 +185,7 @@
   (<? (>>!
         first (parse-emitter categories features valued-features category-map
                              closed-registers)
+        _ (parse-whitespace)
         rest (parse-after categories features valued-features category-map
                           closed-registers)
         (succeed `(:sequence ,first ,rest)))
@@ -194,15 +197,21 @@
   (>>!
     before (parse-to (// (parse-constant "->")
                          (parse-constant "→")))
+    _ (parse-whitespace)
     after (parse-to (// (^< (parse-constant "/"))
                         (parse-eof)))
+    _ (parse-whitespace)
     (pre post)
     (<? (>>!
           _ (parse-constant "/")
+          _ (parse-whitespace)
           pre (parse-to (parse-constant "_"))
+          _ (parse-whitespace)
           post (parse-to (parse-eof))
           (succeed `(,pre ,post)))
         `((:empty) (:empty)))
+    _ (parse-whitespace)
+    _ (parse-eof)
     (pre-write/comp pre-emit open-registers closed-registers)
     (^$ (parse-pre categories features valued-features category-map)
         pre)
