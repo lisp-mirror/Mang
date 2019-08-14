@@ -146,19 +146,38 @@
         category (// (parse-category categories)
                      (parse-constant "."))
         _ (parse-whitespace)
-        features (<? (parse-features-no-write features valued-features
-                                              closed-registers))
+        (constant-features register-features)
+        (<? (parse-features-no-write features valued-features
+                                     closed-registers))
         _ (parse-whitespace)
         register (<? (parse-register))
-        (if (@ closed-registers register)
-            (if features
-                (if register
-                    (todo category category-map)
-                    (todo category category-map))
-                (if register
-                    (todo category category-map)
-                    (todo category category-map)))
-            (fail `(:register-not-written ,register ,closed-registers))))))
+        (if register
+            (if (@ closed-registers register)
+                (if constant-features
+                    (if register-features
+                        (if category
+                            (todo category-map)
+                            (todo category-map))
+                        (if category
+                            (todo category-map)
+                            (todo category-map)))
+                    (if register-features
+                        (if category
+                            (todo category-map)
+                            (todo category-map))
+                        (if category
+                            (todo category-map)
+                            (todo category-map))))
+                (fail `(:register-not-written ,register ,closed-registers)))
+            (if category
+                `(:emit-category-no-register ,category)
+                (if constant-features
+                    (if register-features
+                        (todo category-map)
+                        (todo category-map))
+                    (if register-features
+                        (todo category-map)
+                        (todo category-map))))))))
 
 ;;; -> after-emit
 (defun parse-after (glyphs categories features valued-features category-map
