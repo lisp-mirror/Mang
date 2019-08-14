@@ -108,6 +108,8 @@
       (parse-valued-feature valued-features)
       (parse-register-feature (union features (domain valued-features)))))
 
+
+;;;; -> constant-features(::map fature value) register-features(::map feature register)
 (defun parse-features-no-write (features valued-features closed-registers)
   (declare (type set features closed-registers)
            (type map valued-features))
@@ -156,39 +158,55 @@
                 (if constant-features
                     (if register-features
                         (if category
-                            (todo category-map)
-                            (todo category-map))
+                            (succeed
+                             `(:emit
+                               (:supplement
+                                (:load-category ,(@ category-map category)
+                                                ,register)
+                                (:supplement
+                                 ,constant-features
+                                 (:load-features ,register-features)))))
+                            (succeed
+                             `(:emit
+                               (:supplement
+                                ,constant-features
+                                (:load-features ,register-features)))))
                         (if category
                             (succeed
                              `(:emit
                                (:supplement
-                                (:load-register ,register)
-                                (:supplement
-                                 ,constant-features
-                                 ;; NOTE: `register-features` has to be a map
-                                 ;; from features to registers
-                                 (:load-features ,register-features)))))
+                                (:load-category ,(@ category-map category)
+                                                ,register)
+                                ,constant-features)))
                             (succeed
                              `(:emit (:supplement (:load-register ,register)
                                                   ,constant-features)))))
                     (if register-features
                         (if category
-                            (todo category-map)
-                            (todo category-map))
+                            (succeed `(:emit
+                                       (:supplement
+                                        (:load-category
+                                         ,(@ category-map category))
+                                        (:load-features ,register-features))))
+                            (succeed `(:emit
+                                       (:load-features ,register-features))))
                         (if category
-                            (todo category-map)
-                            (todo category-map))))
+                            (succeed `(:emit (:load-category
+                                              ,(@ category-map category)
+                                              ,register)))
+                            (succeed `(:emit (:load-register ,register))))))
                 (fail `(:register-not-written ,register ,closed-registers)))
             (if category
                 `(:emit-category-no-register ,category)
                 (if constant-features
                     (if register-features
-                        (todo category-map)
-                        ;; NOTE: `constant-features` has to be a map from
-                        ;; features to feature values
+                        (succeed
+                         `(:emit
+                           (:supplement ,constant-features
+                                        (:load-features ,register-features))))
                         (succeed`(:emit ,constant-features)))
                     (if register-features
-                        (todo category-map)
+                        (succeed `(:emit (:load-features ,register-features)))
                         (fail `(:empty-emitter)))))))))
 
 ;;; -> after-emit
