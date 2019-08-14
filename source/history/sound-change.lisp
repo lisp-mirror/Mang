@@ -159,8 +159,18 @@
                             (todo category-map)
                             (todo category-map))
                         (if category
-                            (todo category-map)
-                            (todo category-map)))
+                            (succeed
+                             `(:emit
+                               (:supplement
+                                (:load-register ,register)
+                                (:supplement
+                                 ,constant-features
+                                 ;; NOTE: `register-features` has to be a map
+                                 ;; from features to registers
+                                 (:load-features ,register-features)))))
+                            (succeed
+                             `(:emit (:supplement (:load-register ,register)
+                                                  ,constant-features)))))
                     (if register-features
                         (if category
                             (todo category-map)
