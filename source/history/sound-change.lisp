@@ -174,10 +174,12 @@
                 (if constant-features
                     (if register-features
                         (todo category-map)
-                        (todo category-map))
+                        ;; NOTE: `constant-features` has to be a map from
+                        ;; features to feature values
+                        (succeed`(:emit ,constant-features)))
                     (if register-features
                         (todo category-map)
-                        (todo category-map))))))))
+                        (fail `(:empty-emitter)))))))))
 
 ;;; -> after-emit
 (defun parse-after (glyphs categories features valued-features category-map
