@@ -116,33 +116,34 @@
   (todo features valued-features closed-registers))
 
 ;;; -> pre-write/comp pre-emit open-registers closed-registers
-(defun parse-pre (glyphs categories features valued-features category-map)
+(defun parse-pre (glyphs categories features valued-features category-map
+                  glyph-map)
   (declare (type set glyphs categories features)
-           (type map valued-features category-map))
-  (todo glyphs categories features valued-features category-map))
+           (type map valued-features category-map glyph-map))
+  (todo glyphs categories features valued-features category-map glyph-map))
 
 ;;; -> before-write/comp open-registers closed-registers
 (defun parse-before (glyphs categories features valued-features category-map
-                     open-registers closed-registers)
+                     glyph-map open-registers closed-registers)
   (declare (type set glyphs categories features closed-registers)
-           (type map valued-features category-map open-registers))
-  (todo glyphs categories features valued-features category-map
+           (type map valued-features category-map glyph-map open-registers))
+  (todo glyphs categories features valued-features category-map glyph-map
         open-registers closed-registers))
 
 ;;; -> post-write/comp post-emit closed-registes
 (defun parse-post (glyphs categories features valued-features category-map
-                   open-registers closed-registers)
+                   glyph-map open-registers closed-registers)
   (declare (type set glyphs categories features closed-registers)
-           (type map valued-features category-map open-registers))
-  (todo glyphs categories features valued-features category-map
+           (type map valued-features category-map glyph-map open-registers))
+  (todo glyphs categories features valued-features category-map glyph-map
         open-registers closed-registers))
 
 (defun parse-emitter (glyphs categories features valued-features category-map
-                      closed-registers)
+                      glyph-map closed-registers)
   (declare (type set glyphs categories features closed-registers)
-           (type map valued-features category-map))
+           (type map valued-features category-map glyph-map))
   (// (<$> (lambda (glyph)
-             `(:emit-constant ,glyph))
+             `(:emit-constant ,(@ glyph-map glyph)))
            (parse-prefix-set glyphs))
       (>>!
         category (// (parse-category categories)
@@ -211,21 +212,22 @@
 
 ;;; -> after-emit
 (defun parse-after (glyphs categories features valued-features category-map
-                    closed-registers)
+                    glyph-map closed-registers)
   (declare (type set glyphs categories features closed-registers)
-           (type map valued-features category-map))
+           (type map valued-features category-map glyph-map))
   (<? (>>!
         first (parse-emitter glyphs categories features valued-features
-                             category-map closed-registers)
+                             category-map glyph-map closed-registers)
         _ (parse-whitespace)
         rest (parse-after glyphs categories features valued-features
-                          category-map closed-registers)
+                          category-map glyph-map closed-registers)
         (succeed `(:sequence ,first ,rest)))
       `(:empty)))
 
-(defun parse-sound-change (glyphs categories features valued-features category-map)
+(defun parse-sound-change (glyphs categories features valued-features
+                           category-map glyph-map)
   (declare (type set glyphs categories features)
-           (type map valued-features category-map))
+           (type map valued-features category-map glyph-map))
   (>>!
     before (parse-to (// (parse-constant "->")
                          (parse-constant "→")))
@@ -245,19 +247,20 @@
     _ (parse-whitespace)
     _ (parse-eof)
     (pre-write/comp pre-emit open-registers closed-registers)
-    (^$ (parse-pre glyphs categories features valued-features category-map)
+    (^$ (parse-pre glyphs categories features valued-features category-map
+                   glyph-map)
         pre)
     (before-write/comp open-registers closed-registers)
     (^$ (parse-before glyphs categories features valued-features category-map
-                      open-registers closed-registers)
+                      glyph-map open-registers closed-registers)
         before)
     (post-write/comp post-emit closed-registers)
     (^$ (parse-post glyphs categories features valued-features category-map
-                    open-registers closed-registers)
+                    glyph-map open-registers closed-registers)
         post)
     after-emit
     (^$ (parse-after glyphs categories features valued-features category-map
-                     closed-registers)
+                     glyph-map closed-registers)
         after)
     (succeed `(:sequence ,pre-write/comp ,before-write/comp ,post-write/comp
                          ,pre-emit ,after-emit ,post-emit))))
