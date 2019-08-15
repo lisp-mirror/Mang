@@ -154,61 +154,49 @@
                                      closed-registers))
         _ (parse-whitespace)
         register (<? (parse-register))
-        (if register
-            (if (@ closed-registers register)
-                (if constant-features
-                    (if register-features
-                        (if category
-                            (succeed
-                             `(:emit
-                               (:supplement
-                                (:load-category ,(@ category-map category)
-                                                ,register)
-                                (:supplement
-                                 ,constant-features
-                                 (:load-features ,register-features)))))
-                            (succeed
-                             `(:emit
-                               (:supplement
-                                ,constant-features
-                                (:load-features ,register-features)))))
-                        (if category
-                            (succeed
-                             `(:emit
-                               (:supplement
-                                (:load-category ,(@ category-map category)
-                                                ,register)
-                                ,constant-features)))
-                            (succeed
-                             `(:emit (:supplement (:load-register ,register)
-                                                  ,constant-features)))))
-                    (if register-features
-                        (if category
-                            (succeed `(:emit
-                                       (:supplement
-                                        (:load-category
-                                         ,(@ category-map category))
-                                        (:load-features ,register-features))))
-                            (succeed `(:emit
-                                       (:load-features ,register-features))))
-                        (if category
-                            (succeed `(:emit (:load-category
-                                              ,(@ category-map category)
-                                              ,register)))
-                            (succeed `(:emit (:load-register ,register))))))
-                (fail `(:register-not-written ,register ,closed-registers)))
-            (if category
-                `(:emit-category-no-register ,category)
-                (if constant-features
-                    (if register-features
-                        (succeed
-                         `(:emit
-                           (:supplement ,constant-features
-                                        (:load-features ,register-features))))
-                        (succeed`(:emit ,constant-features)))
-                    (if register-features
-                        (succeed `(:emit (:load-features ,register-features)))
-                        (fail `(:empty-emitter)))))))))
+        (cond
+          ((and register (not (@ closed-registers register)))
+           (fail `(:register-not-written ,register ,closed-registers)))
+          ((and category (not register))
+           (fail `(:emit-category-no-register ,category)))
+          ((and register constant-features register-features category)
+           (succeed `(:emit
+                      (:supplement
+                       (:load-category ,(@ category-map category)
+                                       ,register)
+                       (:supplement ,constant-features
+                                    (:load-features ,register-features))))))
+          ((and register constant-features register-features)
+           (succeed `(:emit (:supplement ,constant-features
+                                         (:load-features ,register-features)))))
+          ((and register constant-features category)
+           (succeed `(:emit
+                      (:supplement (:load-category ,(@ category-map category)
+                                                   ,register)
+                                   ,constant-features))))
+          ((and register constant-features)
+           (succeed `(:emit (:supplement (:load-register ,register)
+                                         ,constant-features))))
+          ((and register register-features category)
+           (succeed `(:emit
+                      (:supplement (:load-category ,(@ category-map category))
+                                   (:load-features ,register-features)))))
+          ((and register register-features)
+           (succeed `(:emit (:load-features ,register-features))))
+          ((and register category)
+           (succeed `(:emit (:load-category ,(@ category-map category)
+                                            ,register))))
+          (register
+           (succeed `(:emit (:load-register ,register))))
+          ((and constant-features register-features)
+           (succeed `(:emit (:supplement ,constant-features
+                                         (:load-features ,register-features)))))
+          (constant-features
+           (succeed`(:emit ,constant-features)))
+          (register-features
+           (succeed `(:emit (:load-features ,register-features))))
+          (t
+           (fail `(:empty-emitter)))))))
 
 ;;; -> after-emit
 (defun parse-after (glyphs categories features valued-features category-map
