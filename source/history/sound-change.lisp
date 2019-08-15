@@ -151,7 +151,9 @@
         _ (parse-whitespace)
         (constant-features register-features)
         (<? (parse-features-no-write features valued-features
-                                     closed-registers))
+                                     closed-registers)
+            `(,(empty-map)
+               ,(empty-map)))
         _ (parse-whitespace)
         register (<? (parse-register))
         (cond
@@ -159,44 +161,24 @@
            (fail `(:register-not-written ,register ,closed-registers)))
           ((and category (not register))
            (fail `(:emit-category-no-register ,category)))
-          ((and register constant-features register-features category)
-           (succeed `(:emit
-                      (:supplement
-                       (:load-category ,(@ category-map category)
-                                       ,register)
-                       (:supplement ,constant-features
-                                    (:load-features ,register-features))))))
-          ((and register constant-features register-features)
-           (succeed `(:emit (:supplement ,constant-features
-                                         (:load-features ,register-features)))))
-          ((and register constant-features category)
-           (succeed `(:emit
-                      (:supplement (:load-category ,(@ category-map category)
-                                                   ,register)
-                                   ,constant-features))))
-          ((and register constant-features)
-           (succeed `(:emit (:supplement (:load-register ,register)
-                                         ,constant-features))))
-          ((and register register-features category)
-           (succeed `(:emit
-                      (:supplement (:load-category ,(@ category-map category))
-                                   (:load-features ,register-features)))))
-          ((and register register-features)
-           (succeed `(:emit (:load-features ,register-features))))
-          ((and register category)
-           (succeed `(:emit (:load-category ,(@ category-map category)
-                                            ,register))))
+          ((not (or register constant-features register-features))
+           (fail `(:empty-emitter)))
+          (category
+           (succeed
+            `(:emit
+              (:supplement (:load-category ,category ,register)
+                           (:supplement ,constant-features
+                                        (:load-features ,register-features))))))
           (register
-           (succeed `(:emit (:load-register ,register))))
-          ((and constant-features register-features)
-           (succeed `(:emit (:supplement ,constant-features
-                                         (:load-features ,register-features)))))
-          (constant-features
-           (succeed`(:emit ,constant-features)))
-          (register-features
-           (succeed `(:emit (:load-features ,register-features))))
+           (succeed
+            `(:emit
+              (:supplement (:load-register ,register)
+                           (:supplement ,constant-features
+                                        (:load-features ,register-features))))))
           (t
-           (fail `(:empty-emitter)))))))
+           (succeed
+            `(:emit (:supplement ,constant-features
+                                 (:load-features ,register-features)))))))))
 
 ;;; -> after-emit
 (defun parse-after (glyphs categories features valued-features category-map
