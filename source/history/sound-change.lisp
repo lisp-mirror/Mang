@@ -64,7 +64,11 @@
 
 (defun parse-category (categories)
   (declare (type map categories))
-  (parse-from-map categories))
+  (>>!
+    _ (parse-constant "<")
+    category (parse-from-map categories)
+    _ (parse-constant ">")
+    (succeed category)))
 
 (defun parse-register ()
   (// (parse-number)
