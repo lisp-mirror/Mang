@@ -60,15 +60,11 @@
 ;;;; Parser
 (defun parse-glyph (glyphs)
   (declare (type map glyphs))
-  (<$> (lambda (glyph)
-         (@ glyph glyphs))
-       (parse-from-set (domain glyphs))))
+  (parse-from-map glyphs))
 
 (defun parse-category (categories)
   (declare (type map categories))
-  (<$> (lambda (category)
-         (@ categories category))
-       (parse-from-set (domain categories))))
+  (parse-from-map categories))
 
 (defun parse-register ()
   (// (parse-number)
@@ -134,8 +130,8 @@
 (defun parse-pre/post (glyphs categories features valued-features
                        &optional (open-registers (empty-map (empty-set)))
                               (closed-registers (empty-set)))
-  (declare (type set features open-registers)
-           (type map glyphs categories valued-features closed-registers))
+  (declare (type set features closed-registers)
+           (type map glyphs categories valued-features open-registers))
   (<? (>>!
         (first-write/comp first-emit)
         (parse-compare/write-emit glyphs categories features valued-features

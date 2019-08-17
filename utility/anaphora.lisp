@@ -15,3 +15,12 @@
          ,then
          (progn
            ,@else))))
+
+(defmacro [av]if (test then &body else)
+  (bind ((g!success? (gensym "success?")))
+    `(bind (((,g!success? it)
+             ,test))
+       (if ,g!success?
+           ,then
+           (progn
+             ,@else)))))

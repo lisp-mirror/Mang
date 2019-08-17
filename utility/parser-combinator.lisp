@@ -229,6 +229,17 @@
                 t)
       (values nil s nil))))
 
+(defun parse-from-map (map)
+  (declare (type map map))
+  (lambda (s)
+    (declare (type string s))
+    ([av]if (find-if (lambda (prefix)
+                       (prefix? prefix s))
+                     map)
+        (values it (subseq s (length it))
+                t)
+      (values nil s nil))))
+
 (defun parse-whitespace ()
   (many (parse-unicode-property "Whitespace")
         nil (constantly nil)))
