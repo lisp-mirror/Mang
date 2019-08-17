@@ -148,13 +148,13 @@
                  (:compare-features (:load-features ,register-features))
                  ,(if (@ closed-registers register)
                       (if category
-                          `(:sequence (:compare-category ,category)
+                          `(:sequence (:check-category ,category)
                                       (:sequence (:write-category ,category)
                                                  (:compare ,register)))
                           `(:compare ,register))
                       ([a]if (@ open-registers register)
                           (if category
-                              `(:sequence (:compare-category ,category)
+                              `(:sequence (:check-category ,category)
                                           (:write-category ,category)
                                           (:write-features ,it))
                               `(:write-features ,register ,it)))))))))))
