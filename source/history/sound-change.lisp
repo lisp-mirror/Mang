@@ -99,8 +99,29 @@
                                  open-registers closed-registers)
   (declare (type set features closed-registers)
            (type map glyphs categories valued-features open-registers))
-  (todo glyphs categories features valued-features open-registers
-        closed-registers))
+  (<$> (lambda (action)
+         `(:sequence ,action (:consume)))
+       (// (<$> (lambda (glyph)
+                  `(:sequence (:compare ,glyph)
+                              (:write ,(gensym))))
+                (parse-glyph glyphs))
+           (>>!
+             category (// (parse-category categories)
+                          (parse-constant "."))
+             _ (parse-whitespace)
+             (constant-features register-features open-registers
+                                closed-registers)
+             (<? (parse-features features valued-features open-registers
+                                 closed-registers)
+                 `(,(empty-map)
+                    ,(empty-map)
+                    ,open-registers ,closed-registers))
+             _ (parse-whitespace)
+             register (<? (parse-register)
+                          (gensym))
+             (succeed
+              (todo category constant-features register-features open-registers
+                    closed-registers register))))))
 
 ;;; -> pre-write/comp pre-emit open-registers closed-registers
 (defun parse-pre/post (glyphs categories features valued-features
@@ -145,24 +166,27 @@
                 (:compare-features ,constant-features)
                 (:sequence
                  (:compare-features (:load-features ,register-features))
-                 ,(if register
-                      (if (@ closed-registers register)
-                          (if category
-                              `(:sequence (:check-category ,category)
-                                          (:sequence (:write-category ,category
-                                                                      ,register)
-                                                     (:compare ,register)))
-                              `(:compare ,register))
-                          ([a]if (@ open-registers register)
-                              (if category
-                                  `(:sequence (:check-category ,category)
-                                              (:write-category ,category
-                                                               ,register)
-                                              (:write-features ,it))
-                                  `(:write-features ,register ,it))))
-                      (if category
-                          `(:check-category ,category)
-                          `(:empty))))))))))
+                 ,(cond
+                    ((and category register (@ closed-registers register))
+                     `(:sequence (:compare ,register)
+                                 (:check-category ,category)))
+                    ((and category register)
+                     ([a]if (@ open-registers register)
+                         ;; `:write-category` has to include a check for the
+                         ;; category
+                         `(:sequence (:write-category ,category
+                                                      ,register)
+                                     (:write ,register))))
+                    (category
+                     `(:check-category ,category))
+                    ((and register (@ closed-registers register))
+                     `(:compare ,register))
+                    (register
+                     ([a]if (@ open-registers register)
+                         `(:sequence (:compare-features ,it)
+                                     (:write ,register))
+                       `(:write ,register)))
+                    (t `(:empty))))))))))
 
 ;;; -> before-write/comp open-registers closed-registers
 (defun parse-before (glyphs categories features valued-features open-registers
