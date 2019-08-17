@@ -243,7 +243,8 @@
           (values nil s nil)))))
 
 (defun parse-whitespace ()
-  (many (parse-unicode-property "Whitespace")
+  (many (// (parse-unicode-property "Whitespace")
+            (parse-unicode-property "Control"))
         nil (constantly nil)))
 
 (defun parse-identifier ()

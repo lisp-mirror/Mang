@@ -18,7 +18,7 @@
 
 (defmacro [av]if (test then &body else)
   (bind ((g!success? (gensym "success?")))
-    `(bind (((:values ,g!success? it)
+    `(bind (((:values it ,g!success?)
              ,test))
        (if ,g!success?
            ,then
