@@ -31,7 +31,7 @@
 
 ;;;; Parser
 (defparameter *sound-change-reserved-symbols*
-   (set #\( #\) #\{ #\} #\[ #\] #\< #\> #\. #\, #\+ #\- #\→))
+   (set #\( #\) #\{ #\} #\[ #\] #\< #\> #\. #\, #\+ #\- #\→ #\; #\= #\:))
 
 (defun parse-glyph (glyphs)
   (declare (type map glyphs))
@@ -516,12 +516,9 @@
     (succeed `(,name ,(with values value)))))
 
 (defun parse-feature-definitions ()
-  (many (>>!
-          _ (parse-whitespace)
-          result (// (parse-binary-feature-definition)
-                     (parse-valued-feature-definition))
-          _ (parse-whitespace)
-          (succeed result))
+  (many (>> (parse-whitespace)
+            (// (parse-binary-feature-definition)
+                (parse-valued-feature-definition)))
         `(,(empty-set)
            ,(empty-map (empty-set)))
         (lambda (feature features)
@@ -606,8 +603,9 @@
                   glyph-def))
             (with glyph-defs name features)))))
 
-(defun parse-category-definitions (glyphs)
+(defun parse-category-definition (glyphs)
   (>>!
+    _ (parse-whitespace)
     name (parse-identifier *sound-change-reserved-symbols*)
     _ (>> (parse-whitespace)
           (parse-constant "=")
@@ -626,4 +624,22 @@
                        (succeed it)
                      (fail `(:unknown-glyph ,name))))
                  '() #'cons)
+    _ (>> (parse-whitespace)
+          (parse-constant ";"))
     (succeed `(,name (,glyph ,@glyphs)))))
+
+(defun parse-category-definitions (glyphs)
+  (many (parse-category-definition glyphs)
+        (empty-map (empty-map))
+        (lambda (category categories)
+          (bind (((name contents)
+                  category))
+            (with categories name contents)))))
+
+(defun parse-phonology ()
+  (>>!
+    (binary-features valued-features)
+    (parse-feature-definitions)
+    glyphs (parse-glyph-definitions binary-features valued-features)
+    categories (parse-category-definitions glyphs)
+    (succeed `(,binary-features ,valued-features ,glyphs ,categories))))
