@@ -32,15 +32,15 @@
 ;;;; Parser
 (defun parse-glyph (glyphs)
   (declare (type map glyphs))
-  (parse-from-map glyphs))
+  (>>!
+    _ (parse-constant "<")
+    category (parse-from-map glyphs)
+    _ (parse-constant ">")
+    (succeed category)))
 
 (defun parse-category (categories)
   (declare (type map categories))
-  (>>!
-    _ (parse-constant "<")
-    category (parse-from-map categories)
-    _ (parse-constant ">")
-    (succeed category)))
+  (parse-from-map categories))
 
 (defun parse-register ()
   (// (parse-number)
