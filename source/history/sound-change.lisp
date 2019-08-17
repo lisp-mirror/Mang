@@ -62,13 +62,13 @@
   (declare (type map glyphs))
   (<$> (lambda (glyph)
          (@ glyph glyphs))
-       (parse-prefix-set (domain glyphs))))
+       (parse-from-set (domain glyphs))))
 
 (defun parse-category (categories)
   (declare (type map categories))
   (<$> (lambda (category)
          (@ categories category))
-       (parse-prefix-set (domain categories))))
+       (parse-from-set (domain categories))))
 
 (defun parse-register ()
   (// (parse-number)
@@ -84,20 +84,20 @@
   (>>!
     sign (// (<$ t (parse-constant "+"))
              (parse-constant "-"))
-    feature (parse-prefix-set features)
+    feature (parse-from-set features)
     (succeed `(:binary-feature ,sign ,feature))))
 
 (defun parse-valued-feature (features)
   (>>!
-    feature (parse-prefix-set (domain features))
+    feature (parse-from-set (domain features))
     _ (parse-constant "<")
-    value (parse-prefix-set (@ features feature))
+    value (parse-from-set (@ features feature))
     _ (parse-constant ">")
     (succeed `(:valued-feature ,feature ,value))))
 
 (defun parse-register-feature (features)
   (>>!
-    feature (parse-prefix-set features)
+    feature (parse-from-set features)
     _ (parse-whitespace)
     register (parse-register)
     (succeed `(:register-feature ,register ,feature))))
