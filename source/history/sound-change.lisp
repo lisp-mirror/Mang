@@ -139,25 +139,30 @@
                     ,(empty-map)
                     ,open-registers ,closed-registers))
              _ (parse-whitespace)
-             register (<? (parse-register)
-                          (gensym))
+             register (parse-register)
              (succeed
               `(:sequence
                 (:compare-features ,constant-features)
                 (:sequence
                  (:compare-features (:load-features ,register-features))
-                 ,(if (@ closed-registers register)
-                      (if category
-                          `(:sequence (:check-category ,category)
-                                      (:sequence (:write-category ,category)
-                                                 (:compare ,register)))
-                          `(:compare ,register))
-                      ([a]if (@ open-registers register)
+                 ,(if register
+                      (if (@ closed-registers register)
                           (if category
                               `(:sequence (:check-category ,category)
-                                          (:write-category ,category)
-                                          (:write-features ,it))
-                              `(:write-features ,register ,it)))))))))))
+                                          (:sequence (:write-category ,category
+                                                                      ,register)
+                                                     (:compare ,register)))
+                              `(:compare ,register))
+                          ([a]if (@ open-registers register)
+                              (if category
+                                  `(:sequence (:check-category ,category)
+                                              (:write-category ,category
+                                                               ,register)
+                                              (:write-features ,it))
+                                  `(:write-features ,register ,it))))
+                      (if category
+                          `(:check-category ,category)
+                          `(:empty))))))))))
 
 ;;; -> before-write/comp open-registers closed-registers
 (defun parse-before (glyphs categories features valued-features open-registers
