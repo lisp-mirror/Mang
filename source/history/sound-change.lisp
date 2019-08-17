@@ -72,28 +72,113 @@
     feature (parse-from-set features)
     _ (parse-whitespace)
     register (parse-register)
-    (succeed `(:register-feature ,register ,feature))))
-
-(defun parse-registerless-feature (features valued-features)
-  (// (parse-binary-feature features)
-      (parse-valued-feature valued-features)))
+    (succeed `(:register-feature ,feature ,register))))
 
 (defun parse-feature (features valued-features)
   (// (parse-binary-feature features)
       (parse-valued-feature valued-features)
       (parse-register-feature (union features (domain valued-features)))))
 
-
 ;;;; -> constant-features(::map fature value) register-features(::map feature register)
-(defun parse-features-no-write (features valued-features closed-registers)
+(defun parse-features-no-write (features valued-features open-registers
+                                closed-registers)
   (declare (type set features closed-registers)
            (type map valued-features))
-  (todo features valued-features closed-registers))
+  (labels ((_inner-parser ()
+             (>>!
+               feature (parse-feature features valued-features)
+               _ (parse-whitespace)
+               (constant-features register-features)
+               (<? (>> (parse-constant ",")
+                       (parse-whitespace)
+                       (_inner-parser))
+                   `(,(empty-map)
+                      ,(empty-map)))
+               (bind (((type &rest args)
+                       feature))
+                 (ecase type
+                   (:binary-feature
+                    (bind (((sign feature)
+                            args))
+                      (succeed
+                       `(,(with constant-features feature sign)
+                          ,register-features))))
+                   (:valued-feature
+                    (bind (((feature value)
+                            args))
+                      (succeed
+                       `(,(with constant-features feature value)
+                          ,register-features))))
+                   (:register-feature
+                    (bind (((feature register)
+                            args))
+                      (if (or (@ closed-registers register)
+                              (@ (@ open-registers register)
+                                 feature))
+                          (succeed
+                           `(,constant-features
+                             ,(with register-features feature register)))
+                          (fail `(:compare-unwritten-feature ,register
+                                                             ,feature))))))))))
+    (>>!
+      _ (parse-constant "[")
+      _ (parse-whitespace)
+      features (_inner-parser)
+      _ (parse-whitespace)
+      _ (parse-constant "]")
+      (succeed features))))
 
 (defun parse-features (features valued-features open-registers closed-registers)
   (declare (type set features closed-registers)
            (type map valued-features open-registers))
-  (todo features valued-features open-registers closed-registers))
+  (labels ((_inner-parser (open-registers)
+             (>>!
+               feature (parse-feature features valued-features)
+               (constant-feature register-feature open-registers)
+               (succeed
+                (bind (((type &rest args)
+                        feature))
+                  (ecase type
+                    (:binary-feature
+                     (bind (((sign feature)
+                             args))
+                       `(,(map (feature sign))
+                          ,(empty-map)
+                          ,open-registers)))
+                    (:valued-feature
+                     (bind (((feature value)
+                             args))
+                       `(,(map (feature value))
+                          ,(empty-map)
+                          ,open-registers)))
+                    (:register-feature
+                     (bind (((feature register)
+                             args))
+                       `(,(empty-map)
+                         ,(map (feature register))
+                          ,(if (@ closed-registers register)
+                               open-registers
+                               (with open-registers register
+                                     (with (@ open-registers register)
+                                           feature)))))))))
+               _ (parse-whitespace)
+               (constant-features register-features open-registers)
+               (<? (>> (parse-constant ",")
+                       (parse-whitespace)
+                       (_inner-parser open-registers))
+                   `(,(empty-map)
+                      ,(empty-map)
+                      ,open-registers))
+               (succeed `(,(map-union constant-feature constant-features)
+                           ,(map-union register-feature register-features)
+                           ,open-registers)))))
+    (>>!
+      _ (parse-constant "[")
+      _ (parse-whitespace)
+      features (_inner-parser open-registers)
+      _ (parse-whitespace)
+      _ (parse-constant "]")
+      (succeed features))))
 
 (defun parse-compare/write-emit (glyphs categories features valued-features
                                  open-registers closed-registers)
@@ -237,9 +322,9 @@
       `(:empty)))
 
 (defun parse-emitter (glyphs categories features valued-features
-                      closed-registers)
+                      open-registers closed-registers)
   (declare (type set features closed-registers)
-           (type map glyphs categories valued-features))
+           (type map glyphs categories open-registers valued-features))
   (// (parse-glyph glyphs)
       (>>!
         category (// (parse-category categories)
@@ -247,7 +332,7 @@
         _ (parse-whitespace)
         (constant-features register-features)
         (<? (parse-features-no-write features valued-features
-                                     closed-registers)
+                                     open-registers closed-registers)
             `(,(empty-map)
                ,(empty-map)))
         _ (parse-whitespace)
@@ -277,15 +362,16 @@
                                  (:load-features ,register-features)))))))))
 
 ;;; -> after-emit
-(defun parse-after (glyphs categories features valued-features closed-registers)
+(defun parse-after (glyphs categories features valued-features open-registers
+                    closed-registers)
   (declare (type set features closed-registers)
-           (type map glyphs categories valued-features))
+           (type map glyphs categories valued-features open-registers))
   (<? (>>!
         first (parse-emitter glyphs categories features valued-features
-                             closed-registers)
+                             open-registers closed-registers)
         _ (parse-whitespace)
         rest (parse-after glyphs categories features valued-features
-                          closed-registers)
+                          open-registers closed-registers)
         (succeed `(:sequence ,first ,rest)))
       `(:empty)))
 
@@ -323,7 +409,7 @@
         post)
     after-emit
     (^$ (parse-after glyphs categories features valued-features
-                     closed-registers)
+                     open-registers closed-registers)
         after)
     (succeed `(:sequence ,pre-write/comp ,before-write/comp ,post-write/comp
                          ,pre-emit ,after-emit ,post-emit))))

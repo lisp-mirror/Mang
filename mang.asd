@@ -26,7 +26,8 @@
      (:file "pointer")
      (:file "anaphora")
      (:file "finite-state-transducer")
-     (:file "parser-combinator")
+     (:file "parser-combinator"
+            :depends-on ("anaphora"))
      ))
    (:module
     "source"
