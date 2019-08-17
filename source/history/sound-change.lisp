@@ -4,11 +4,11 @@
 
 (defun has-features? (phoneme features)
   (declare (type map phoneme features))
-  (@ (gmap :set (lambda (feature value)
-                  (eql (@ phoneme feature)
-                       value))
-           (:map features))
-     t))
+  (not (@ (gmap :set (lambda (feature value)
+                       (eql (@ phoneme feature)
+                            value))
+                (:map features))
+          nil)))
 
 (defmethod in-category? ((phoneme map)
                          (category sequence))
