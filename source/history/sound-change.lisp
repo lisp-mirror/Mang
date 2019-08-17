@@ -16,40 +16,12 @@
                  (has-features? phoneme features))
                category))
 
-(defun load-glyph (&key
-                     phoneme-register phoneme
-                     category-register category
-                     (features-from-register (empty-map))
-                     (constant-features (empty-map)))
-  (declare (special *registry*)
-           (type symbol phoneme-register category-register)
-           (type sequence category)
-           (type map features-from-register constant-features)
-           (type (or map null)
-                 phoneme))
-  (assert (if category-register
-              category
-              (not category)))
-  (assert (if phoneme-register
-              (not phoneme)
-              phoneme))
-  (bind ((phoneme (or phoneme (gethash phoneme-register *registry*))))
-    (map-union
-     (map-union
-      (if category
-          (@ category (gethash category-register *registry*))
-          phoneme)
-      (image (lambda (feature register)
-               (values feature (@ (gethash register *registry*)
-                                  feature)))
-             features-from-register))
-     constant-features)))
-
 (defmethod apply-sound-change ((word word)
                                (sound-change fst))
-  (bind ((*registry* (make-hash-table :test 'eq)))
-    (declare (special *registry*)
-             (type hash-table *registry*))
+  (bind ((*phoneme-registry* (make-hash-table :test 'equal))
+         (*category-registry* (make-hash-table :test 'equal)))
+    (declare (special *phoneme-registry* *category-registry*)
+             (type hash-table *phoneme-registry* *category-registry*))
     (image (lambda (solution)
              (word (mapcar #'funcall
                            solution)
@@ -176,14 +148,16 @@
                  (:compare-features (:load-features ,register-features))
                  ,(if (@ closed-registers register)
                       (if category
-                          `(:compare ,register)
                           `(:sequence (:compare-category ,category)
-                                      (:compare ,register)))
+                                      (:sequence (:write-category ,category)
+                                                 (:compare ,register)))
+                          `(:compare ,register))
                       ([a]if (@ open-registers register)
                           (if category
-                              `(:sequence (:compare-features ,it)
-                                          (:compare-category ,category))
-                              `(:compare-features it)))))))))))
+                              `(:sequence (:compare-category ,category)
+                                          (:write-category ,category)
+                                          (:write-features ,it))
+                              `(:write-features ,register ,it)))))))))))
 
 ;;; -> before-write/comp open-registers closed-registers
 (defun parse-before (glyphs categories features valued-features open-registers
