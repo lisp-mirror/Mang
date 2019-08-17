@@ -30,6 +30,9 @@
            (run-fst sound-change (form<- word)))))
 
 ;;;; Parser
+(defparameter *sound-change-reserved-symbols*
+   (set #\( #\) #\{ #\} #\[ #\] #\< #\> #\. #\, #\+ #\- #\→))
+
 (defun parse-glyph (glyphs)
   (declare (type map glyphs))
   (>>!
@@ -100,7 +103,7 @@
   (// (>>!
         _ (parse-constant "<")
         _ (parse-whitespace)
-        name (parse-identifier)
+        name (parse-identifier *sound-change-reserved-symbols*)
         _ (parse-whitespace)
         _ (parse-constant ">")
         ([av]if (@ categories name)
@@ -117,7 +120,7 @@
       (>>!
         _ (parse-constant "{")
         _ (parse-whitespace)
-        name (parse-identifier)
+        name (parse-identifier *sound-change-reserved-symbols*)
         _ (parse-whitespace)
         _ (parse-constant "}")
         (succeed name))))
@@ -481,7 +484,7 @@
 ;;;; Supporting parsers
 (defun parse-binary-feature-definition ()
   (>>!
-    name (parse-identifier)
+    name (parse-identifier *sound-change-reserved-symbols*)
     _ (>> (parse-whitespace)
           (parse-constant ":")
           (parse-whitespace)
@@ -492,7 +495,7 @@
 
 (defun parse-valued-feature-definition ()
   (>>!
-    name (parse-identifier)
+    name (parse-identifier *sound-change-reserved-symbols*)
     _ (>> (parse-whitespace)
           (parse-constant ":")
           (parse-whitespace)
@@ -500,11 +503,11 @@
           (parse-whitespace)
           (parse-constant "=")
           (parse-whitespace))
-    value (parse-identifier)
+    value (parse-identifier *sound-change-reserved-symbols*)
     values (some (>> (parse-whitespace)
                      (parse-constant ",")
                      (parse-whitespace)
-                     (parse-identifier))
+                     (parse-identifier *sound-change-reserved-symbols*))
                  (empty-set)
                  (lambda (value values)
                    (with values value)))
@@ -533,7 +536,8 @@
 
 (defun parse-glyph-definition (features valued-features)
   (>>!
-    name (parse-identifier)
+    _ (parse-whitespace)
+    name (parse-identifier *sound-change-reserved-symbols*)
     _ (>> (parse-whitespace)
           (parse-constant "=")
           (parse-whitespace))
@@ -542,16 +546,16 @@
           sign (// (<$ t (parse-constant "+"))
                    (<$ nil (parse-constant "-")))
           _ (parse-whitespace)
-          feature (parse-identifier)
+          feature (parse-identifier *sound-change-reserved-symbols*) 
           (if (@ features feature)
               (succeed `(,feature ,sign))
               (fail `(:unknown-binary-feature ,feature ,sign))))
         (>>!
-          feature (parse-identifier)
+          feature (parse-identifier *sound-change-reserved-symbols*)
           _ (>> (parse-whitespace)
                 (parse-constant "<")
                 (parse-whitespace))
-          value (parse-identifier)
+          value (parse-identifier *sound-change-reserved-symbols*)
           _ (>> (parse-whitespace)
                 (parse-constant ">"))
           ([a]if (@ valued-features feature)
@@ -567,16 +571,16 @@
                     sign (// (<$ t (parse-constant "+"))
                              (<$ nil (parse-constant "-")))
                     _ (parse-whitespace)
-                    feature (parse-identifier)
+                    feature (parse-identifier *sound-change-reserved-symbols*)
                     (if (@ features feature)
                         (succeed `(,feature ,sign))
                         (fail `(:unknown-binary-feature ,feature ,sign))))
                   (>>!
-                    feature (parse-identifier)
+                    feature (parse-identifier *sound-change-reserved-symbols*)
                     _ (>> (parse-whitespace)
                           (parse-constant "<")
                           (parse-whitespace))
-                    value (parse-identifier)
+                    value (parse-identifier *sound-change-reserved-symbols*)
                     _ (>> (parse-whitespace)
                           (parse-constant ">"))
                     ([a]if (@ valued-features feature)
@@ -604,12 +608,12 @@
 
 (defun parse-category-definitions (glyphs)
   (>>!
-    name (parse-identifier)
+    name (parse-identifier *sound-change-reserved-symbols*)
     _ (>> (parse-whitespace)
           (parse-constant "=")
           (parse-whitespace))
     glyph (>>!
-            name (parse-identifier)
+            name (parse-identifier *sound-change-reserved-symbols*)
             ([av]if (@ glyphs name)
                 (succeed it)
               (fail `(:unknown-glyph ,name))))
@@ -617,7 +621,7 @@
                    _ (>> (parse-whitespace)
                          (parse-constant ",")
                          (parse-whitespace))
-                   name (parse-identifier)
+                   name (parse-identifier *sound-change-reserved-symbols*)
                    ([av]if (@ glyphs name)
                        (succeed it)
                      (fail `(:unknown-glyph ,name))))

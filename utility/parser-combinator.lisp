@@ -90,7 +90,7 @@
       (if success?
           (funcall (funcall fa r)
                    ns)
-          (values r ns nil)))))
+          (values r s nil)))))
 
 (defun >> (parser &rest parsers)
   (declare (type function parser))
@@ -135,6 +135,15 @@
   (declare (type function ptest pthen pelse))
   (??= ptest (constantly pthen)
        pelse))
+
+(defmacro ??! (var ptest pthen pelse)
+  (bind ((g!arg (gensym "arg")))
+    `(??= ,ptest
+          (lambda (,g!arg)
+            (declare (ignorable ,g!arg))
+            (bind ((,var ,g!arg))
+              ,pthen))
+          ,pelse)))
 
 (defun <?> (p &optional (d #'identity))
   (declare (type function p d))
@@ -247,8 +256,16 @@
             (parse-unicode-property "Control"))
         nil (constantly nil)))
 
-(defun parse-identifier ()
-  (some (parse-unicode-property "Alphabetic")))
+(defun parse-identifier (&optional (reserved (empty-set)))
+  (some (??! parsed (parse-anything)
+             (bind ((parsed-char (elt parsed 0)))
+               (if (or (@ reserved parsed-char)
+                       (has-property parsed-char "Number")
+                       (has-property parsed-char "Whitespace")
+                       (has-property parsed-char "Control"))
+                   (fail nil)
+                   (succeed parsed)))
+             (parse-unicode-property "Alphabetic"))))
 
 (defun parse-number ()
   (some (parse-unicode-property "Number")))
