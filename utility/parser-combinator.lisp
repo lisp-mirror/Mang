@@ -27,8 +27,8 @@
             (parser-call p x)))
       (values r s success?))))
 
-(defun <$~> (fs fe p)
-  (declare (type function fs fe p))
+(defun <$~> (p fs fe)
+  (declare (type function p fs fe))
   (lambda (s)
     (bind (((:values r ns success?)
             (parser-call p s)))
@@ -37,26 +37,23 @@
                   (funcall fe r))
               ns success?))))
 
-(defun <$> (fs p)
-  (declare (type function fs p))
-  (<$~> fs #'identity p))
+(defun <$> (p fs)
+  (declare (type function p fs))
+  (<$~> p fs #'identity))
 
-(defun <~> (fe p)
-  (declare (type function fe p))
-  (<$~> #'identity fe p))
+(defun <~> (p fe)
+  (declare (type function p fe))
+  (<$~> p #'identity fe))
 
-(defun <$~ (s e p)
-  (<$~> (constantly s)
-        (constantly e)
-        p))
+(defun <$~ (p s e)
+  (<$~> p (constantly s)
+        (constantly e)))
 
-(defun <$ (s p)
-  (<$> (constantly s)
-       p))
+(defun <$ (p s)
+  (<$> p (constantly s)))
 
-(defun <~ (e p)
-  (<~> (constantly e)
-       p))
+(defun <~ (p e)
+  (<~> p (constantly e)))
 
 (defun //= (p pg)
   (declare (type function p pg))
@@ -248,9 +245,9 @@
 
 (defun parse-from-map (map)
   (declare (type map map))
-  (<$> (lambda (result)
-         (@ map result))
-       (parse-from-set (domain map))))
+  (<$> (parse-from-set (domain map))
+       (lambda (result)
+         (@ map result))))
 
 (defun parse-to (parser)
   (?? parser

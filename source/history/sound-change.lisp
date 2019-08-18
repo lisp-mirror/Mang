@@ -127,7 +127,8 @@
 
 (defun parse-binary-feature (features)
   (>>!
-    sign (// (<$ t (parse-constant "+"))
+    sign (// (<$ (parse-constant "+")
+                 t)
              (parse-constant "-"))
     feature (parse-from-set features)
     (succeed `(:binary-feature ,sign ,feature))))
@@ -257,12 +258,7 @@
                                  open-registers closed-registers)
   (declare (type set features closed-registers)
            (type map glyphs categories valued-features open-registers))
-  (<$> (lambda (action)
-         (bind (((comp/write-action emit-action)
-                 action))
-           `((:sequence ,comp/write-action (:consume))
-             ,emit-action)))
-       (// (parse-glyphs-comp-emit glyphs)
+  (<$> (// (parse-glyphs-comp-emit glyphs)
            (>>!
              category (// (parse-category categories)
                           (parse-constant "."))
@@ -300,7 +296,12 @@
                         `(:write ,register))))))
                 (:emit ,register)
                 ,(less open-registers register)
-                ,(with closed-registers register)))))))
+                ,(with closed-registers register)))))
+       (lambda (action)
+         (bind (((comp/write-action emit-action)
+                 action))
+           `((:sequence ,comp/write-action (:consume))
+             ,emit-action)))))
 
 ;;; -> pre-write/comp pre-emit open-registers closed-registers
 (defun parse-pre/post (glyphs categories features valued-features
@@ -324,12 +325,7 @@
                             open-registers closed-registers)
   (declare (type set features closed-registers)
            (type map glyphs categories valued-features open-registers))
-  (<$> (lambda (action)
-         (bind (((action open-registers closed-registers)
-                 action))
-           `((:sequence ,action (:consume))
-             ,open-registers ,closed-registers)))
-       (// (parse-glyphs-comp glyphs)
+  (<$> (// (parse-glyphs-comp glyphs)
            (>>!
              category (// (parse-category categories)
                           (parse-constant "."))
@@ -372,7 +368,12 @@
                 ,(less open-registers register)
                 ,(if register
                      (with closed-registers register)
-                     closed-registers)))))))
+                     closed-registers)))))
+       (lambda (action)
+         (bind (((action open-registers closed-registers)
+                 action))
+           `((:sequence ,action (:consume))
+             ,open-registers ,closed-registers)))))
 
 ;;; -> before-write/comp open-registers closed-registers
 (defun parse-before (glyphs categories features valued-features open-registers
@@ -540,8 +541,10 @@
           (parse-whitespace))
     (feature value)
     (// (>>!
-          sign (// (<$ t (parse-constant "+"))
-                   (<$ nil (parse-constant "-")))
+          sign (// (<$ (parse-constant "+")
+                       t)
+                   (<$ (parse-constant "-")
+                       nil))
           _ (parse-whitespace)
           feature (parse-identifier *sound-change-reserved-symbols*) 
           (if (@ features feature)
@@ -565,8 +568,10 @@
               (parse-constant ",")
               (parse-whitespace)
               (// (>>!
-                    sign (// (<$ t (parse-constant "+"))
-                             (<$ nil (parse-constant "-")))
+                    sign (// (<$ (parse-constant "+")
+                                 t)
+                             (<$ (parse-constant "-")
+                                 nil))
                     _ (parse-whitespace)
                     feature (parse-identifier *sound-change-reserved-symbols*)
                     (if (@ features feature)
