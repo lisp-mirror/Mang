@@ -418,18 +418,21 @@
                      closed-registers)
   (declare (type set features closed-registers)
            (type map glyphs categories valued-features open-registers))
-  ;; FIX: This isn't correct and will never fail – a malformed `before` will
-  ;; always be taken to be empty, such as it is.
-  (<? (>>!
+  (// (<$ (>> (parse-whitespace)
+              (parse-eof))
+          `((:empty)
+            ,open-registers ,closed-registers))
+      (>>!
         _ (parse-whitespace)
-        first (parse-compare/write glyphs categories features valued-features
-                                   open-registers closed-registers)
+        (first open-registers closed-registers)
+        (parse-compare/write glyphs categories features valued-features
+                             open-registers closed-registers)
         _ (parse-whitespace)
-        rest (parse-before glyphs categories features valued-features
-                           open-registers closed-registers)
-        (succeed `(:sequence ,first ,rest)))
-      `((:empty)
-        ,open-registers ,closed-registers)))
+        (rest open-registers closed-registers)
+        (parse-before glyphs categories features valued-features
+                      open-registers closed-registers)
+        (succeed `((:sequence ,first ,rest)
+                   ,open-registers ,closed-registers)))))
 
 (defun parse-emitter (glyphs categories features valued-features
                       open-registers closed-registers)
