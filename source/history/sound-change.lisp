@@ -417,13 +417,15 @@
   (declare (type set features closed-registers)
            (type map glyphs categories valued-features open-registers))
   (<? (>>!
+        _ (parse-whitespace)
         first (parse-compare/write glyphs categories features valued-features
                                    open-registers closed-registers)
         _ (parse-whitespace)
         rest (parse-before glyphs categories features valued-features
                            open-registers closed-registers)
         (succeed `(:sequence ,first ,rest)))
-      `(:empty)))
+      `((:empty)
+        ,open-registers ,closed-registers)))
 
 (defun parse-emitter (glyphs categories features valued-features
                       open-registers closed-registers)
@@ -499,8 +501,7 @@
           post (parse-to (parse-eof))
           (succeed `(,pre ,post)))
         `("" ""))
-    _ (>> (parse-whitespace)
-          (parse-expression-end))
+    _ (parse-expression-end)
     (pre-write/comp pre-emit open-registers closed-registers)
     (^$ (parse-pre/post glyphs categories features valued-features)
         pre)
@@ -527,7 +528,6 @@
           (parse-constant ":")
           (parse-whitespace)
           (parse-constant "binary")
-          (parse-whitespace)
           (parse-expression-end))
     (succeed name)))
 
@@ -549,8 +549,7 @@
                  (empty-set)
                  (lambda (value values)
                    (with values value)))
-    _ (>> (parse-whitespace)
-          (parse-expression-end))
+    _ (parse-expression-end)
     (succeed `(,name ,(with values value)))))
 
 (defun parse-feature-definitions ()
@@ -632,8 +631,7 @@
             (bind (((name value)
                     feature))
               (with features name value))))
-    _ (>> (parse-whitespace)
-          (parse-expression-end))
+    _ (parse-expression-end)
     (succeed `(,name ,(with features feature value)))))
 
 (defun parse-glyph-definitions (features valued-features)
@@ -666,8 +664,7 @@
                        (succeed it)
                      (fail `(:unknown-glyph ,name))))
                  '() #'cons)
-    _ (>> (parse-whitespace)
-          (parse-expression-end))
+    _ (parse-expression-end)
     (succeed `(,name (,glyph ,@glyphs)))))
 
 (defun parse-category-definitions (glyphs)
