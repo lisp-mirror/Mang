@@ -28,7 +28,8 @@
      (:file "list")
      (:file "finite-state-transducer")
      (:file "buffered-stream"
-            :depends-on ("anaphora"))
+            :depends-on ("anaphora"
+                         "list"))
      (:file "parser-combinator"
             :depends-on ("anaphora"))
      ))

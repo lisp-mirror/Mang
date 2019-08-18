@@ -7,51 +7,73 @@
             :accessor buffer<-)
    (%stream :type stream
             :initarg :stream
-            :reader stream<-)))
+            :reader stream<-)
+   (%child :type (or bus null)
+           :initarg :child
+           :initform nil
+           :accessor child<-)))
 
-(bind ((registry (make-weak-hash-table :weakness :key
-                                       :test 'eq)))
-  (defun bus (stream &optional (buffer ""))
-    (bind ((bus (make-instance 'bus
-                               :buffer buffer
-                               :stream stream)))
-      (setf (gethash stream registry)
-            (cons (make-weak-pointer bus)
-                  (gethash stream registry)))
-      bus))
+(defun bus-flatten (bus)
+  (declare (type bus bus))
+  (with-accessors ((child child<-)
+                   (buffer buffer<-))
+      bus
+    (when child
+      (setf buffer
+            (concatenate 'string
+                         buffer (buffer<- (bus-flatten child)))
+            child nil))
+    bus))
 
-  (defun stream-buses (stream)
-    (gethash stream registry))
+(defun bus (stream &key (buffer "")
+                     parent)
+  (declare (type stream stream)
+           (type string buffer)
+           (type (or bus null)
+                 parent))
+  (bind ((bus (make-instance 'bus
+                             :buffer buffer
+                             :stream stream)))
+    (when parent
+      (bus-flatten parent)
+      (setf (child<- parent)
+            bus))
+    bus))
 
-  (defun bus-read (bus &optional (length 1))
-    (declare (type bus bus)
-             (type (integer 0)
-                   length))
-    (with-accessors ((buffer buffer<-)
-                     (stream stream<-))
-        bus
-      (if (or (length= buffer length)
-              (length> buffer length))
-          (values (subseq buffer 0 length)
-                  t)
-          (bind ((length (- length (length buffer)))
-                 (buses (image #'weak-pointer-value
-                               (gethash stream registry)))
-                 (read (make-string length))
-                 (count (read-sequence read stream))
-                 (read (subseq read 0 count)))
-            (dolist (bus buses)
-              (setf (buffer<- bus)
-                    (concatenate 'string
-                                 (buffer<- bus)
-                                 read)))
-            (values (buffer<- bus)
-                    (= count length))))))
+(defun bus-read (bus &optional (length 1))
+  (declare (type bus bus)
+           (type (integer 0)
+                 length))
+  (bus-flatten bus)
+  (with-accessors ((buffer buffer<-)
+                   (stream stream<-))
+      bus
+    (if (length>= buffer length)
+        (values (subseq buffer 0 length)
+                t)
+        (bind ((length (- length (length buffer)))
+               (read (make-string length))
+               (count (read-sequence read stream))
+               (read (subseq read 0 count)))
+          (setf buffer
+                (concatenate 'string
+                             buffer read))
+          (values buffer (= count length))))))
 
-  (defun bus-consume (bus &optional (length 1))
-    (declare (type bus bus)
-             (type (integer 0)
-                   length))
-    (bus (stream<- bus)
-         (subseq (buffer<- bus)
-                 length))))
+(defun bus-consume (bus &optional (length 1))
+  (declare (type bus bus)
+           (type (integer 0)
+                 length))
+  (bus-flatten bus)
+  (with-accessors ((buffer buffer<-)
+                   (stream stream<-))
+      bus
+    (when (length> length buffer)
+      (error "Tried to consume length ~A of bus ~A with buffer ~S of length ~A"
+             length bus buffer (length buffer)))
+    (bind ((begin (subseq buffer 0 length))
+           (end (subseq buffer length)))
+      (setf buffer begin)
+      (bus stream
+           :buffer end
+           :parent bus))))

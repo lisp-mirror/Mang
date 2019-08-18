@@ -187,6 +187,10 @@
   (> (length seq1)
      (length seq2)))
 
+(defun length>= (a b)
+  (or (length= a b)
+      (length> a b)))
+
 (defun prefix? (prefix sequence &key (test #'equal?))
   (if (length= prefix 0)
       t
