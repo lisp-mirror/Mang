@@ -27,45 +27,45 @@
             (parser-call p x)))
       (values r s success?))))
 
-(defun <$~> (fs fe a)
-  (declare (type function fs fe a))
+(defun <$~> (fs fe p)
+  (declare (type function fs fe p))
   (lambda (s)
     (bind (((:values r ns success?)
-            (parser-call a s)))
+            (parser-call p s)))
       (values (if success?
                   (funcall fs r)
                   (funcall fe r))
               ns success?))))
 
-(defun <$> (fs a)
-  (declare (type function fs))
-  (<$~> fs #'identity a))
+(defun <$> (fs p)
+  (declare (type function fs p))
+  (<$~> fs #'identity p))
 
-(defun <~> (fe a)
-  (declare (type function fe))
-  (<$~> #'identity fe a))
+(defun <~> (fe p)
+  (declare (type function fe p))
+  (<$~> #'identity fe p))
 
-(defun <$~ (s e a)
+(defun <$~ (s e p)
   (<$~> (constantly s)
         (constantly e)
-        a))
+        p))
 
-(defun <$ (s a)
+(defun <$ (s p)
   (<$> (constantly s)
-       a))
+       p))
 
-(defun <~ (e a)
+(defun <~ (e p)
   (<~> (constantly e)
-       a))
+       p))
 
-(defun //= (xa fa)
-  (declare (type function xa fa))
+(defun //= (p pg)
+  (declare (type function p pg))
   (lambda (s)
     (bind (((:values r ns success?)
-            (parser-call xa s)))
+            (parser-call p s)))
       (if success?
           (values r ns t)
-          (parser-call (funcall fa r)
+          (parser-call (funcall pg r)
                        s)))))
 
 (defun // (parser &rest parsers)
@@ -92,13 +92,13 @@
             `(//* ,parser ,var (//! ,@bindings))))
       (first bindings)))
 
-(defun >>= (xa fa)
-  (declare (type function xa fa))
+(defun >>= (p pg)
+  (declare (type function p pg))
   (lambda (s)
     (bind (((:values r ns success?)
-            (parser-call xa s)))
+            (parser-call p s)))
       (if success?
-          (parser-call (funcall fa r)
+          (parser-call (funcall pg r)
                        ns)
           (values r s nil)))))
 
@@ -126,20 +126,20 @@
             `(>>* ,parser ,var (>>! ,@bindings))))
       (first bindings)))
 
-(defun ??== (ptest xthen xelse)
-  (declare (type function ptest xthen xelse))
+(defun ??== (ptest pgthen pgelse)
+  (declare (type function ptest pgthen pgelse))
   (lambda (s)
     (bind (((:values r ns success?)
             (parser-call ptest s)))
       (parser-call (funcall (if success?
-                                xthen
-                                xelse)
+                                pgthen
+                                pgelse)
                             r)
                    ns))))
 
-(defun ??= (ptest xthen pelse)
-  (declare (type function ptest xthen pelse))
-  (??== ptest xthen (constantly pelse)))
+(defun ??= (ptest pgthen pelse)
+  (declare (type function ptest pgthen pelse))
+  (??== ptest pgthen (constantly pelse)))
 
 (defun ?? (ptest pthen pelse)
   (declare (type function ptest pthen pelse))
