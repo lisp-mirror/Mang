@@ -361,20 +361,21 @@
                             open-registers closed-registers)
   (declare (type set features closed-registers)
            (type map glyphs categories valued-features open-registers))
-  (<$> (// (parse-glyphs-comp glyphs)
-           (>>!
+  (// (<$> (parse-glyphs-comp glyphs)
+           (lambda (action)
+             `(,action ,open-registers ,closed-registers)))
+      (<$> (>>!
              category (// (parse-category categories)
                           (parse-constant "."))
              _ (parse-whitespace)
-             (constant-features register-features open-registers
-                                closed-registers)
+             (constant-features register-features open-registers)
              (<? (parse-features features valued-features open-registers
                                  closed-registers)
                  `(,(empty-map)
                     ,(empty-map)
-                    ,open-registers ,closed-registers))
+                    ,open-registers))
              _ (parse-whitespace)
-             register (parse-register)
+             register (<? (parse-register))
              (succeed
               `((:sequence
                  (:compare-features ,constant-features)
@@ -390,7 +391,8 @@
                           ;; category
                           `(:sequence (:compare-features ,it)
                                       (:write-category ,category
-                                                       ,register))))
+                                                       ,register))
+                        `(:write-category ,category ,register)))
                      (category
                       `(:check-category ,category))
                      ((and register (@ closed-registers register))
@@ -404,18 +406,20 @@
                 ,(less open-registers register)
                 ,(if register
                      (with closed-registers register)
-                     closed-registers)))))
-       (lambda (action)
-         (bind (((action open-registers closed-registers)
-                 action))
-           `((:sequence ,action (:consume))
-             ,open-registers ,closed-registers)))))
+                     closed-registers))))
+           (lambda (action)
+             (bind (((action open-registers closed-registers)
+                     action))
+               `((:sequence ,action (:consume))
+                 ,open-registers ,closed-registers))))))
 
 ;;; -> before-write/comp open-registers closed-registers
 (defun parse-before (glyphs categories features valued-features open-registers
                      closed-registers)
   (declare (type set features closed-registers)
            (type map glyphs categories valued-features open-registers))
+  ;; FIX: This isn't correct and will never fail – a malformed `before` will
+  ;; always be taken to be empty, such as it is.
   (<? (>>!
         _ (parse-whitespace)
         first (parse-compare/write glyphs categories features valued-features
