@@ -1,8 +1,82 @@
 (in-package #:mang)
 
-;;; Parser err ret = String -> (String, Either err ret)
-;;; String -> (String, err/ret, Bool)
+;;;; buffered stream
+(defclass buffered-stream ()
+  ((%buffer :type string
+            :initform ""
+            :initarg :buffer
+            :accessor buffer<-)
+   (%stream :type stream
+            :initarg :stream
+            :accessor stream<-)))
 
+(defun buffered-stream (stream &optional (buffer ""))
+  (declare (type stream stream)
+           (type string buffer))
+  (make-instance 'buffered-stream
+                 :buffer buffer
+                 :stream stream))
+
+(defun buffered-stream-read-char (buffered-stream &optional eof)
+  (declare (type buffered-stream buffered-stream))
+  (with-accessors ((buffer buffer<-)
+                   (stream stream<-))
+      buffered-stream
+    (if (length> buffer 0)
+        (prog1
+            (elt buffer 0)
+          (setf buffer
+                (subseq buffer 1)))
+        (read-char stream
+                   nil eof))))
+
+(defun buffered-stream-read-to (buffered-stream length)
+  (declare (type buffered-stream buffered-stream)
+           (type (integer (0))
+                 length))
+  (with-accessors ((buffer buffer<-)
+                   (stream stream<-))
+      buffered-stream
+    (if (or (length= buffer length)
+            (length> buffer length))
+        (prog1
+            (subseq buffer 0 length)
+          (setf buffer
+                (subseq buffer length)))
+        (bind ((length (- length (length buffer)))
+               (read (make-string length)))
+          (prog1
+              ([d]if (< (read-sequence read stream)
+                        length)
+                  (values (concatenate 'string
+                                       buffer (subseq read 0 it))
+                          nil)
+                (values (concatenate 'string
+                                     buffer read)
+                        t))
+            (setf buffer ""))))))
+
+(defun buffered-stream-unread (buffered-stream object)
+  (declare (type buffered-stream buffered-stream))
+  (setf (buffer<- buffered-stream)
+        (concatenate 'string
+                     (string object)
+                     (buffer<- buffered-stream)))
+  buffered-stream)
+
+(defgeneric parser-call (parser to-parse)
+  (:method ((parser function)
+            (to-parse buffered-stream))
+    (funcall parser to-parse))
+  (:method ((parser function)
+            (to-parse string))
+    (with-input-from-string (stream to-parse)
+      (funcall parser (buffered-stream stream))))
+  (:method ((parser function)
+            (to-parse stream))
+    (funcall parser (buffered-stream to-parse))))
+
+;;;; Monadic operations
 (defun succeed (x)
   (lambda (s)
     (values x s t)))
@@ -14,14 +88,14 @@
 (defun ^$ (p x)
   (lambda (s)
     (bind (((:values r _ success?)
-            (funcall p x)))
+            (parser-call p x)))
       (values r s success?))))
 
 (defun <$~> (fs fe a)
-  (declare (type function fs fe))
+  (declare (type function fs fe a))
   (lambda (s)
     (bind (((:values r ns success?)
-            (funcall a s)))
+            (parser-call a s)))
       (values (if success?
                   (funcall fs r)
                   (funcall fe r))
@@ -52,11 +126,11 @@
   (declare (type function xa fa))
   (lambda (s)
     (bind (((:values r ns success?)
-            (funcall xa s)))
+            (parser-call xa s)))
       (if success?
           (values r ns t)
-          (funcall (funcall fa r)
-                   s)))))
+          (parser-call (funcall fa r)
+                       s)))))
 
 (defun // (parser &rest parsers)
   (declare (type function parser))
@@ -66,7 +140,7 @@
       parser))
 
 (defmacro //* (left var right)
-  (let ((g!arg (gensym "arg")))
+  (bind ((g!arg (gensym "arg")))
     `(//= ,left (lambda (,g!arg)
                   (bind ((,var ,g!arg))
                     ,right)))))
@@ -86,10 +160,10 @@
   (declare (type function xa fa))
   (lambda (s)
     (bind (((:values r ns success?)
-            (funcall xa s)))
+            (parser-call xa s)))
       (if success?
-          (funcall (funcall fa r)
-                   ns)
+          (parser-call (funcall fa r)
+                       ns)
           (values r s nil)))))
 
 (defun >> (parser &rest parsers)
@@ -100,7 +174,7 @@
       parser))
 
 (defmacro >>* (left var right)
-  (let ((g!arg (gensym "arg")))
+  (bind ((g!arg (gensym "arg")))
     `(>>= ,left (lambda (,g!arg)
                   (bind ((,var ,g!arg))
                     ,right)))))
@@ -120,12 +194,12 @@
   (declare (type function ptest xthen xelse))
   (lambda (s)
     (bind (((:values r ns success?)
-            (funcall ptest s)))
-      (funcall (funcall (if success?
-                            xthen
-                            xelse)
-                        r)
-               ns))))
+            (parser-call ptest s)))
+      (parser-call (funcall (if success?
+                                xthen
+                                xelse)
+                            r)
+                   ns))))
 
 (defun ??= (ptest xthen pelse)
   (declare (type function ptest xthen pelse))
@@ -175,26 +249,70 @@
   (declare (type function p))
   (lambda (s)
     (bind (((r ns success?)
-            (funcall p s)))
+            (parser-call p s)))
       (if success?
           (values r s t)
           (values r ns nil)))))
 
-(defun parse-eof ()
-  (lambda (s)
-    (declare (type string s))
-    (if (string= s "")
-        (values nil "" t)
-        (values nil "" nil))))
+;;;; basic parsers
+(let ((eof (gensym "eof")))
+  (defun parse-eof ()
+    (lambda (s)
+      (declare (type buffered-stream s))
+      ([d]if (eq (buffered-stream-read-char s eof)
+                 eof)
+          (values nil s t)
+        (progn
+          (buffered-stream-unread s it)
+          (values nil s nil)))))
 
-(defun parse-anything ()
+  (defun parse-anything ()
+    (lambda (s)
+      (declare (type buffered-stream s))
+      ([d]if (eq (buffered-stream-read-char s eof)
+                 eof)
+          (values nil s nil)
+        (values it s t))))
+
+  (defun parse-unicode-property (property)
+    (lambda (s)
+      (declare (type buffered-stream s))
+      ([d]if (eq (buffered-stream-read-char s eof)
+                 eof)
+          (values nil s nil)
+        (if (has-property it property)
+            (values it s t)
+            (progn
+              (buffered-stream-unread s it)
+              (values nil s nil)))))))
+
+(defun parse-constant (string)
+  (declare (type string string))
   (lambda (s)
-    (declare (type string s))
-    (if (length> s 0)
-        (values (subseq s 0 1)
-                (subseq s 1)
-                t)
-        (values nil s nil))))
+    (declare (type buffered-stream s))
+    ([d]if (string= (buffered-stream-read-to s (length string))
+                    string)
+        (values nil s t)
+      (buffered-stream-unread s it)
+      (values nil s nil))))
+
+(defun parse-from-list (list)
+  (declare (type list list))
+  (if list
+      (// (parse-constant (first list))
+          (parse-from-list (rest list)))
+      (fail nil)))
+
+(defun parse-from-set (set)
+  (declare (type set set))
+  (parse-from-list (sort (convert 'list set)
+                         #'length>)))
+
+(defun parse-from-map (map)
+  (declare (type map map))
+  (<$> (lambda (result)
+         (@ map result))
+       (parse-from-set (domain map))))
 
 (defun parse-to (parser)
   (?? parser
@@ -204,52 +322,6 @@
         rest (parse-to parser)
         (succeed (concatenate 'string
                               first rest)))))
-
-(defun parse-constant (string)
-  (declare (type string string))
-  (lambda (s)
-    (declare (type string s))
-    (if (prefix? string s)
-        (values nil (subseq s (length string))
-                t)
-        (values nil s nil))))
-
-(defun parse-unicode-property (property)
-  (lambda (s)
-    (declare (type string s))
-    (if (> (length s)
-           0)
-        (if (has-property (elt s 0)
-                          property)
-            (values (subseq s 0 1)
-                    (subseq s 1)
-                    t)
-            (values nil s nil))
-        (values "" s nil))))
-
-(defun parse-from-set (set)
-  (declare (type set set))
-  (lambda (s)
-    (declare (type string s))
-    ([a]if (find-if (lambda (prefix)
-                      (prefix? prefix s))
-                    set)
-        (values it (subseq s (length it))
-                t)
-      (values nil s nil))))
-
-(defun parse-from-map (map)
-  (declare (type map map))
-  (lambda (s)
-    (declare (type string s))
-    (bind (((:values glyph phoneme)
-            (find-if (lambda (prefix)
-                       (prefix? prefix s))
-                     map)))
-      (if glyph
-          (values phoneme (subseq s (length glyph))
-                  t)
-          (values nil s nil)))))
 
 (defun parse-whitespace ()
   (many (// (parse-unicode-property "Whitespace")
