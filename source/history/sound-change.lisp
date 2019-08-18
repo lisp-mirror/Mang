@@ -216,11 +216,12 @@
                           (fail `(:compare-unwritten-feature ,register
                                                              ,feature))))))))))
     (>>!
-      _ (parse-constant "[")
-      _ (parse-whitespace)
+      _ (>> (parse-whitespace)
+            (parse-constant "[")
+            (parse-whitespace))
       features (_inner-parser)
-      _ (parse-whitespace)
-      _ (parse-constant "]")
+      _ (>> (parse-whitespace)
+            (parse-constant "]"))
       (succeed features))))
 
 (defun parse-features (features valued-features open-registers closed-registers)
@@ -268,11 +269,12 @@
                            ,(map-union register-feature register-features)
                            ,open-registers)))))
     (>>!
-      _ (parse-constant "[")
-      _ (parse-whitespace)
+      _ (>> (parse-whitespace)
+            (parse-constant "[")
+            (parse-whitespace))
       features (_inner-parser open-registers)
-      _ (parse-whitespace)
-      _ (parse-constant "]")
+      _ (>> (parse-whitespace)
+            (parse-constant "]"))
       (succeed features))))
 
 (defun parse-compare/write-emit (glyphs categories features valued-features
@@ -477,6 +479,7 @@
   (declare (type set features)
            (type map glyphs categories valued-features))
   (>>!
+    _ (parse-whitespace)
     before (parse-to (// (parse-constant "->")
                          (parse-constant "→")))
     _ (parse-whitespace)
@@ -493,7 +496,8 @@
           (succeed `(,pre ,post)))
         `("" ""))
     _ (>> (parse-whitespace)
-          (parse-eof))
+          (// (parse-constant ";")
+              (parse-eof)))
     (pre-write/comp pre-emit open-registers closed-registers)
     (^$ (parse-pre/post glyphs categories features valued-features)
         pre)
