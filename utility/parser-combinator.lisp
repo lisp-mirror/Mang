@@ -234,8 +234,11 @@
 (defun parse-from-list (list)
   (declare (type list list))
   (if list
-      (// (parse-constant (first list))
-          (parse-from-list (rest list)))
+      (bind (((curr &rest rest)
+              list))
+        (// (<$ (parse-constant curr)
+                curr)
+            (parse-from-list rest)))
       (fail `(:elements-not-found ,@list))))
 
 (defun parse-from-set (set)
