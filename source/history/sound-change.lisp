@@ -380,6 +380,8 @@
               `((:sequence
                  (:compare-features ,constant-features)
                  (:sequence
+                  ;; TODO: split properly into features to be written and
+                  ;; features to be checked
                   (:compare-features (:load-features ,register-features))
                   ,(cond
                      ((and category register (@ closed-registers register))
