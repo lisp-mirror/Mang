@@ -11,7 +11,6 @@
                #:cl-unicode
                #:split-sequence
                #:metabang-bind
-               #:trivial-garbage
                )
   :components
   ((:file "package")
