@@ -24,5 +24,8 @@
   (:shadowing-import-from
    #:cl-unicode
    #:has-property)
+  (:shadowing-import-from
+   #:trivial-garbage
+   #:make-weak-pointer #:weak-pointer-value #:make-weak-hash-table)
   (:export
    ))

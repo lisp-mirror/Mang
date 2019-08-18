@@ -1,80 +1,16 @@
 (in-package #:mang)
 
-;;;; buffered stream
-(defclass buffered-stream ()
-  ((%buffer :type string
-            :initform ""
-            :initarg :buffer
-            :accessor buffer<-)
-   (%stream :type stream
-            :initarg :stream
-            :accessor stream<-)))
-
-(defun buffered-stream (stream &optional (buffer ""))
-  (declare (type stream stream)
-           (type string buffer))
-  (make-instance 'buffered-stream
-                 :buffer buffer
-                 :stream stream))
-
-(defun buffered-stream-read-char (buffered-stream &optional eof)
-  (declare (type buffered-stream buffered-stream))
-  (with-accessors ((buffer buffer<-)
-                   (stream stream<-))
-      buffered-stream
-    (if (length> buffer 0)
-        (prog1
-            (elt buffer 0)
-          (setf buffer
-                (subseq buffer 1)))
-        (read-char stream
-                   nil eof))))
-
-(defun buffered-stream-read-to (buffered-stream length)
-  (declare (type buffered-stream buffered-stream)
-           (type (integer (0))
-                 length))
-  (with-accessors ((buffer buffer<-)
-                   (stream stream<-))
-      buffered-stream
-    (if (or (length= buffer length)
-            (length> buffer length))
-        (prog1
-            (subseq buffer 0 length)
-          (setf buffer
-                (subseq buffer length)))
-        (bind ((length (- length (length buffer)))
-               (read (make-string length)))
-          (prog1
-              ([d]if (< (read-sequence read stream)
-                        length)
-                  (values (concatenate 'string
-                                       buffer (subseq read 0 it))
-                          nil)
-                (values (concatenate 'string
-                                     buffer read)
-                        t))
-            (setf buffer ""))))))
-
-(defun buffered-stream-unread (buffered-stream object)
-  (declare (type buffered-stream buffered-stream))
-  (setf (buffer<- buffered-stream)
-        (concatenate 'string
-                     (string object)
-                     (buffer<- buffered-stream)))
-  buffered-stream)
-
 (defgeneric parser-call (parser to-parse)
   (:method ((parser function)
-            (to-parse buffered-stream))
+            (to-parse bus))
     (funcall parser to-parse))
   (:method ((parser function)
             (to-parse string))
     (with-input-from-string (stream to-parse)
-      (funcall parser (buffered-stream stream))))
+      (funcall parser (bus stream))))
   (:method ((parser function)
             (to-parse stream))
-    (funcall parser (buffered-stream to-parse))))
+    (funcall parser (bus to-parse))))
 
 ;;;; Monadic operations
 (defun succeed (x)
@@ -255,53 +191,51 @@
           (values r ns nil)))))
 
 ;;;; basic parsers
-(let ((eof (gensym "eof")))
-  (defun parse-eof ()
-    (lambda (s)
-      (declare (type buffered-stream s))
-      ([d]if (eq (buffered-stream-read-char s eof)
-                 eof)
-          (values nil s t)
-        (progn
-          (buffered-stream-unread s it)
-          (values nil s nil)))))
+(defun parse-eof ()
+  (lambda (s)
+    (declare (type bus s))
+    (if (nth-value 1 (bus-read s))
+        (values nil s nil)
+        (values nil s t))))
 
-  (defun parse-anything ()
-    (lambda (s)
-      (declare (type buffered-stream s))
-      ([d]if (eq (buffered-stream-read-char s eof)
-                 eof)
-          (values nil s nil)
-        (values it s t))))
+(defun parse-anything ()
+  (lambda (s)
+    (declare (type bus s))
+    ([av]if (bus-read s)
+        (values it (bus-consume s)
+                t)
+      (values `(:unexpected-eof)
+              s nil))))
 
-  (defun parse-unicode-property (property)
-    (lambda (s)
-      (declare (type buffered-stream s))
-      ([d]if (eq (buffered-stream-read-char s eof)
-                 eof)
-          (values nil s nil)
+(defun parse-unicode-property (property)
+  (lambda (s)
+    (declare (type bus s))
+    ([av]if (bus-read s)
         (if (has-property it property)
-            (values it s t)
-            (progn
-              (buffered-stream-unread s it)
-              (values nil s nil)))))))
+            (values it (bus-consume s)
+                    t)
+            (values `(:wrong-properties ,it ,property)
+                    s nil))
+      (values `(:unexpected-eof)
+              s nil))))
 
 (defun parse-constant (string)
   (declare (type string string))
   (lambda (s)
-    (declare (type buffered-stream s))
-    ([d]if (string= (buffered-stream-read-to s (length string))
-                    string)
-        (values nil s t)
-      (buffered-stream-unread s it)
-      (values nil s nil))))
+    (declare (type bus s))
+    (bind ((length (length string)))
+      ([av]if (bus-read s length)
+          (values it (bus-consume s length)
+                  t)
+        (values `(:constant-not-found ,string)
+                s nil)))))
 
 (defun parse-from-list (list)
   (declare (type list list))
   (if list
       (// (parse-constant (first list))
           (parse-from-list (rest list)))
-      (fail nil)))
+      (fail `(:elements-not-found ,@list))))
 
 (defun parse-from-set (set)
   (declare (type set set))

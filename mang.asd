@@ -11,6 +11,7 @@
                #:cl-unicode
                #:split-sequence
                #:metabang-bind
+               #:trivial-garbage
                )
   :components
   ((:file "package")
@@ -18,14 +19,16 @@
     "utility"
     :depends-on ("package")
     :components
-    ((:file "list")
+    ((:file "anaphora")
      (:file "set")
      (:file "distribution")
      (:file "nfsm-dfsm"
             :depends-on ("set" "distribution"))
      (:file "pointer")
-     (:file "anaphora")
+     (:file "list")
      (:file "finite-state-transducer")
+     (:file "buffered-stream"
+            :depends-on ("anaphora"))
      (:file "parser-combinator"
             :depends-on ("anaphora"))
      ))
