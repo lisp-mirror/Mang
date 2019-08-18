@@ -224,7 +224,7 @@
     (bind ((length (length string)))
       ([av]if (bus-read s length)
           (if (string= it string)
-              (values it (bus-consume s length)
+              (values nil (bus-consume s length)
                       t)
               (values `(:constant-not-found ,string)
                       s nil))
