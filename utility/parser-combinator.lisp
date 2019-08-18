@@ -181,7 +181,7 @@
 (defun ^< (p)
   (declare (type function p))
   (lambda (s)
-    (bind (((r ns success?)
+    (bind (((:values r ns success?)
             (parser-call p s)))
       (if success?
           (values r s t)
