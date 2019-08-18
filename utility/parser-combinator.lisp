@@ -258,6 +258,9 @@
         (succeed (concatenate 'string
                               first rest)))))
 
+(defun parse-newline ()
+  (parse-constant (string #\Newline)))
+
 (defun parse-whitespace ()
   (many (// (parse-unicode-property "Whitespace")
             (parse-unicode-property "Control"))
