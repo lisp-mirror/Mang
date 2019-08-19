@@ -258,21 +258,21 @@
                      (bind (((feature register)
                              args))
                        (if (@ closed-registers register)
-                       `(,(empty-map)
-                          ,(map (feature register))
-                          ,(empty-map)
-                          ,open-registers))
-                       ([av]if (@ open-registers register)
                            `(,(empty-map)
                               ,(map (feature register))
                               ,(empty-map)
-                              ,(with open-registers register
-                                     (with it feature)))
-                         `(,(empty-map)
-                            ,(empty-map)
-                            ,(map (feature register))
-                            ,(with open-registers register
-                                   (set feature)))))))))
+                              ,open-registers)
+                           ([av]if (@ open-registers register)
+                               `(,(empty-map)
+                                  ,(map (feature register))
+                                  ,(empty-map)
+                                  ,(with open-registers register
+                                         (with it feature)))
+                             `(,(empty-map)
+                                ,(empty-map)
+                                ,(map (feature register))
+                                ,(with open-registers register
+                                       (set feature))))))))))
                _ (parse-whitespace)
                (constant-features register-features-compare
                                   register-features-write open-registers)
@@ -393,6 +393,7 @@
              (<? (parse-features features valued-features open-registers
                                  closed-registers)
                  `(,(empty-map)
+                    ,(empty-map)
                     ,(empty-map)
                     ,open-registers))
              _ (parse-whitespace)
