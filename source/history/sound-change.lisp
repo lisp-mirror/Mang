@@ -507,14 +507,16 @@
                     closed-registers)
   (declare (type set features closed-registers)
            (type map glyphs categories valued-features open-registers))
-  (<? (>>!
+  (// (<$ (>> (parse-whitespace)
+              (parse-eof))
+          `(:empty))
+      (>>!
         first (parse-emitter glyphs categories features valued-features
                              open-registers closed-registers)
         _ (parse-whitespace)
         rest (parse-after glyphs categories features valued-features
                           open-registers closed-registers)
-        (succeed `(:sequence ,first ,rest)))
-      `(:empty)))
+        (succeed `(:sequence ,first ,rest)))))
 
 (defun parse-sound-change (glyphs categories features valued-features)
   (declare (type set features)
@@ -544,7 +546,7 @@
     (^$ (parse-before glyphs categories features valued-features open-registers
                       closed-registers)
         before)
-    (post-write/comp post-emit closed-registers)
+    (post-write/comp post-emit open-registers closed-registers)
     (^$ (parse-pre/post glyphs categories features valued-features
                         open-registers closed-registers)
         post)
@@ -552,8 +554,19 @@
     (^$ (parse-after glyphs categories features valued-features
                      open-registers closed-registers)
         after)
-    (succeed `(:sequence ,pre-write/comp ,before-write/comp ,post-write/comp
-                         ,pre-emit ,after-emit ,post-emit))))
+    (if (and (equal pre-write/comp `(:empty))
+             (equal post-write/comp `(:empty))
+             (equal before-write/comp `(:empty)))
+        (fail `(:empty-pre-before-post ,post-write/comp))
+        (succeed `(:sequence
+                   ,pre-write/comp
+                   (:sequence
+                    ,before-write/comp
+                    (:sequence
+                     ,post-write/comp
+                     (:sequence
+                      ,pre-emit
+                      (:sequence ,after-emit ,post-emit)))))))))
 
 ;;;; Supporting parsers
 (defun parse-binary-feature-definition ()
