@@ -94,6 +94,10 @@
          :start-state in-state
          :accepting-states (set out-state))))
 
+(defun fst-consume ()
+  (fst-elementary #'true '()
+                  :consume? t))
+
 (defun fst-sequence (fst1 fst2 &key (in-state (gensym "sequence-in"))
                                  (out-state (gensym "sequence-out")))
   (modify-fst fst1
