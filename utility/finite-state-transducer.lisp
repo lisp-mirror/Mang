@@ -83,7 +83,7 @@
                                        (consume? t))
   (bind ((out (if (functionp out)
                   out
-                  (constantly out)))
+                  (constantly (ensure-list out))))
          (condition (if (functionp condition)
                         condition
                         (lambda (x)
@@ -248,22 +248,34 @@
                                         :default (empty-set)))
                      :default (empty-map (empty-set))))))
 
-(defun fst-preferred-transitions (fst state glyph)
+(defun fst-preferred-transitions (fst state glyph not-end?)
   (declare (type fst fst)
            (type symbol state))
   (reduce #'union
-          (range (all-fitting (@ (preferred<- fst)
-                                 state)
-                              glyph))
+          (range (if not-end?
+                     (all-fitting (@ (preferred<- fst)
+                                     state)
+                                  glyph)
+                     (filter (lambda (key value)
+                               (and (eq key #'true)
+                                    (not (third value))))
+                             (@ (preferred<- fst)
+                                glyph))))
           :initial-value (empty-set)))
 
-(defun fst-applicable-transitions (fst state glyph)
+(defun fst-applicable-transitions (fst state glyph not-end?)
   (declare (type fst fst)
            (type symbol state))
   (reduce #'union
-          (range (all-fitting (@ (transitions<- fst)
-                                 state)
-                              glyph))
+          (range (if not-end?
+                     (all-fitting (@ (transitions<- fst)
+                                     state)
+                                  glyph)
+                     (filter (lambda (key value)
+                               (and (eq key #'true)
+                                    (not (third value))))
+                             (@ (transitions<- fst)
+                                glyph))))
           :initial-value (empty-set)))
 
 (defun fst-solutions (fst state input)
@@ -272,43 +284,30 @@
            (type (or cons null)
                  input))
   (bind ((glyph (first input)))
-    (bind ((preferred-transitions (fst-preferred-transitions fst state
-                                                             glyph)))
+    (labels ((_expand (transitions)
+               (if (empty? transitions)
+                   (if (and (empty? input)
+                            (@ (accepting-states<- fst)
+                               state))
+                       (set '())
+                       (empty-set))
+                   (cross-product
+                    #'append
+                    (image (lambda (transition)
+                             (funcall (first transition)
+                                      glyph))
+                           transitions)
+                    (reduce #'union
+                            (image (lambda (transition)
+                                     (fst-solutions fst (second transition)
+                                                    (if (third transition)
+                                                        (rest input)
+                                                        input)))
+                                   transitions)
+                            :initial-value (empty-set))))))
       ([d]if (empty?
-              (cross-product
-               #'append
-               (image (lambda (transition)
-                        (funcall (first transition)
-                                 glyph))
-                      preferred-transitions)
-               (reduce #'union
-                       (image (lambda (transition)
-                                (fst-solutions fst (second transition)
-                                               (if (third transition)
-                                                   (rest input)
-                                                   input)))
-                              preferred-transitions)
-                       :initial-value (empty-set))))
-          ([d]if (empty? (fst-applicable-transitions fst state glyph))
-              (if (and (empty? input)
-                       (@ (accepting-states<- fst)
-                          state))
-                  (set '())
-                  (empty-set))
-            (cross-product
-             #'append
-             (image (lambda (transition)
-                      (funcall (first transition)
-                               glyph))
-                    it)
-             (reduce #'union
-                     (image (lambda (transition)
-                              (fst-solutions fst (second transition)
-                                             (if (third transition)
-                                                 (rest input)
-                                                 input)))
-                            it)
-                     :initial-value (empty-set))))
+              (_expand (fst-preferred-transitions fst state glyph input)))
+          (_expand (fst-applicable-transitions fst state glyph input))
         it))))
 
 (defun run-fst (fst input)

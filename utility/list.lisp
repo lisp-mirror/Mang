@@ -1,7 +1,7 @@
 (in-package #:mang)
 
 (defun ensure-list (obj)
-  (if (consp obj)
+  (if (listp obj)
       obj
       (list obj)))
 

@@ -27,7 +27,8 @@
      (:file "pointer")
      (:file "list")
      (:file "finite-state-transducer"
-            :depends-on ("constant-functions"))
+            :depends-on ("constant-functions"
+                         "list"))
      (:file "buffered-stream"
             :depends-on ("anaphora"
                          "list"))
