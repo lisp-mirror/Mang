@@ -33,6 +33,121 @@
 (defparameter *sound-change-reserved-symbols*
    (set #\( #\) #\{ #\} #\[ #\] #\< #\> #\. #\, #\+ #\- #\→ #\= #\:))
 
+(defun fst-compare-features (features)
+  (fst-elementary (lambda (phoneme)
+                    (has-features? phoneme features))
+                  '()
+                  :consume? nil))
+
+(defun fst-compare-register (register)
+  (declare (special *phoneme-registry*))
+  (fst-elementary (lambda (phoneme)
+                    (has-features? phoneme
+                                   (gethash register *phoneme-registry*)))
+                  '()
+                  :consume? nil))
+
+(defun fst-emit (phoneme
+                 &optional
+                   (constant-supplement (empty-map))
+                   (register-supplement (empty-map)))
+  (declare (special *phoneme-registry*))
+  (fst-elementary
+   #'true
+   (lambda (glyph)
+     (declare (ignore glyph))
+     (list
+      (map-union phoneme
+                 (map-union constant-supplement
+                            (image (lambda (feature register)
+                                     (values feature
+                                             (@ (gethash register
+                                                         *phoneme-registry*)
+                                                feature)))
+                                   register-supplement)))))
+   :consume? nil))
+
+(defun fst-emit-register (register
+                          &optional
+                            (constant-supplement (empty-map))
+                            (register-supplement (empty-map)))
+  (declare (special *phoneme-registry*))
+  (fst-elementary
+   #'true
+   (lambda (glyph)
+     (declare (ignore glyph))
+     (list
+      (map-union (gethash register *phoneme-registry*)
+                 (map-union constant-supplement
+                            (image (lambda (feature register)
+                                     (values feature
+                                             (@ (gethash register
+                                                         *phoneme-registry*)
+                                                feature)))
+                                   register-supplement)))))
+   :consume? nil))
+
+(defun fst-emit-category (category register
+                          &optional
+                          (constant-supplement (empty-map))
+                            (register-supplement (empty-map)))
+  (declare (special *category-registry* *phoneme-registry*))
+  (fst-elementary
+   #'true
+   (lambda (glyph)
+     (declare (ignore glyph))
+     (list
+      (map-union (nth (gethash register *category-registry*)
+                      category)
+                 (map-union constant-supplement
+                            (image (lambda (feature register)
+                                     (values feature
+                                             (@ (gethash register
+                                                         *phoneme-registry*)
+                                                feature)))
+                                   register-supplement)))))
+   :consume? nil))
+
+(defun fst-write-features (features)
+  (declare (special *phoneme-registry*))
+  (fst-elementary (lambda (phoneme)
+                    (dolist (feature (convert 'list features)
+                             t)
+                      (bind (((feature register)
+                              feature))
+                        (setf (gethash register *phoneme-registry*)
+                              (with (gethash register *phoneme-registry*)
+                                    feature (@ phoneme feature))))))
+                  '()
+                  :consume? nil))
+
+(defun fst-write-category (category register)
+  (declare (special *category-registry* *phoneme-registry*))
+  (fst-elementary (lambda (phoneme)
+                    ([a]when (position phoneme category :test #'equal?)
+                      (setf (gethash register *category-registry*)
+                            it
+                            (gethash register *phoneme-registry*)
+                            phoneme)))
+                  '()
+                  :consume? nil))
+
+(defun fst-write-register (register)
+  (declare (special *phoneme-registry*))
+  (fst-elementary (lambda (phoneme)
+                    (setf (gethash register *phoneme-registry*)
+                          phoneme)
+                    t)
+                  '()
+                  :consume? nil))
+
+(defun fst-check-category (category)
+  (fst-elementary (lambda (phoneme)
+                    (find phoneme category
+                          :test #'equal?))
+                  '()
+                  :consume? nil))
+
 (defun parse-expression-end ()
   (// (parse-newline)
       (parse-eof)))
@@ -58,16 +173,16 @@
                      (parse-constant ",")
                      (parse-whitespace)
                      (parse-glyph glyphs))
-                 `(:empty)
+                 (empty-fst)
                  (lambda (glyph glyphs)
-                   `(:sequence (:sequence (:compare-features ,glyph)
-                                          (:consume))
-                               ,glyphs)))
+                   (fst-sequence* (fst-compare-features glyph)
+                                  (fst-consume)
+                                  glyphs)))
     _ (>> (parse-whitespace)
           (parse-constant ")"))
-    (succeed `(:sequence (:sequence (:compare-features ,glyph)
-                                    (:consume))
-                         ,glyphs))))
+    (succeed (fst-sequence* (fst-compare-features glyph)
+                            (fst-consume)
+                            glyphs))))
 
 (defun parse-glyphs-emit (glyphs)
   (declare (type map glyphs))
@@ -80,14 +195,14 @@
                      (parse-constant ",")
                      (parse-whitespace)
                      (parse-glyph glyphs))
-                 `(:empty)
+                 (empty-fst)
                  (lambda (glyph glyphs)
-                   `(:sequence (:emit ,glyph)
-                               ,glyphs)))
+                   (fst-sequence* (fst-emit glyph)
+                                  glyphs)))
     _ (>> (parse-whitespace)
           (parse-constant ")"))
-    (succeed `(:sequence (:emit ,glyph)
-                         ,glyphs))))
+    (succeed (fst-sequence* (fst-emit glyph)
+                            glyphs))))
 
 (defun parse-glyphs-comp-emit (glyphs)
   (declare (type map glyphs))
@@ -101,20 +216,20 @@
               (parse-constant ",")
               (parse-whitespace)
               (parse-glyph glyphs))
-          `((:empty) (:empty))
+          `(,(empty-fst) ,(empty-fst))
           (lambda (glyph glyphs)
-            `((:sequence (:sequence (:compare-features ,glyph)
-                                    (:consume))
-                         ,glyphs)
-              (:sequence (:emit ,glyph)
-                         ,glyphs))))
+            `(,(fst-sequence* (fst-compare-features glyph)
+                              (fst-consume)
+                              glyphs)
+              ,(fst-sequence* (fst-emit glyph)
+                              glyphs))))
     _ (>> (parse-whitespace)
           (parse-constant ")"))
-    (succeed `((:sequence (:sequence (:compare-features ,glyph)
-                                     (:consume))
-                          ,comp-glyphs)
-               (:sequence (:emit ,glyph)
-                          ,emit-glyphs)))))
+    (succeed `(,(fst-sequence* (fst-compare-features glyph)
+                               (fst-consume)
+                               comp-glyphs)
+                ,(fst-sequence* (fst-emit glyph)
+                                emit-glyphs)))))
 
 (defun parse-category (categories)
   (declare (type map categories))
@@ -321,32 +436,29 @@
              register (<? (parse-register)
                           (gensym))
              (succeed
-              `((:sequence
-                 (:sequence
-                  (:write-features ,register-features-write)
-                  (:compare-features
-                   (:load-features ,register-features-compare)))
-                 (:sequence
-                  (:compare-features ,constant-features)
-                  ,(cond
-                     ((and category (@ closed-registers register))
-                      `(:sequence (:compare ,register)
-                                  (:check-category ,category)))
+              `(,(fst-sequence*
+                  (fst-write-features register-features-write)
+                  (fst-compare-register register-features-compare)
+                  (fst-compare-features constant-features)
+                  (cond
+                    ((and category (@ closed-registers register))
+                     (fst-sequence* (fst-compare-register register)
+                                    (fst-check-category category)))
                      (category
                       ([av]if (@ open-registers register)
-                          `(:sequence (:check-features ,it)
-                                      (:write-category ,category ,register))
-                        `(:write-category ,category ,register)))
+                          (fst-sequence* (fst-compare-features it)
+                                         (fst-write-category category register))
+                        (fst-write-category category register)))
                      ((@ closed-registers register)
-                      `(:compare ,register))
+                      (fst-compare-register register))
                      (t
                       ([av]if (@ open-registers register)
-                          `(:sequence (:compare-features ,it)
-                                      (:write ,register))
-                        `(:write ,register))))))
-                (:emit ,register)
-                ,(less open-registers register)
-                ,(with closed-registers register))))
+                          (fst-sequence* (fst-compare-features it)
+                                         (fst-write-register register))
+                        (fst-write-register register)))))
+                 ,(fst-emit-register register)
+                 ,(less open-registers register)
+                 ,(with closed-registers register))))
            (lambda (action)
              (bind (((comp/write-action
                       emit-action
@@ -354,8 +466,8 @@
                       (open-registers (empty-map (empty-set)))
                       (closed-registers (empty-set)))
                      action))
-               `((:sequence ,comp/write-action (:consume))
-                 ,emit-action ,open-registers ,closed-registers))))))
+               `(,(fst-sequence* comp/write-action (fst-consume))
+                  ,emit-action ,open-registers ,closed-registers))))))
 
 ;;; -> pre-write/comp pre-emit open-registers closed-registers
 (defun parse-pre/post (glyphs categories features valued-features
@@ -365,9 +477,9 @@
            (type map glyphs categories valued-features open-registers))
   (// (<$ (>> (parse-whitespace)
               (parse-eof))
-          `((:empty)
-            (:empty)
-            ,open-registers ,closed-registers))
+          `(,(empty-fst)
+             ,(empty-fst)
+             ,open-registers ,closed-registers))
       (>>!
         (first-write/comp first-emit open-registers closed-registers)
         (parse-compare/write-emit glyphs categories features valued-features
@@ -376,9 +488,9 @@
         (rest-write/comp rest-emit open-registers closed-registers)
         (parse-pre/post glyphs categories features valued-features
                         open-registers closed-registers)
-        (succeed `((:sequence ,first-write/comp ,rest-write/comp)
-                   (:sequence ,first-emit ,rest-emit)
-                   ,open-registers ,closed-registers)))))
+        (succeed `(,(fst-sequence* first-write/comp rest-write/comp)
+                    ,(fst-sequence* first-emit rest-emit)
+                    ,open-registers ,closed-registers)))))
 
 (defun parse-compare/write (glyphs categories features valued-features
                             open-registers closed-registers)
@@ -402,43 +514,38 @@
              _ (parse-whitespace)
              register (<? (parse-register))
              (succeed
-              `((:sequence
-                 (:compare-features ,constant-features)
-                 (:sequence
-                  (:sequence
-                   (:write-features ,register-features-write)
-                   (:compare-features
-                    (:load-features ,register-features-compare)))
-                  ,(cond
-                     ((and category register (@ closed-registers register))
-                      `(:sequence (:compare ,register)
-                                  (:check-category ,category)))
-                     ((and category register)
-                      ([av]if (@ open-registers register)
-                          ;; `:write-category` has to include a check for the
-                          ;; category
-                          `(:sequence (:compare-features ,it)
-                                      (:write-category ,category
-                                                       ,register))
-                        `(:write-category ,category ,register)))
-                     (category
-                      `(:check-category ,category))
-                     ((and register (@ closed-registers register))
-                      `(:compare ,register))
-                     (register
-                      ([av]if (@ open-registers register)
-                          `(:sequence (:compare-features ,it)
-                                      (:write ,register))
-                        `(:write ,register)))
-                     (t `(:empty)))))
-                ,(less open-registers register)
-                ,(if register
-                     (with closed-registers register)
-                     closed-registers))))
+              `(,(fst-sequence*
+                  (fst-compare-features constant-features)
+                  (fst-write-features register-features-write)
+                  (fst-compare-register register-features-compare)
+                  (cond
+                    ((and category register (@ closed-registers register))
+                     (fst-sequence* (fst-compare-register register)
+                                    (fst-check-category category)))
+                    ((and category register)
+                     ([av]if (@ open-registers register)
+                         (fst-sequence* (fst-compare-features it)
+                                        (fst-write-category category
+                                                            register))
+                       (fst-write-category category register)))
+                    (category
+                     (fst-check-category category))
+                    ((and register (@ closed-registers register))
+                     (fst-compare-register register))
+                    (register
+                     ([av]if (@ open-registers register)
+                         (fst-sequence* (fst-compare-features it)
+                                        (fst-write-register register))
+                       (fst-write-register register)))
+                    (t (empty-fst))))
+                 ,(less open-registers register)
+                 ,(if register
+                      (with closed-registers register)
+                      closed-registers))))
            (lambda (action)
              (bind (((action open-registers closed-registers)
                      action))
-               `((:sequence ,action (:consume))
+               `(,(fst-sequence* action (fst-consume))
                  ,open-registers ,closed-registers))))))
 
 ;;; -> before-write/comp open-registers closed-registers
@@ -448,7 +555,7 @@
            (type map glyphs categories valued-features open-registers))
   (// (<$ (>> (parse-whitespace)
               (parse-eof))
-          `((:empty)
+          `(,(empty-fst)
             ,open-registers ,closed-registers))
       (>>!
         _ (parse-whitespace)
@@ -459,7 +566,7 @@
         (rest open-registers closed-registers)
         (parse-before glyphs categories features valued-features
                       open-registers closed-registers)
-        (succeed `((:sequence ,first ,rest)
+        (succeed `(,(fst-sequence* first rest)
                    ,open-registers ,closed-registers)))))
 
 (defun parse-emitter (glyphs categories features valued-features
@@ -487,20 +594,15 @@
            (fail `(:empty-emitter)))
           (category
            (succeed
-            `(:emit
-              (:supplement (:load-category ,category ,register)
-                           (:supplement ,constant-features
-                                        (:load-features ,register-features))))))
+            (fst-emit-category category register constant-features
+                               register-features)))
           (register
            (succeed
-            `(:emit
-              (:supplement (:load-register ,register)
-                           (:supplement ,constant-features
-                                        (:load-features ,register-features))))))
+            (fst-emit-register register constant-features register-features)))
           (t
            (succeed
-            `(:emit (:supplement ,constant-features
-                                 (:load-features ,register-features)))))))))
+            (fst-emit constant-features (empty-map)
+                      register-features)))))))
 
 ;;; -> after-emit
 (defun parse-after (glyphs categories features valued-features open-registers
@@ -509,14 +611,14 @@
            (type map glyphs categories valued-features open-registers))
   (// (<$ (>> (parse-whitespace)
               (parse-eof))
-          `(:empty))
+          (empty-fst))
       (>>!
         first (parse-emitter glyphs categories features valued-features
                              open-registers closed-registers)
         _ (parse-whitespace)
         rest (parse-after glyphs categories features valued-features
                           open-registers closed-registers)
-        (succeed `(:sequence ,first ,rest)))))
+        (succeed (fst-sequence* first rest)))))
 
 (defun parse-sound-change (glyphs categories features valued-features)
   (declare (type set features)
@@ -554,19 +656,14 @@
     (^$ (parse-after glyphs categories features valued-features
                      open-registers closed-registers)
         after)
-    (if (and (equal pre-write/comp `(:empty))
-             (equal post-write/comp `(:empty))
-             (equal before-write/comp `(:empty)))
+    (if (and nil (empty-fst? pre-write/comp) ; `nil` here to prevent test from
+                                        ; running while the subparsers don't yet
+                                        ; return fsts themselves
+             (empty-fst? before-write/comp)
+             (empty-fst? post-write/comp))
         (fail `(:empty-pre-before-post ,post-write/comp))
-        (succeed `(:sequence
-                   ,pre-write/comp
-                   (:sequence
-                    ,before-write/comp
-                    (:sequence
-                     ,post-write/comp
-                     (:sequence
-                      ,pre-emit
-                      (:sequence ,after-emit ,post-emit)))))))))
+        (succeed (fst-sequence* pre-write/comp before-write/comp post-write/comp
+                                pre-emit after-emit post-emit)))))
 
 ;;;; Supporting parsers
 (defun parse-binary-feature-definition ()
