@@ -25,6 +25,10 @@
                  :start-state start-state
                  :accepting-states accepting-states))
 
+(defun empty-fst? (fst)
+  (and (empty? (transitions<- fst))
+       (empty? (preferred<- fst))))
+
 (defun modify-fst (fst &key
                          transitions preferred start-state accepting-states
                          new-transitions new-preferred new-accepting-states)
