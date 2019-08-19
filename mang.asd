@@ -18,14 +18,16 @@
     "utility"
     :depends-on ("package")
     :components
-    ((:file "anaphora")
+    ((:file "constant-functions")
+     (:file "anaphora")
      (:file "set")
      (:file "distribution")
      (:file "nfsm-dfsm"
             :depends-on ("set" "distribution"))
      (:file "pointer")
      (:file "list")
-     (:file "finite-state-transducer")
+     (:file "finite-state-transducer"
+            :depends-on ("constant-functions"))
      (:file "buffered-stream"
             :depends-on ("anaphora"
                          "list"))
