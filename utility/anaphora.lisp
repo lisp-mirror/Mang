@@ -24,3 +24,8 @@
            ,then
            (progn
              ,@else)))))
+
+(defmacro [a]when (test &body body)
+  `([a]if ,test
+       (progn
+         ,@body)))
