@@ -234,7 +234,8 @@
   (labels ((_inner-parser (open-registers)
              (>>!
                feature (parse-feature features valued-features)
-               (constant-feature register-feature open-registers)
+               (constant-feature register-feature-compare register-feature-write
+                                 open-registers)
                (succeed
                 (bind (((type &rest args)
                         feature))
@@ -244,33 +245,49 @@
                              args))
                        `(,(map (feature sign))
                           ,(empty-map)
+                          ,(empty-map)
                           ,open-registers)))
                     (:valued-feature
                      (bind (((feature value)
                              args))
                        `(,(map (feature value))
                           ,(empty-map)
+                          ,(empty-map)
                           ,open-registers)))
                     (:register-feature
                      (bind (((feature register)
                              args))
+                       (if (@ closed-registers register)
                        `(,(empty-map)
-                         ,(map (feature register))
-                          ,(if (@ closed-registers register)
-                               open-registers
-                               (with open-registers register
-                                     (with (@ open-registers register)
-                                           feature)))))))))
+                          ,(map (feature register))
+                          ,(empty-map)
+                          ,open-registers))
+                       ([av]if (@ open-registers register)
+                           `(,(empty-map)
+                              ,(map (feature register))
+                              ,(empty-map)
+                              ,(with open-registers register
+                                     (with it feature)))
+                         `(,(empty-map)
+                            ,(empty-map)
+                            ,(map (feature register))
+                            ,(with open-registers register
+                                   (set feature)))))))))
                _ (parse-whitespace)
-               (constant-features register-features open-registers)
+               (constant-features register-features-compare
+                                  register-features-write open-registers)
                (<? (>> (parse-constant ",")
                        (parse-whitespace)
                        (_inner-parser open-registers))
                    `(,(empty-map)
                       ,(empty-map)
+                      ,(empty-map)
                       ,open-registers))
                (succeed `(,(map-union constant-feature constant-features)
-                           ,(map-union register-feature register-features)
+                           ,(map-union register-feature-compare
+                                       register-features-compare)
+                           ,(map-union register-feature-write
+                                       register-features-write)
                            ,open-registers)))))
     (>>!
       _ (>> (parse-whitespace)
@@ -290,8 +307,8 @@
              category (// (parse-category categories)
                           (parse-constant "."))
              _ (parse-whitespace)
-             (constant-features register-features open-registers
-                                closed-registers)
+             (constant-features register-features-compare
+                                 register-features-write closed-registers)
              (<? (parse-features features valued-features open-registers
                                  closed-registers)
                  `(,(empty-map)
@@ -302,7 +319,10 @@
                           (gensym))
              (succeed
               `((:sequence
-                 (:compare-features (:load-features ,register-features))
+                 (:sequence
+                  (:write-features ,register-features-write)
+                  (:compare-features
+                   (:load-features ,register-features-compare)))
                  (:sequence
                   (:compare-features ,constant-features)
                   ,(cond
@@ -368,7 +388,8 @@
              category (// (parse-category categories)
                           (parse-constant "."))
              _ (parse-whitespace)
-             (constant-features register-features open-registers)
+             (constant-features register-features-compare
+                                register-features-write open-registers)
              (<? (parse-features features valued-features open-registers
                                  closed-registers)
                  `(,(empty-map)
@@ -380,9 +401,10 @@
               `((:sequence
                  (:compare-features ,constant-features)
                  (:sequence
-                  ;; TODO: split properly into features to be written and
-                  ;; features to be checked
-                  (:compare-features (:load-features ,register-features))
+                  (:sequence
+                   (:write-features ,register-features-write)
+                   (:compare-features
+                    (:load-features ,register-features-compare)))
                   ,(cond
                      ((and category register (@ closed-registers register))
                       `(:sequence (:compare ,register)
