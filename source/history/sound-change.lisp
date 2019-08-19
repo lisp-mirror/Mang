@@ -302,18 +302,21 @@
                                  open-registers closed-registers)
   (declare (type set features closed-registers)
            (type map glyphs categories valued-features open-registers))
-  (<$> (// (parse-glyphs-comp-emit glyphs)
-           (>>!
+  (// (<$> (parse-glyphs-comp-emit glyphs)
+           (lambda (action)
+             `(,@action ,open-registers ,closed-registers)))
+      (<$> (>>!
              category (// (parse-category categories)
                           (parse-constant "."))
              _ (parse-whitespace)
              (constant-features register-features-compare
-                                 register-features-write closed-registers)
+                                register-features-write open-registers)
              (<? (parse-features features valued-features open-registers
                                  closed-registers)
                  `(,(empty-map)
                     ,(empty-map)
-                    ,open-registers ,closed-registers))
+                    ,(empty-map)
+                    ,open-registers))
              _ (parse-whitespace)
              register (<? (parse-register)
                           (gensym))
@@ -332,7 +335,7 @@
                      (category
                       ([av]if (@ open-registers register)
                           `(:sequence (:check-features ,it)
-                                      (:write-category ,register))
+                                      (:write-category ,category ,register))
                         `(:write-category ,category ,register)))
                      ((@ closed-registers register)
                       `(:compare ,register))
@@ -343,16 +346,16 @@
                         `(:write ,register))))))
                 (:emit ,register)
                 ,(less open-registers register)
-                ,(with closed-registers register)))))
-       (lambda (action)
-         (bind (((comp/write-action
-                  emit-action
-                  &optional
-                  (open-registers (empty-map (empty-set)))
-                  (closed-registers (empty-set)))
-                 action))
-           `((:sequence ,comp/write-action (:consume))
-             ,emit-action ,open-registers ,closed-registers)))))
+                ,(with closed-registers register))))
+           (lambda (action)
+             (bind (((comp/write-action
+                      emit-action
+                      &optional
+                      (open-registers (empty-map (empty-set)))
+                      (closed-registers (empty-set)))
+                     action))
+               `((:sequence ,comp/write-action (:consume))
+                 ,emit-action ,open-registers ,closed-registers))))))
 
 ;;; -> pre-write/comp pre-emit open-registers closed-registers
 (defun parse-pre/post (glyphs categories features valued-features
