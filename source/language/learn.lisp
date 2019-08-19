@@ -160,9 +160,5 @@
                         (with memoized parameters matcher))
                   matcher)))))))
 
-(defun true (&rest args)
-  (declare (ignore args))
-  t)
-
 (defun match-everything-generator ()
   (constantly (set #'true)))
