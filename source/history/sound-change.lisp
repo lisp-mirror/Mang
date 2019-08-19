@@ -43,7 +43,8 @@
   (declare (special *phoneme-registry*))
   (fst-elementary (lambda (phoneme)
                     (has-features? phoneme
-                                   (gethash register *phoneme-registry*)))
+                                   (gethash register *phoneme-registry*
+                                            (empty-map))))
                   '()
                   :consume? nil))
 
@@ -656,14 +657,17 @@
     (^$ (parse-after glyphs categories features valued-features
                      open-registers closed-registers)
         after)
-    (if (and nil (empty-fst? pre-write/comp) ; `nil` here to prevent test from
-                                        ; running while the subparsers don't yet
-                                        ; return fsts themselves
+    (if (and (empty-fst? pre-write/comp)
              (empty-fst? before-write/comp)
              (empty-fst? post-write/comp))
         (fail `(:empty-pre-before-post ,post-write/comp))
-        (succeed (fst-sequence* pre-write/comp before-write/comp post-write/comp
-                                pre-emit after-emit post-emit)))))
+        (succeed
+         (fst-preferred (fst-sequence* pre-write/comp
+                                       before-write/comp
+                                       post-write/comp pre-emit
+                                       after-emit post-emit)
+                        (fst-elementary #'true '()
+                                        :consume? t))))))
 
 ;;;; Supporting parsers
 (defun parse-binary-feature-definition ()
