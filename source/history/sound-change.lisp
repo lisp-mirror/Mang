@@ -662,12 +662,12 @@
              (empty-fst? post-write/comp))
         (fail `(:empty-pre-before-post ,post-write/comp))
         (succeed
-         (fst-preferred (fst-sequence* pre-write/comp
-                                       before-write/comp
-                                       post-write/comp pre-emit
-                                       after-emit post-emit)
-                        (fst-elementary #'true '()
-                                        :consume? t))))))
+         (fst-repeat (fst-preferred (fst-sequence* pre-write/comp
+                                                   before-write/comp
+                                                   post-write/comp pre-emit
+                                                   after-emit post-emit)
+                                    (fst-elementary #'true #'list
+                                                    :consume? t)))))))
 
 ;;;; Supporting parsers
 (defun parse-binary-feature-definition ()
