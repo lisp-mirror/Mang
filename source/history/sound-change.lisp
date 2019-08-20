@@ -229,24 +229,6 @@
                 ,(fst-sequence* (fst-emit glyph)
                                 emit-glyphs)))))
 
-(defun parse-category (categories)
-  (declare (type map categories))
-  (// (>>!
-        _ (>> (parse-whitespace)
-              (parse-constant "<")
-              (parse-whitespace))
-        name (parse-identifier *mang-reserved-symbols*)
-        _ (>> (parse-whitespace)
-              (parse-constant ">"))
-        ([av]if (@ categories name)
-            (succeed it)
-          `(:unknown-category ,name)))
-      (>>* (parse-unicode-property "Letter")
-           name
-           ([av]if (@ categories name)
-               (succeed it)
-             (fail `(:unknown-category ,name))))))
-
 (defun parse-register ()
   (// (parse-number)
       (>>!

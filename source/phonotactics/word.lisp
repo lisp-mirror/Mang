@@ -1,5 +1,53 @@
 (in-package #:mang)
 
+(defun parse-category (categories)
+  (declare (type map categories))
+  (// (>>!
+        _ (>> (parse-whitespace)
+              (parse-constant "<")
+              (parse-whitespace))
+        name (parse-identifier *mang-reserved-symbols*)
+        _ (>> (parse-whitespace)
+              (parse-constant ">"))
+        ([av]if (@ categories name)
+            (succeed it)
+          `(:unknown-category ,name)))
+      (>>* (parse-unicode-property "Letter")
+           name
+           ([av]if (@ categories name)
+               (succeed it)
+             (fail `(:unknown-category ,name))))))
+
+(defun parse-syllable-generator (categories)
+  (declare (type map categories))
+  (labels ((_alternatives ()
+             (>>!
+               _ (parse-whitespace)
+               front (parse-syllable-generator categories)
+               back (many (>> (parse-whitespace)
+                              (parse-constant "|")
+                              (parse-whitespace)
+                              (<? (parse-syllable-generator categories)))
+                          (empty-set)
+                          (lambda (front back)
+                            (with back front)))
+               (succeed (with back front)))))
+    (>>!
+      _ (parse-whitespace)
+      front (<$> (// (<$> (parse-category categories)
+                          (lambda (category)
+                            (convert 'set
+                                     category)))
+                     (>>!
+                       _ (parse-constant "(")
+                       alternatives (_alternatives)
+                       _ (>> (parse-whitespace)
+                             (parse-constant ")"))
+                       (succeed alternatives)))
+                 #'list)
+      back (<? (parse-syllable-generator categories))
+      (succeed `(,front ,@back)))))
+
 (defmethod word-forms<-spec ((spec null))
   (set '()))
 
