@@ -110,26 +110,3 @@
   (syllabalize (remove "" word
                        :test #'string=)
                hierarchy prefer-open?))
-
-(defmethod clustered-gen ((min-length integer)
-                          (max-length integer)
-                          (vowels set)
-                          (initial-clusters set)
-                          (median-clusters set)
-                          (final-clusters set))
-  (declare (type (integer 1)
-                 min-length max-length))
-  (labels ((_compile (l)
-             (declare (type (integer 0)
-                            l))
-             (cond
-               ((= l max-length)
-                (list vowels final-clusters))
-               ((= l 0)
-                (list initial-clusters (_compile (1+ l))))
-               ((>= l min-length)
-                (list vowels (set final-clusters
-                                  (list median-clusters (_compile (1+ l))))))
-               (t
-                (list vowels median-clusters (_compile (1+ l)))))))
-    (dfsm<- (_compile 0))))

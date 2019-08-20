@@ -1,8 +1,12 @@
 (in-package #:mang)
 
 (defun parse-expression-end ()
-  (// (parse-newline)
-      (parse-eof)))
+  (//!
+    _ (// (parse-newline)
+          (parse-eof))
+    _ (>> (parse-unicode-property "Whitespace")
+          (parse-expression-end))
+    (fail `(:expression-not-over))))
 
 (defun parse-category (categories)
   (declare (type map categories))
