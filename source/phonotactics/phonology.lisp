@@ -21,7 +21,7 @@
           (parse-constant ":=")
           (parse-whitespace))
     value (parse-identifier *mang-reserved-symbols*)
-    values (some (>> (parse-whitespace)
+    values (many (>> (parse-whitespace)
                      (parse-constant ",")
                      (parse-whitespace)
                      (parse-identifier *mang-reserved-symbols*))
