@@ -69,12 +69,16 @@
 
 (defun parse-syllable-definitions (categories)
   (declare (type map categories))
-  (many (parse-syllable-definition categories)
-        (empty-map)
-        (lambda (definition definitions)
-          (bind (((name definition)
-                  definition))
-            (with definitions name definition)))))
+  (>> (parse-whitespace)
+      (parse-constant "syllables:")
+      (parse-newline)
+      (parse-whitespace)
+      (many (parse-syllable-definition categories)
+            (empty-map)
+            (lambda (definition definitions)
+              (bind (((name definition)
+                      definition))
+                (with definitions name definition))))))
 
 (defun parse-syllables-spec (syllables)
   (declare (type map syllables))
@@ -116,6 +120,21 @@
         (lambda (syls words)
           (cross-product #'append
                          syls words))))
+
+(defun parse-glyph-for-generator (glyphs)
+  (>>!
+    _ (parse-whitespace)
+    glyph (// (>>!
+                _ (>> (parse-constant "<")
+                      (parse-whitespace))
+                glyph (parse-identifier *mang-reserved-symbols*)
+                _ (>> (parse-whitespace)
+                      (parse-constant ">"))
+                (succeed glyph))
+              (>> (parse-anything)))
+    ([av]if (@ glyphs glyph)
+        (succeed it)
+      (fail `(:unknown-glyph ,glyph)))))
 
 (defmethod string<-word ((word cons)
                          (glyphs map))
