@@ -1,5 +1,9 @@
 (in-package #:mang)
 
+(defun parse-expression-end ()
+  (// (parse-newline)
+      (parse-eof)))
+
 (defun parse-category (categories)
   (declare (type map categories))
   (// (>>!
@@ -47,6 +51,27 @@
                  #'list)
       back (<? (parse-syllable-generator categories))
       (succeed `(,front ,@back)))))
+
+(defun parse-syllable-definition (categories)
+  (declare (type map categories))
+  (>>!
+    _ (parse-whitespace)
+    name (parse-identifier *mang-reserved-symbols*)
+    _ (>> (parse-whitespace)
+          (parse-constant ":=")
+          (parse-whitespace))
+    definition (parse-syllable-generator categories)
+    _ (parse-expression-end)
+    (succeed `(,name ,definition))))
+
+(defun parse-syllable-definitions (categories)
+  (declare (type map categories))
+  (many (parse-syllable-definition categories)
+        (empty-map)
+        (lambda (definition definitions)
+          (bind ((name definition)
+                 definition)
+            (with definitions name definition)))))
 
 (defmethod word-forms<-spec ((spec null))
   (set '()))

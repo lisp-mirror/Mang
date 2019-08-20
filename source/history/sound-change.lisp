@@ -146,10 +146,6 @@
                   '()
                   :consume? nil))
 
-(defun parse-expression-end ()
-  (// (parse-newline)
-      (parse-eof)))
-
 (defun parse-glyph (glyphs)
   (declare (type map glyphs))
   (>>!
