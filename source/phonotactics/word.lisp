@@ -38,17 +38,16 @@
                (succeed (with back front)))))
     (>>!
       _ (parse-whitespace)
-      front (<$> (// (<$> (parse-category categories)
-                          (lambda (category)
-                            (convert 'set
-                                     category)))
-                     (>>!
-                       _ (parse-constant "(")
-                       alternatives (_alternatives)
-                       _ (>> (parse-whitespace)
-                             (parse-constant ")"))
-                       (succeed alternatives)))
-                 #'list)
+      front (// (<$> (parse-category categories)
+                     (lambda (category)
+                       (convert 'set
+                                category)))
+                (>>!
+                  _ (parse-constant "(")
+                  alternatives (_alternatives)
+                  _ (>> (parse-whitespace)
+                        (parse-constant ")"))
+                  (succeed alternatives)))
       back (<? (parse-syllable-generator categories))
       (succeed `(,front ,@back)))))
 
@@ -69,9 +68,29 @@
   (many (parse-syllable-definition categories)
         (empty-map)
         (lambda (definition definitions)
-          (bind ((name definition)
-                 definition)
+          (bind (((name definition)
+                  definition))
             (with definitions name definition)))))
+
+(defun parse-syllables-spec (syllables)
+  (declare (type map syllables))
+  (>>!
+    _ (>> (parse-whitespace)
+          (parse-constant "(")
+          (parse-whitespace))
+    definition (>>!
+                 name (parse-identifier *mang-reserved-symbols*)
+                 ([av]if (@ syllables name)
+                     (succeed it)
+                   (fail `(:unknown-syllable-type ,name))))
+    _ (>> (parse-whitespace)
+          (parse-constant ")")
+          (parse-whitespace))
+    count (<? (<$> (parse-number)
+                   #'parse-integer)
+              1)
+    (succeed (apply #'append
+                    (repeat count definition)))))
 
 (defmethod word-forms<-spec ((spec null))
   (set '()))
