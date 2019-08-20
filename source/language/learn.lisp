@@ -80,11 +80,11 @@
             (map-union (markov<- (@ categories category))
                        result)))))
 
-(defmethod generate-word ((word-system word-system)
+(defmethod generate-word ((syllables-word-spec string)
                           (store store)
                           (positive set)
                           &key (negative (set)))
-  (word (generate word-system (@ store positive)
+  (word (generate syllables-word-spec (@ store positive)
                   (@ store negative))))
 
 (defmethod learn-word ((store store)

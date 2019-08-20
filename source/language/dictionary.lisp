@@ -33,9 +33,9 @@
                  :transformations transformations))
 
 (defmethod string<-word ((word word)
-                         &optional syllables?)
+                         (glyphs map))
   (string<-word (form<- word)
-                syllables?))
+                glyphs))
 
 (defun romanize-word (romanization word)
   (apply #'concatenate 'string
