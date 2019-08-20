@@ -86,15 +86,32 @@
     _ (>> (parse-whitespace)
           (parse-constant ")")
           (parse-whitespace))
-    count (<? (<$> (parse-number)
+    (min max)
+    (<? (>>!
+          min (<$> (parse-number)
                    #'parse-integer)
-              1)
-    (succeed (apply #'append
-                    (repeat count definition)))))
+          max (<? (>> (parse-whitespace)
+                      (parse-constant "-")
+                      (parse-whitespace)
+                      (<$> (parse-number)
+                           #'parse-integer))
+                  min)
+          (if (<= min max)
+              (succeed `(,min ,max))
+              (fail `(:syllable-count-malfored ,(first definition)
+                                               ,min ,max))))
+        `(1 1))
+    (succeed (convert 'set
+                      (loop :for count :from min :to max
+                         :collect (apply #'append
+                                         (repeat count definition)))))))
 
 (defun parse-syllables-word-spec (syllables)
   (some (parse-syllables-spec syllables)
-        '() #'append))
+        (set '())
+        (lambda (syls words)
+          (cross-product #'append
+                         syls words))))
 
 (defmethod word-forms<-spec ((spec null))
   (set '()))
