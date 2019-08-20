@@ -39,10 +39,13 @@
     "source"
     :depends-on ("package" "utility")
     :components
-    ((:module
+    ((:file "globals")
+     (:module
       "phonotactics"
+      :depends-on ("globals")
       :components
       ((:file "glyph")
+       (:file "phonology")
        (:file "word")
        (:file "sonority")
        ))
@@ -61,6 +64,7 @@
        ))
      (:module
       "history"
+      :depends-on ("globals")
       :components
       ((:file "sound-change")
        ))
