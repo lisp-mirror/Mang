@@ -92,6 +92,10 @@
     (succeed (apply #'append
                     (repeat count definition)))))
 
+(defun parse-syllables-word-spec (syllables)
+  (some (parse-syllables-spec syllables)
+        '() #'append))
+
 (defmethod word-forms<-spec ((spec null))
   (set '()))
 
