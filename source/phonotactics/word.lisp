@@ -154,10 +154,7 @@
             (parse-constant "()"))
         (>>!
           _ (parse-whitespace)
-          front (// (<$> (parse-category categories)
-                         (lambda (category)
-                           (convert 'set
-                                    category)))
+          front (// (parse-category categories)
                     (<$> (parse-glyph-for-generator glyphs)
                          (lambda (glyph)
                            (set glyph)))
