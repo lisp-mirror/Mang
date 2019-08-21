@@ -68,9 +68,13 @@
 (defun // (parser &rest parsers)
   (declare (type function parser))
   (if parsers
-      (//= parser (constantly (apply #'//
-                                     parsers)))
-      parser))
+      (//= parser (lambda (err)
+                    (<~> (apply #'//
+                                parsers)
+                         (lambda (errors)
+                           (cons err errors)))))
+      (<~> parser (lambda (err)
+                    `(,err)))))
 
 (defmacro //* (left var right)
   (bind ((g!arg (gensym "arg")))
