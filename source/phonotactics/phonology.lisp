@@ -33,7 +33,7 @@
 
 (defun parse-feature-definitions ()
   (>> (parse-whitespace)
-      (parse-constant "features:")
+      (parse-constant "#features:")
       (parse-newline)
       (parse-whitespace)
       (many (>> (parse-whitespace)
@@ -117,7 +117,7 @@
 
 (defun parse-glyph-definitions (features valued-features)
   (>> (parse-whitespace)
-      (parse-constant "glyphs:")
+      (parse-constant "#glyphs:")
       (parse-newline)
       (parse-whitespace)
       (many (>> (parse-whitespace)
@@ -154,7 +154,7 @@
 
 (defun parse-category-definitions (glyphs)
   (>> (parse-whitespace)
-      (parse-constant "categories:")
+      (parse-constant "#categories:")
       (parse-newline)
       (parse-whitespace)
       (many (parse-category-definition glyphs)
