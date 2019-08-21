@@ -25,6 +25,17 @@
             child nil))
     bus))
 
+(defun buffer<-* (bus)
+  (declare (type bus bus))
+  (bus-flatten bus)
+  (buffer<- bus))
+
+(defmethod print-object ((object bus)
+                         stream)
+  (format stream "#<BUS ~S ~S>"
+          (buffer<- object)
+          (child<- object)))
+
 (defun bus (stream &key (buffer "")
                      parent)
   (declare (type stream stream)
