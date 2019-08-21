@@ -136,7 +136,6 @@
         (succeed it)
       (fail `(:unknown-glyph ,glyph)))))
 
-;;; FIX: Alternatives fail to parse
 (defmethod parse-cluster-definition (glyphs categories)
   (labels ((_alternatives ()
              (>>!
@@ -150,27 +149,28 @@
                           (lambda (alternative alternatives)
                             (with alternatives alternative)))
                (succeed (with back front)))))
-    (>>!
-      _ (parse-whitespace)
-      front (// (<$> (parse-category categories)
-                     (lambda (category)
-                       (convert 'set
-                                category)))
-                (<$> (parse-glyph-for-generator glyphs)
-                     (lambda (glyph)
-                       (set glyph)))
-                (>>!
-                  _ (parse-constant "(")
-                  alternatives (_alternatives)
-                  _ (>> (parse-whitespace)
-                        (parse-constant ")"))
-                  (succeed alternatives)))
-      back (<? (parse-cluster-definition glyphs categories))
-      (succeed `(,front ,@back)))))
+    (// (parse-constant "()")
+        (>>!
+          _ (parse-whitespace)
+          front (// (<$> (parse-category categories)
+                         (lambda (category)
+                           (convert 'set
+                                    category)))
+                    (<$> (parse-glyph-for-generator glyphs)
+                         (lambda (glyph)
+                           (set glyph)))
+                    (>>!
+                      _ (parse-constant "(")
+                      alternatives (_alternatives)
+                      _ (>> (parse-whitespace)
+                            (parse-constant ")"))
+                      (succeed alternatives)))
+          back (<? (parse-cluster-definition glyphs categories))
+          (succeed `(,front ,@back))))))
 
 (defun parse-cluster-definitions (glyphs categories)
   (>>!
-    _ (parse-whitspace)
+    _ (parse-whitespace)
     front (parse-cluster-definition glyphs categories)
     _ (// (parse-expression-end)
           (>> (parse-whitespace)
@@ -178,7 +178,7 @@
               (parse-whitespace)))
     back (<? (parse-cluster-definitions glyphs categories)
              (empty-set))
-    (succeed (union front back))))
+    (succeed (with back front))))
 
 (defun parse-clusters-generator (glyphs categories)
   (>>!
@@ -189,16 +189,16 @@
           (parse-constant "min:")
           (parse-whitespace))
     min (>>!
-          number (parse-number)
+          min (parse-number)
           _ (parse-expression-end)
-          (succeed (parse-integer number)))
+          (succeed (parse-integer min)))
     max (<? (>>!
               _ (>> (parse-whitespace)
                     (parse-constant "max:")
                     (parse-whitespace))
-              number (parse-number)
+              max (parse-number)
               _ (parse-expression-end)
-              ([d]if (>= (parse-integer number)
+              ([d]if (>= (parse-integer max)
                          min)
                   (succeed max)
                 (fail `(:malformed-word-length ,min ,max))))
@@ -220,7 +220,12 @@
           (parse-newline))
     nuclei (parse-cluster-definitions glyphs categories)
     _ (parse-expression-end)
-    (succeed (todo min max begin mid end nuclei))))
+    (succeed (image (lambda (count)
+                      (append begin (intersperse mid (repeat count nuclei))
+                              end))
+                    (convert 'set
+                             (loop :for count :from min :to max
+                                :collect count))))))
 
 (defmethod string<-word ((word cons)
                          (glyphs map))
