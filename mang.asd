@@ -44,8 +44,7 @@
       "phonotactics"
       :depends-on ("globals")
       :components
-      ((:file "glyph")
-       (:file "phonology")
+      ((:file "phonology")
        (:file "word")
        (:file "sonority")
        ))
