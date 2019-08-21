@@ -19,7 +19,7 @@
               (parse-constant ">"))
         ([av]if (@ categories name)
             (succeed it)
-          `(:unknown-category ,name)))
+          (fail `(:unknown-category ,name))))
       (>>!
         _ (parse-whitespace)
         name (parse-unicode-property "Letter")
