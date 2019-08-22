@@ -164,12 +164,15 @@
                     (>>!
                       _ (parse-constant "(")
                       alternatives (_alternatives)
-                      final (>> (parse-whitespace)
-                                (// (<$ (parse-constant ")")
-                                        (empty-set))
-                                    (<$ (parse-constant "|)")
-                                        (set '()))))
-                      (succeed (union alternatives final))))
+                      _ (>> (parse-whitespace)
+                            (parse-constant ")"))
+                      (succeed (with alternatives '())))
+                    (>>!
+                      _ (parse-constant "[")
+                      alternatives (_alternatives)
+                      _ (>> (parse-whitespace)
+                            (parse-constant "]"))
+                      (succeed alternatives)))
           back (<? (parse-cluster-definition glyphs categories))
           (succeed `(,front ,@back))))))
 
