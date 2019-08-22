@@ -154,16 +154,22 @@
             (parse-constant "()"))
         (>>!
           _ (parse-whitespace)
-          front (// (parse-category categories)
+          front (// (<$> (parse-category categories)
+                         (lambda (category)
+                           (convert 'set
+                                    category)))
                     (<$> (parse-glyph-for-generator glyphs)
                          (lambda (glyph)
                            (set glyph)))
                     (>>!
                       _ (parse-constant "(")
                       alternatives (_alternatives)
-                      _ (>> (parse-whitespace)
-                            (parse-constant ")"))
-                      (succeed alternatives)))
+                      final (>> (parse-whitespace)
+                                (// (<$ (parse-constant ")")
+                                        (empty-set))
+                                    (<$ (parse-constant "|)")
+                                        (set '()))))
+                      (succeed (union alternatives final))))
           back (<? (parse-cluster-definition glyphs categories))
           (succeed `(,front ,@back))))))
 
