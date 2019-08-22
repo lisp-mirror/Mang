@@ -27,16 +27,31 @@
             (succeed it)
           (fail `(:unknown-category ,name))))))
 
-(defun parse-syllable-generator (categories)
+(defun parse-glyph-for-generator (glyphs)
+  (>>!
+    _ (parse-whitespace)
+    glyph (// (>>!
+                _ (>> (parse-constant "<")
+                      (parse-whitespace))
+                glyph (parse-identifier *mang-reserved-symbols*)
+                _ (>> (parse-whitespace)
+                      (parse-constant ">"))
+                (succeed glyph))
+              (parse-anything))
+    ([av]if (@ glyphs glyph)
+        (succeed it)
+      (fail `(:unknown-glyph ,glyph)))))
+
+(defun parse-syllable-generator (glyphs categories)
   (declare (type map categories))
   (labels ((_alternatives ()
              (>>!
                _ (parse-whitespace)
-               front (parse-syllable-generator categories)
+               front (parse-syllable-generator glyphs categories)
                back (many (>> (parse-whitespace)
                               (parse-constant "|")
                               (parse-whitespace)
-                              (<? (parse-syllable-generator categories)))
+                              (<? (parse-syllable-generator glyphs categories)))
                           (empty-set)
                           (lambda (front back)
                             (with back front)))
@@ -47,16 +62,17 @@
                      (lambda (category)
                        (convert 'set
                                 category)))
+                (parse-glyph-for-generator glyphs)
                 (>>!
                   _ (parse-constant "(")
                   alternatives (_alternatives)
                   _ (>> (parse-whitespace)
                         (parse-constant ")"))
                   (succeed alternatives)))
-      back (<? (parse-syllable-generator categories))
+      back (<? (parse-syllable-generator glyphs categories))
       (succeed `(,front ,@back)))))
 
-(defun parse-syllable-definition (categories)
+(defun parse-syllable-definition (glyphs categories)
   (declare (type map categories))
   (>>!
     _ (parse-whitespace)
@@ -64,17 +80,17 @@
     _ (>> (parse-whitespace)
           (parse-constant ":=")
           (parse-whitespace))
-    definition (parse-syllable-generator categories)
+    definition (parse-syllable-generator glyphs categories)
     _ (parse-expression-end)
     (succeed `(,name ,definition))))
 
-(defun parse-syllable-definitions (categories)
+(defun parse-syllable-definitions (glyphs categories)
   (declare (type map categories))
   (>> (parse-whitespace)
       (parse-constant "syllables:")
       (parse-newline)
       (parse-whitespace)
-      (many (parse-syllable-definition categories)
+      (many (parse-syllable-definition glyphs categories)
             (empty-map)
             (lambda (definition definitions)
               (bind (((name definition)
@@ -121,21 +137,6 @@
         (lambda (syls words)
           (cross-product #'append
                          syls words))))
-
-(defun parse-glyph-for-generator (glyphs)
-  (>>!
-    _ (parse-whitespace)
-    glyph (// (>>!
-                _ (>> (parse-constant "<")
-                      (parse-whitespace))
-                glyph (parse-identifier *mang-reserved-symbols*)
-                _ (>> (parse-whitespace)
-                      (parse-constant ">"))
-                (succeed glyph))
-              (parse-anything))
-    ([av]if (@ glyphs glyph)
-        (succeed it)
-      (fail `(:unknown-glyph ,glyph)))))
 
 (defmethod parse-cluster-definition (glyphs categories)
   (labels ((_alternatives ()
