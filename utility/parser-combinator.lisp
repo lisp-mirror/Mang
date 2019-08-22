@@ -315,6 +315,13 @@
             (parse-unicode-property "Control"))
         nil (constantly nil)))
 
+(defun parse-whitespace-no-newline ()
+  (many (?? (^< (parse-newline))
+            (fail `(:newline-found))
+            (// (parse-unicode-property "Whitespace")
+                (parse-unicode-property "Control")))
+        nil (constantly nil)))
+
 (defun parse-identifier (&optional (reserved (empty-set)))
   (some (>>!
           parsed (parse-anything)
