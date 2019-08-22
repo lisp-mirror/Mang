@@ -51,7 +51,7 @@
                back (many (>> (parse-whitespace-no-newline)
                               (parse-constant "|")
                               (parse-whitespace-no-newline)
-                              (<? (parse-syllable-generator glyphs categories)))
+                              (parse-syllable-generator glyphs categories))
                           (empty-set)
                           (lambda (front back)
                             (with back front)))
@@ -64,11 +64,17 @@
                                 category)))
                 (parse-glyph-for-generator glyphs)
                 (>>!
+                  _ (parse-constant "[")
+                  alternatives (_alternatives)
+                  _ (>> (parse-whitespace-no-newline)
+                        (parse-constant "]"))
+                  (succeed alternatives))
+                (>>!
                   _ (parse-constant "(")
                   alternatives (_alternatives)
                   _ (>> (parse-whitespace-no-newline)
                         (parse-constant ")"))
-                  (succeed alternatives)))
+                  (succeed (with alternatives '()))))
       back (<? (parse-syllable-generator glyphs categories))
       (succeed `(,front ,@back)))))
 
@@ -138,6 +144,8 @@
 (defun parse-syllables-generator (glyphs categories)
   (>>!
     _ (>> (parse-whitespace)
+          (parse-constant "#syllables-generator:")
+          (parse-whitespace)
           (parse-constant "#syllable-specs:")
           (parse-expression-end)
           (parse-whitespace))
