@@ -119,7 +119,6 @@
   (>> (parse-whitespace)
       (parse-constant "#glyphs:")
       (parse-newline)
-      (parse-whitespace)
       (many (>> (parse-whitespace)
                 (parse-glyph-definition features valued-features))
             (empty-map (empty-set))
