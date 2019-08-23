@@ -142,5 +142,5 @@
                    (parse-phonology)
                    _ (>> (parse-whitespace)
                          (parse-eof))
-                   (succeed `(,binary-features valued-features glyphs)))
+                   (succeed `(,binary-features ,valued-features ,glyphs)))
                  stream)))
