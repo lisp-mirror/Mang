@@ -8,6 +8,42 @@
           (parse-expression-end))
     (fail `(:expression-not-over))))
 
+(defun parse-category-definition (glyphs)
+  (>>!
+    _ (parse-whitespace)
+    name (parse-identifier *mang-reserved-symbols*)
+    _ (>> (parse-whitespace)
+          (parse-constant ":=")
+          (parse-whitespace))
+    glyph (>>!
+            name (parse-identifier *mang-reserved-symbols*)
+            ([av]if (@ glyphs name)
+                (succeed it)
+              (fail `(:unknown-glyph ,name))))
+    glyphs (many (>>!
+                   _ (>> (parse-whitespace)
+                         (parse-constant ",")
+                         (parse-whitespace))
+                   name (parse-identifier *mang-reserved-symbols*)
+                   ([av]if (@ glyphs name)
+                       (succeed it)
+                     (fail `(:unknown-glyph ,name))))
+                 '() #'cons)
+    _ (parse-expression-end)
+    (succeed `(,name (,glyph ,@glyphs)))))
+
+(defun parse-category-definitions (glyphs)
+  (>> (parse-whitespace)
+      (parse-constant "#categories:")
+      (parse-newline)
+      (parse-whitespace)
+      (many (parse-category-definition glyphs)
+            (empty-map (empty-map))
+            (lambda (category categories)
+              (bind (((name contents)
+                      category))
+                (with categories name contents))))))
+
 (defun parse-category (categories)
   (declare (type map categories))
   (// (>>!
@@ -162,7 +198,7 @@
                      (lambda (word-spec word-specs)
                        (with word-specs word-spec)))
     _ (parse-expression-end)
-    (succeed (with word-specs word-spec))))
+    (succeed (dfsm<- (with word-specs word-spec)))))
 
 (defmethod parse-cluster-definition (glyphs categories)
   (labels ((_alternatives ()
@@ -264,12 +300,24 @@
           (parse-newline))
     nuclei (parse-cluster-definitions glyphs categories)
     _ (parse-expression-end)
-    (succeed (image (lambda (count)
-                      (list begin (intersperse mid (repeat count nuclei))
-                            end))
-                    (convert 'set
-                             (loop :for count :from min :to max
-                                :collect count))))))
+    (succeed (dfsm<- (image (lambda (count)
+                              (list begin (intersperse mid (repeat count
+                                                                   nuclei))
+                                    end))
+                            (convert 'set
+                                     (loop :for count :from min :to max
+                                        :collect count)))))))
+
+(defun load-generator (file glyphs)
+  (with-open-file (stream file)
+    (parser-call (>>!
+                   categories (parse-category-definitions glyphs)
+                   generator (// (parse-syllables-generator glyphs categories)
+                                 (parse-clusters-generator glyphs categories))
+                   _ (>> (parse-whitespace)
+                         (parse-eof))
+                   (succeed generator))
+                 stream)))
 
 (defmethod string<-word ((word cons)
                          (glyphs map))

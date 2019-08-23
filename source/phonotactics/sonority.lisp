@@ -88,7 +88,7 @@
 
 (defmethod syllabalize ((word cons)
                         (hierarchy cons)
-                        prefer-open?)
+                        &optional (prefer-open? t))
   (declare (type boolean prefer-open?))
   (apply #'append
          (intersperse '("")
@@ -105,8 +105,33 @@
 
 (defmethod resyllabalize ((word cons)
                           (hierarchy cons)
-                          prefer-open?)
+                          &optional (prefer-open? t))
   (declare (type boolean prefer-open?))
   (syllabalize (remove "" word
                        :test #'string=)
                hierarchy prefer-open?))
+
+(defun parse-sonority-class (glyphs categories)
+  (declare (type map glyphs categories))
+  (>>!
+    _ (parse-whitespace)
+    front (// (parse-from-map categories)
+              (parse-from-map glyphs))
+    back (many (>> (parse-whitespace)
+                   (parse-constant ",")
+                   (parse-whitespace)
+                   (// (parse-from-map categories)
+                       (parse-from-map glyphs)))
+               (empty-set)
+               (lambda (phoneme phonemes)
+                 (with phonemes phoneme)))
+    _ (parse-expression-end)
+    (succeed (with back front))))
+
+(defun parse-sonority-hierarchy (glyphs categories)
+  (declare (type map glyphs categories))
+  (>> (parse-whitespace)
+      (parse-constant "#sonority-hierarchy:")
+      (parse-expression-end)
+      (some (parse-sonority-class glyphs categories)
+            '() #'cons)))

@@ -52,7 +52,7 @@
 
 (defmethod resyllabalize ((word word)
                           (hierarchy cons)
-                          prefer-open?)
+                          &optional (prefer-open? t))
   (declare (type boolean prefer-open?))
   (word (resyllabalize (form<- word)
                        hierarchy prefer-open?)
