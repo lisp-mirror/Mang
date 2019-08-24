@@ -169,3 +169,9 @@
                                                            (constantly t)))
                                        features))))
                  "]"))
+
+(defun augment-feature-set (feature-set overwrite absent)
+  (filter (lambda (k v)
+            (declare (ignore v))
+            (not (@ absent k)))
+          (map-union feature-set overwrite)))

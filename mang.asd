@@ -57,10 +57,6 @@
                          "glyphs"
                          "categories"))
      (:file "sonority")  ; TODO: figure out how to describe and use sonority
-     (:file "dictionary"
-            :depends-on ("globals"
-                         "blocks"
-                         "glyphs"))
      (:module
       "language"
       :components
