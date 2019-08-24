@@ -71,4 +71,9 @@
 
 (defun load-by-parser (parser file)
   (with-open-file (stream file)
-    (parser-call parser stream)))
+    (parser-call (>>!
+                   result parser
+                   _ (>> (parse-whitespace)
+                         (parse-eof))
+                   (succeed result))
+                 stream)))
