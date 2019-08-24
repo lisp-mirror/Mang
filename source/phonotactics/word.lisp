@@ -1,44 +1,5 @@
 (in-package #:mang)
 
-(defmethod parse-cluster-definition (glyphs categories)
-  (labels ((_alternatives ()
-             (>>!
-               _ (parse-whitespace-no-newline)
-               front (parse-cluster-definition glyphs categories)
-               back (many (>> (parse-whitespace-no-newline)
-                              (parse-constant "|")
-                              (parse-whitespace-no-newline)
-                              (_alternatives))
-                          (empty-set)
-                          (lambda (alternative alternatives)
-                            (with alternatives alternative)))
-               (succeed (with back front)))))
-    (// (>> (parse-whitespace-no-newline)
-            (parse-constant "()"))
-        (>>!
-          _ (parse-whitespace-no-newline)
-          front (// (<$> (parse-category-w categories)
-                         (lambda (category)
-                           (convert 'set
-                                    category)))
-                    (<$> (parse-glyph-for-generator glyphs)
-                         (lambda (glyph)
-                           (set glyph)))
-                    (>>!
-                      _ (parse-constant "(")
-                      alternatives (_alternatives)
-                      _ (>> (parse-whitespace-no-newline)
-                            (parse-constant ")"))
-                      (succeed (with alternatives '())))
-                    (>>!
-                      _ (parse-constant "[")
-                      alternatives (_alternatives)
-                      _ (>> (parse-whitespace-no-newline)
-                            (parse-constant "]"))
-                      (succeed alternatives)))
-          back (<? (parse-cluster-definition glyphs categories))
-          (succeed `(,front ,@back))))))
-
 (defun parse-cluster-definitions (glyphs categories)
   (>>!
     _ (parse-whitespace)
