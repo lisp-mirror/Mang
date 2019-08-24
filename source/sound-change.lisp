@@ -315,6 +315,7 @@
                ,(empty-set)
                ,(empty-set)
                ,(empty-map)
+               ,(empty-map)
                ,(empty-map (empty-set))))
         _ (parse-whitespace-no-newline)
         register (<? (parse-register)
@@ -349,7 +350,7 @@
             ,(less feature-registers register)
             ,(if category
                  (less phoneme-registers register)
-                 phoneme-registers)
+                 (with phoneme-registers register))
             ,(if category
                  (with category-registers register)
                  category-registers))))
@@ -385,3 +386,75 @@
                     ,(fst-sequence emit emits)
                     ,feature-registers ,phoneme-registers
                     ,category-registers)))))
+
+(defun parse-compare/write (binary-features valued-features privative-features
+                            glyphs categories feature-registers
+                            phoneme-registers category-registers)
+  (declare (type set binary-features privative-features phoneme-registers
+                 category-registers)
+           (type map valued-features glyphs categories feature-registers))
+  (// (<$> (>>!
+             category (// (parse-category categories)
+                          (parse-constant "."))
+             _ (parse-whitespace-no-newline)
+             (constant-features present-features absent-features
+                                comp-feature-registers write-feature-registers
+                                feature-registers)
+             (<? (parse-features binary-features valued-features
+                                 privative-features feature-registers
+                                 phoneme-registers category-registers)
+                 `(,(empty-map)
+                    ,(empty-set)
+                    ,(empty-set)
+                    ,(empty-map)
+                    ,(empty-map)
+                    ,(empty-map (empty-set))))
+             _ (parse-whitespace-no-newline)
+             register (<? (parse-register))
+             (succeed
+              `(,(fst-sequence*
+                  (fst-compare-features constant-features present-features
+                                        absent-features)
+                  (fst-compare-register comp-feature-registers)
+                  (cond
+                    ((and category register (@ category-registers register))
+                     (fst-sequence (fst-check-category category)
+                                   (fst-compare-register register)))
+                    ((and category register (@ phoneme-registers register))
+                     (fst-sequence (fst-compare-register register)
+                                   (fst-write-category category register)))
+                    ((and category register)
+                     ([av]if (@ feature-registers register)
+                         (fst-sequence (fst-compare-features it)
+                                       (fst-write-category category register))
+                       (fst-write-category category register)))
+                    (category
+                     (fst-check-category category))
+                    ((and register (or (@ phoneme-registers register)
+                                       (@ category-registers register)))
+                     (fst-compare-register register))
+                    (register
+                     ([av]if (@ feature-registers register)
+                         (fst-sequence (fst-compare-features it)
+                                       (fst-write-register register))
+                       (fst-write-register)))
+                    (t (empty-fst))))
+                 ,(if register
+                      (less feature-registers register)
+                      feature-registers)
+                 ,(if (or category (not register))
+                      (less phoneme-registers register)
+                      (with phoneme-registers register))
+                 ,(if (and category register)
+                      (with category-registers register)
+                      category-registers))))
+           (lambda (action)
+             (bind (((action feature-registers phoneme-registers
+                             category-registers)
+                     action))
+               `(,(fst-sequence action (fst-consume))
+                  ,feature-registers ,phoneme-registers ,category-registers))))
+      (<$> (parse-glyphs-comp glyphs)
+           (lambda (action)
+             `(,action ,feature-registers ,phoneme-registers
+                       ,category-registers)))))
