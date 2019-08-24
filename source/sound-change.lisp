@@ -556,3 +556,58 @@
                           glyphs categories feature-registers phoneme-registers
                           category-registers)
         (succeed (fst-sequence first rest)))))
+
+(defun parse-sound-change (binary-features valued-features privative-features
+                           glyphs categories)
+  (declare (type set binary-features privative-features)
+           (type map valued-features glyphs categories))
+  (>>!
+    before (parse-to (>> (parse-whitespace-no-newline)
+                         (// (parse-constant "->")
+                             (parse-constant "→"))))
+    _ (parse-whitespace-no-newline)
+    after (parse-to (>> (parse-whitespace-no-newline)
+                        (^< (// (parse-constant "/")
+                                (parse-expression-end)))))
+    _ (parse-whitespace-no-newline)
+    (pre post)
+    (<? (>>!
+          _ (>> (parse-whitespace-no-newline)
+                (parse-constant "/"))
+          pre (parse-to (>> (parse-whitespace-no-newline)
+                            (parse-constant "_")))
+          _ (parse-whitespace-no-newline)
+          post (parse-to (>> (parse-whitespace-no-newline)
+                             (parse-expression-end))))
+        `("" ""))
+    (pre-write/comp pre-emit feature-registers phoneme-registers
+                    category-registers)
+    (^$ (parse-pre/post binary-features valued-features privative-features
+                        glyphs categories (empty-map (empty-set))
+                        (empty-set)
+                        (empty-set)))
+    (before-write/comp feature-registers phoneme-registers category-registers)
+    (^$ (parse-before binary-features valued-features privative-features glyphs
+                      categories feature-registers phoneme-registers
+                      category-registers))
+    (post-write/comp post-emit feature-registers phoneme-registers
+                     category-registers)
+    (^$ (parse-pre/post binary-features valued-features privative-features
+                        glyphs categories feature-registers phoneme-registers
+                        category-registers))
+    after-emit
+    (^$ (parse-after binary-features valued-features privative-features glyphs
+                     categories feature-registers phoneme-registers
+                     category-registers))
+    (if (and (empty-fst? pre-write/comp)
+             (empty-fst? before-write/comp)
+             (empty-fst? post-write/comp))
+        (fail `(:empty-pre-before-post ,after-emit))
+        (succeed (fst-repeat (fst-preferred (fst-sequence* pre-write/comp
+                                                           before-write/comp
+                                                           post-write/comp
+                                                           pre-emit
+                                                           after-emit
+                                                           post-emit)
+                                            (fst-elementary #'true #'list
+                                                            :consume? t)))))))
