@@ -31,6 +31,5 @@
 
 (defmethod in-category? ((phoneme map)
                          (category sequence))
-  (position-if (lambda (features)
-                 (has-features? phoneme features))
-               category))
+  (position phoneme category
+            :test #'equal?))
