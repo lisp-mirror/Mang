@@ -62,9 +62,10 @@
     definition parser
     (succeed `(,name ,definition))))
 
-(defun parse-definitions (parser &optional (d (empty-set))
+(defun parse-definitions (parser &optional (d (empty-map))
                                    (f (lambda (definition definitions)
-                                        (with definitions definition))))
+                                        (with definitions (first definition)
+                                              (second definition)))))
   (declare (type function parser f))
   (parse-lines (parse-definition parser)
                d f))
