@@ -70,18 +70,6 @@
               :depends-on ("dictionary"))
        (:file "export")
        ))
-     (:module
-      "history"
-      :depends-on ("globals")
-      :components
-      ((:file "sound-change")
-       ))
-     (:module
-      "presentation"
-      ;; example sentences, glosses and stuff
-      :components
-      (
-       ))
      ))
    #+nil
    (:module
