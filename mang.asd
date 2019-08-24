@@ -40,12 +40,15 @@
     :depends-on ("package" "utility")
     :components
     ((:file "globals")
+     (:file "blocks")
+     (:file "features"
+            :depends-on ("globals"
+                         "blocks"))
      (:module
       "phonotactics"
       :depends-on ("globals")
       :components
-      ((:file "phonology")
-       (:file "word")
+      ((:file "word")
        (:file "sonority")
        ))
      (:module
@@ -72,17 +75,6 @@
       ;; example sentences, glosses and stuff
       :components
       (
-       ))
-     (:module
-      "load"
-      :depends-on ("phonotactics"
-                   "grammar"
-                   "language"
-                   "history")
-      :components
-      ((:file "blocks")
-       (:file "features"
-              :depends-on ("blocks"))
        ))
      ))
    #+nil

@@ -53,23 +53,6 @@
                d f)
     (succeed (funcall f first rest))))
 
-(defun parse-definition (parser)
-  (>>!
-    name (parse-identifier *mang-reserved-symbols*)
-    _ (>> (parse-whitespace-no-newline)
-          (parse-constant ":=")
-          (parse-whitespace-no-newline))
-    definition parser
-    (succeed `(,name ,definition))))
-
-(defun parse-definitions (parser &optional (d (empty-map))
-                                   (f (lambda (definition definitions)
-                                        (with definitions (first definition)
-                                              (second definition)))))
-  (declare (type function parser f))
-  (parse-lines (parse-definition parser)
-               d f))
-
 (defun load-by-parser (parser file)
   (with-open-file (stream file)
     (parser-call (>>!
