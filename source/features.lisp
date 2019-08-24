@@ -126,7 +126,8 @@
                       ,(empty-set)
                       ,(set feature))))))))
 
-(defun parse-feature-match (binary-features valued-features privative-features)
+(defun parse-feature-set-with-absent (binary-features valued-features
+                                      privative-features)
   (declare (type set binary-features privative-features)
            (type map valued-features))
   (>>!
