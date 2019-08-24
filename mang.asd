@@ -56,17 +56,11 @@
                          "blocks"
                          "glyphs"
                          "categories"))
-     (:module
-      "phonotactics"
-      :depends-on ("globals")
-      :components
-      ((:file "sonority")
-       ))
-     (:module
-      "grammar"
-      :components
-      (
-       ))
+     (:file "sonority")  ; TODO: figure out how to describe and use sonority
+     (:file "dictionary"
+            :depends-on ("globals"
+                         "blocks"
+                         "glyphs"))
      (:module
       "language"
       :components
