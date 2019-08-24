@@ -14,9 +14,19 @@
     (succeed (map (name phoneme)
                   :default (empty-map)))))
 
+(defun parse-glyph-definitions (binary-features valued-features
+                                privative-features)
+  (declare (type set binary-features privative-features)
+           (type map valued-features))
+  (parse-lines (parse-glyph-definition binary-features valued-features
+                                       privative-features)
+               (empty-map (empty-set))
+               (lambda (glyph glyphs)
+                 (map-union glyphs glyph))))
+
 (defun parse-glyph-section (binary-features valued-features privative-features)
   (declare (type set binary-features privative-features)
            (type map valued-features))
   (parse-section "glyphs"
-                 (parse-glyph-definition binary-features valued-features
-                                         privative-features)))
+                 (parse-glyph-definitions binary-features valued-features
+                                          privative-features)))
