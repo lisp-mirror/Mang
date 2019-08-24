@@ -253,32 +253,106 @@
                (bind (((valued present absent)
                        feature))
                  `(,valued ,present ,absent ,(empty-map)
+                           ,(empty-map)
                            ,(empty-map (empty-set))))))
         (<$> (parse-register-feature binary-features valued-features
                                      privative-features)
              (lambda (feature)
                (bind (((feature register)
                        feature))
-                 `(,(empty-map)
-                    ,(empty-set)
-                    ,(empty-set)
-                    ,(map (feature register))
-                    ,(map (register (set feature))))))))
+                 (if (@ (@ feature-registers register)
+                        feature)
+                     `(,(empty-map)
+                        ,(empty-set)
+                        ,(empty-set)
+                        ,(map (feature register))
+                        ,(empty-map)
+                        ,(empty-map (empty-set)))
+                     `(,(empty-map)
+                        ,(empty-set)
+                        ,(empty-set)
+                        ,(empty-map)
+                        ,(map (feature register))
+                        ,(map (register (set feature))
+                              :default (empty-set))))))))
     ","
     `(,(empty-map)
        ,(empty-set)
        ,(empty-set)
        ,(empty-map)
+       ,(empty-map)
        ,(empty-map (empty-set)))
     (lambda (feature features)
-      (bind (((constant present absent register feature-register)
+      (bind (((constant present absent comp-register write-register
+                        feature-register)
               feature)
-             ((constants presents absents registers feature-registers)
+             ((constants presents absents comp-registers write-registers
+                         feature-registers)
               features))
         `(,(map-union constants constant)
            ,(union presents present)
            ,(union absents absent)
-           ,(map-union registers register)
+           ,(map-union comp-registers comp-register)
+           ,(map-union write-registers write-register)
            ,(map-union feauture-registers feature-register
                        #'union)))))
    "]"))
+
+(defun parse-comp/write-emit (binary-features valued-features privative-features
+                              glyphs categories feature-registers
+                              phoneme-registers category-registers)
+  (// (>>!
+        category (// (parse-category categories)
+                     (parse-constant "."))
+        _ (parse-whitespace-no-newline)
+        (constant-features present-features absent-features
+                           comp-feature-registers write-feature-registers
+                           feature-registers)
+        (<? (parse-features binary-features valued-features privative-features
+                            feature-registers phoneme-registers
+                            category-registers)
+            `(,(empty-map)
+               ,(empty-set)
+               ,(empty-set)
+               ,(empty-map)
+               ,(empty-map (empty-set))))
+        _ (parse-whitespace-no-newline)
+        register (<? (parse-register)
+                     (gensym))
+        (succeed
+         `(,(fst-sequence*
+             (fst-compare-features constant-features present-features
+                                   absent-features)
+             (fst-compare-register comp-feature-registers)
+             (fst-write-features write-feature-registers)
+             (cond
+               ((and category (@ category-registers register))
+                (fst-sequence (fst-check-category category)
+                              (fst-compare-register register)))
+               ((and category (@ phoneme-registers register))
+                (fst-sequence (fst-compare-register register)
+                              (fst-write-category category register)))
+               (category
+                ([av]if (@ feature-registers register)
+                    (fst-sequence (fst-compare-features it)
+                                  (fst-write-category category register))
+                  (fst-write-category category register)))
+               ((or (@ phoneme-registers register)
+                    (@ category-registers register))
+                (fst-compare-register register))
+               (t
+                ([av]if (@ feature-registers register)
+                    (fst-sequence (fst-compare-features it)
+                                  (fst-write-register register))
+                  (fst-write-register register)))))
+            ,(less feature-registers register)
+            ,(if category
+                 (less phoneme-registers register)
+                 phoneme-registers)
+            ,(if category
+                 (with category-registers register)
+                 category-registers))))
+      (<$> (parse-glyphs-comp-emit glyphs)
+           (lambda (action)
+             `(,@action ,feature-registers ,phoneme-registers
+                        ,category-registers)))))

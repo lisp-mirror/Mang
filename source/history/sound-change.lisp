@@ -16,62 +16,6 @@
            (run-fst sound-change (form<- word)))))
 
 ;;;; Parser
-(defun parse-compare/write-emit (glyphs categories features valued-features
-                                 open-registers closed-registers)
-  (declare (type set features closed-registers)
-           (type map glyphs categories valued-features open-registers))
-  (// (<$> (parse-glyphs-comp-emit glyphs)
-           (lambda (action)
-             `(,@action ,open-registers ,closed-registers)))
-      (<$> (>>!
-             category (// (parse-category categories)
-                          (parse-constant "."))
-             _ (parse-whitespace)
-             (constant-features register-features-compare
-                                register-features-write open-registers)
-             (<? (parse-features features valued-features open-registers
-                                 closed-registers)
-                 `(,(empty-map)
-                    ,(empty-map)
-                    ,(empty-map)
-                    ,open-registers))
-             _ (parse-whitespace)
-             register (<? (parse-register)
-                          (gensym))
-             (succeed
-              `(,(fst-sequence*
-                  (fst-write-features register-features-write)
-                  (fst-compare-register register-features-compare)
-                  (fst-compare-features constant-features)
-                  (cond
-                    ((and category (@ closed-registers register))
-                     (fst-sequence* (fst-compare-register register)
-                                    (fst-check-category category)))
-                     (category
-                      ([av]if (@ open-registers register)
-                          (fst-sequence* (fst-compare-features it)
-                                         (fst-write-category category register))
-                        (fst-write-category category register)))
-                     ((@ closed-registers register)
-                      (fst-compare-register register))
-                     (t
-                      ([av]if (@ open-registers register)
-                          (fst-sequence* (fst-compare-features it)
-                                         (fst-write-register register))
-                        (fst-write-register register)))))
-                 ,(fst-emit-register register)
-                 ,(less open-registers register)
-                 ,(with closed-registers register))))
-           (lambda (action)
-             (bind (((comp/write-action
-                      emit-action
-                      &optional
-                      (open-registers (empty-map (empty-set)))
-                      (closed-registers (empty-set)))
-                     action))
-               `(,(fst-sequence* comp/write-action (fst-consume))
-                  ,emit-action ,open-registers ,closed-registers))))))
-
 ;;; -> pre-write/comp pre-emit open-registers closed-registers
 (defun parse-pre/post (glyphs categories features valued-features
                        &optional (open-registers (empty-map (empty-set)))
