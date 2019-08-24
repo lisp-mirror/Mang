@@ -37,15 +37,17 @@
     definition (>> (parse-whitespace)
                    (parse-constant ":=")
                    (parse-whitespace)
-                   (parse-syllable-generator))
+                   (parse-syllable-generator glyphs categories))
     (succeed `(,name ,definition))))
 
 (defun parse-syllable-block (glyphs categories)
   (parse-subsection "syllables"
                     (parse-lines (parse-syllable-definition glyphs categories)
-                                 (empty-set)
+                                 (empty-map)
                                  (lambda (syllable syllables)
-                                   (with syllables syllable)))))
+                                   (bind (((name gen)
+                                           syllable))
+                                     (with syllables name gen))))))
 
 (defun parse-wordgen-spec (syllables)
   (>>!
@@ -70,10 +72,22 @@
                      `(,count ,count)))))
         `(1 1))
     _ (parse-whitespace-no-newline)
-    back (parse-word-spec syllables)
+    back (parse-wordgen-spec syllables)
     (succeed (image (lambda (count)
                       `(,@(repeat count gen)
                           ,@back))
                     (convert 'set
                              (loop :for n :from min :to max
                                 :collect n))))))
+
+(defun parse-wordgen-specs-block (syllables)
+  (parse-subsection "word-generators"
+                    (parse-lines (parse-wordgen-spec syllables)
+                                 (empty-set)
+                                 #'union)))
+
+(defun parse-wordgen-block (glyphs categories)
+  (>>!
+    syllables (parse-syllable-block glyphs categories)
+    gen (parse-wordgen-specs-block syllables)
+    (succeed (dfsm<- gen))))

@@ -1,35 +1,5 @@
 (in-package #:mang)
 
-(defun parse-syllables-word-spec (syllables)
-  (some (parse-syllables-spec syllables)
-        (set '())
-        (lambda (syls words)
-          (cross-product #'append
-                         syls words))))
-
-(defun parse-syllables-generator (glyphs categories)
-  (>>!
-    _ (>> (parse-whitespace)
-          (parse-constant "#syllables-generator:")
-          (parse-whitespace)
-          (parse-constant "#syllable-specs:")
-          (parse-expression-end)
-          (parse-whitespace))
-    syllables (parse-syllable-definitions glyphs categories)
-    _ (>> (parse-whitespace)
-          (parse-constant "#word-specs:")
-          (parse-expression-end)
-          (parse-whitespace))
-    word-spec (parse-syllables-word-spec syllables)
-    word-specs (many (>> (parse-expression-end)
-                         (parse-whitespace)
-                         (parse-syllables-word-spec syllables))
-                     (empty-set)
-                     (lambda (word-spec word-specs)
-                       (with word-specs word-spec)))
-    _ (parse-expression-end)
-    (succeed (dfsm<- (with word-specs word-spec)))))
-
 (defmethod parse-cluster-definition (glyphs categories)
   (labels ((_alternatives ()
              (>>!

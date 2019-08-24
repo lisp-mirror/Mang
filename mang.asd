@@ -52,7 +52,7 @@
                          "blocks"
                          "glyphs"))
      (:file "gen"
-            :depends-on ("glpbals"
+            :depends-on ("globals"
                          "blocks"
                          "glyphs"
                          "categories"))
