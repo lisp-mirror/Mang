@@ -20,6 +20,17 @@
       (parse-expression-end)
       parser))
 
+(defun parse-wrapped (before parser after)
+  (declare (type string before after)
+           (type function parser))
+  (>>!
+    _ (>> (parse-constant before)
+          (parse-whitespace))
+    result parser
+    _ (>> (parse-whitespace)
+          (parse-constant after))
+    (succeed result)))
+
 (defun parse-lines (parser &optional (d '())
                              (f #'cons))
   (many (>>!
