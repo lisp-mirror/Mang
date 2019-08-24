@@ -51,6 +51,11 @@
             :depends-on ("globals"
                          "blocks"
                          "glyphs"))
+     (:file "gen"
+            :depends-on ("glpbals"
+                         "blocks"
+                         "glyphs"
+                         "categories"))
      (:module
       "phonotactics"
       :depends-on ("globals")
