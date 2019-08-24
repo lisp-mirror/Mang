@@ -170,6 +170,14 @@
                                        features))))
                  "]"))
 
+(defun has-features? (phoneme features)
+  (declare (type map phoneme features))
+  (not (@ (gmap :set (lambda (feature value)
+                       (eql (@ phoneme feature)
+                            value))
+                (:map features))
+          nil)))
+
 (defun augment-feature-set (feature-set overwrite absent)
   (filter (lambda (k v)
             (declare (ignore v))

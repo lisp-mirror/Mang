@@ -28,3 +28,9 @@
     ([av]if (@ categories candidate)
         (succeed `(,candidate ,it))
       (fail `(:unknown-category ,candidate)))))
+
+(defmethod in-category? ((phoneme map)
+                         (category sequence))
+  (position-if (lambda (features)
+                 (has-features? phoneme features))
+               category))

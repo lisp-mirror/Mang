@@ -2,20 +2,6 @@
 
 ;;; .[+obstruent,-voice]1V2/.1[front2]V[round3]2/V3_
 
-(defun has-features? (phoneme features)
-  (declare (type map phoneme features))
-  (not (@ (gmap :set (lambda (feature value)
-                       (eql (@ phoneme feature)
-                            value))
-                (:map features))
-          nil)))
-
-(defmethod in-category? ((phoneme map)
-                         (category sequence))
-  (position-if (lambda (features)
-                 (has-features? phoneme features))
-               category))
-
 (defmethod apply-sound-change ((word word)
                                (sound-change fst))
   (bind ((*phoneme-registry* (make-hash-table :test 'equal))
