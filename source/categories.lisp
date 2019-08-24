@@ -21,3 +21,12 @@
 
 (defun parse-category-section (glyphs)
   (parse-section "categories" (parse-category-definitions glyphs)))
+
+(defun parse-category (categories)
+  (>>!
+    candidate (// (parse-wrapped "<" (parse-identifier *mang-reserved-symbols*)
+                                 ">")
+                  (parse-anything))
+    ([av]if (@ categories candidate)
+        (succeed `(,candidate ,it))
+      (fail `(:unknown-category ,candidate)))))
