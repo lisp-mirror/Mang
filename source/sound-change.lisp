@@ -537,3 +537,22 @@
                                       :register-supplement
                                       register-features)))))
       (parse-glyphs-emit glyphs)))
+
+(defun parse-after (binary-features valued-features privative-features glyphs
+                    categories feature-registers phoneme-registers
+                    category-registers)
+  (declare (type set binary-features privative-features phoneme-registers
+                 category-registers)
+           (type map valued-features glyphs categories feature-registers))
+  (// (<$ (>> (parse-whitespace)
+              (parse-eof))
+          (empty-fst))
+      (>>!
+        first (parse-emitter binary-features valued-features privative-features
+                             glyphs categories feature-registers
+                             phoneme-registers category-registers)
+        _ (parse-whitespace-no-newline)
+        rest (parse-after binary-features valued-features privative-features
+                          glyphs categories feature-registers phoneme-registers
+                          category-registers)
+        (succeed (fst-sequence first rest)))))

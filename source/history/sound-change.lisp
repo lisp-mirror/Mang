@@ -16,22 +16,6 @@
            (run-fst sound-change (form<- word)))))
 
 ;;;; Parser
-;;; -> after-emit
-(defun parse-after (glyphs categories features valued-features open-registers
-                    closed-registers)
-  (declare (type set features closed-registers)
-           (type map glyphs categories valued-features open-registers))
-  (// (<$ (>> (parse-whitespace)
-              (parse-eof))
-          (empty-fst))
-      (>>!
-        first (parse-emitter glyphs categories features valued-features
-                             open-registers closed-registers)
-        _ (parse-whitespace)
-        rest (parse-after glyphs categories features valued-features
-                          open-registers closed-registers)
-        (succeed (fst-sequence* first rest)))))
-
 (defun parse-sound-change (glyphs categories features valued-features)
   (declare (type set features)
            (type map glyphs categories valued-features))
