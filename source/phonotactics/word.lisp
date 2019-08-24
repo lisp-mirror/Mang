@@ -1,13 +1,5 @@
 (in-package #:mang)
 
-(defun parse-expression-end ()
-  (//!
-    _ (// (parse-newline)
-          (parse-eof))
-    _ (>> (parse-unicode-property "Whitespace")
-          (parse-expression-end))
-    (fail `(:expression-not-over))))
-
 (defun parse-category-definition (glyphs)
   (>>!
     _ (parse-whitespace)

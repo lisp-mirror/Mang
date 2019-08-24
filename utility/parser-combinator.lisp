@@ -322,6 +322,14 @@
                 (parse-unicode-property "Control")))
         nil (constantly nil)))
 
+(defun parse-expression-end ()
+  (//!
+    _ (// (parse-newline)
+          (parse-eof))
+    _ (>> (parse-unicode-property "Whitespace")
+          (parse-expression-end))
+    (fail `(:expression-not-over))))
+
 (defun parse-identifier (&optional (reserved (empty-set)))
   (some (>>!
           _ (??! symbol (^< (parse-from-set reserved))
