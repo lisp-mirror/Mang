@@ -16,29 +16,6 @@
            (run-fst sound-change (form<- word)))))
 
 ;;;; Parser
-;;; -> pre-write/comp pre-emit open-registers closed-registers
-(defun parse-pre/post (glyphs categories features valued-features
-                       &optional (open-registers (empty-map (empty-set)))
-                              (closed-registers (empty-set)))
-  (declare (type set features closed-registers)
-           (type map glyphs categories valued-features open-registers))
-  (// (<$ (>> (parse-whitespace)
-              (parse-eof))
-          `(,(empty-fst)
-             ,(empty-fst)
-             ,open-registers ,closed-registers))
-      (>>!
-        (first-write/comp first-emit open-registers closed-registers)
-        (parse-compare/write-emit glyphs categories features valued-features
-                                  open-registers closed-registers)
-        _ (parse-whitespace)
-        (rest-write/comp rest-emit open-registers closed-registers)
-        (parse-pre/post glyphs categories features valued-features
-                        open-registers closed-registers)
-        (succeed `(,(fst-sequence* first-write/comp rest-write/comp)
-                    ,(fst-sequence* first-emit rest-emit)
-                    ,open-registers ,closed-registers)))))
-
 (defun parse-compare/write (glyphs categories features valued-features
                             open-registers closed-registers)
   (declare (type set features closed-registers)

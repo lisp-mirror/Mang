@@ -345,6 +345,7 @@
                     (fst-sequence (fst-compare-features it)
                                   (fst-write-register register))
                   (fst-write-register register)))))
+            ,(fst-emit-register register)
             ,(less feature-registers register)
             ,(if category
                  (less phoneme-registers register)
@@ -356,3 +357,31 @@
            (lambda (action)
              `(,@action ,feature-registers ,phoneme-registers
                         ,category-registers)))))
+
+(defun parse-pre/post (binary-features valued-features privative-features glyphs
+                       categories feature-registers phoneme-registers
+                       category-registers)
+  (declare (type set binary-features privative-features phoneme-registers
+                 category-registers)
+           (type map valued-features glyphs categories feature-registers))
+  (// (<$ (>> (parse-whitespace)
+              (parse-eof))
+          `(,(empty-fst)
+             ,(empty-fst)
+             , feature-registers ,phoneme-registers ,category-registers))
+      (>>!
+        (comp/write emit feature-registers phoneme-registers category-registers)
+        (parse-comp/write-emit binary-features valued-features
+                               privative-features glyphs categories
+                               feature-registers phoneme-registers
+                               category-registers)
+        _ (parse-whitespace-no-newline)
+        (comp/writes emits feature-registers phoneme-registers
+                     category-registers)
+        (parse-pre/post binary-features valued-features privative-features
+                        glyphs categories feature-registers phoneme-registers
+                        category-registers)
+        (succeed `(,(fst-sequence comp/write comp/writes)
+                    ,(fst-sequence emit emits)
+                    ,feature-registers ,phoneme-registers
+                    ,category-registers)))))
