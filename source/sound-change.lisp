@@ -182,3 +182,103 @@
   (// (parse-number)
       (parse-wrapped "{" (parse-identifier *mang-reserved-symbols*)
                      "}")))
+
+(defun parse-register-feature (binary-features valued-features
+                               privative-features)
+  (declare (type set binary-features valued-features)
+           (type map privative-features))
+  (>>!
+    feature (parse-from-set (union (union binary-features privative-features)
+                                   (domain valued-features)))
+    register (parse-register)
+    `(,feature ,register)))
+
+(defun parse-features-emit (binary-features valued-features privative-features
+                            feature-registers phoneme-registers
+                            category-registers)
+  (declare (type set binary-features privative-features phoneme-registers
+                 category-registers)
+           (type map valued-features feature-registers))
+  (parse-wrapped
+   "["
+   (parse-separated (// (<$> (parse-feature-spec binary-features valued-features
+                                                 privative-features)
+                             (lambda (feature)
+                               (bind (((valued present _)
+                                       feature))
+                                 `(,(map-union (convert 'set present
+                                                        :key-fn #'identity
+                                                        :value-fn
+                                                        (constantly t))
+                                               valued)
+                                    ,(empty-map)))))
+                        (>>!
+                          (feature register)
+                          (parse-register-feature binary-features
+                                                     valued-features
+                                                     privative-features)
+                          (if (or (@ phoneme-registers register)
+                                  (@ category-registers register)
+                                  (@ (@ feature-registers register)
+                                     feature))
+                              (succeed `(,(empty-map)
+                                          ,(map (feature register))))
+                              (fail `(:compare-unwritten-feature ,register
+                                                                 ,feature)))))
+                    ","
+                    `(,(empty-map)
+                       ,(empty-map))
+                    (lambda (feature features)
+                      (bind (((constant register)
+                              feature)
+                             ((constants registers)
+                              features))
+                        `(,(map-union constants constant)
+                           ,(map-union registers register)))))
+   "]"))
+
+(defun parse-features (binary-features valued-features privative-features
+                       feature-registers phoneme-registers category-registers)
+  (declare (type set binary-features privative-features phoneme-registers
+                 category-registers)
+           (type map valued-features feature-registers))
+  (parse-wrapped
+   "["
+   (parse-separated
+    (// (<$> (parse-feature-spec binary-features valued-features
+                                 (union (union binary-features
+                                               privative-features)
+                                        (domain valued-features)))
+             (lambda (feature)
+               (bind (((valued present absent)
+                       feature))
+                 `(,valued ,present ,absent ,(empty-map)
+                           ,(empty-map (empty-set))))))
+        (<$> (parse-register-feature binary-features valued-features
+                                     privative-features)
+             (lambda (feature)
+               (bind (((feature register)
+                       feature))
+                 `(,(empty-map)
+                    ,(empty-set)
+                    ,(empty-set)
+                    ,(map (feature register))
+                    ,(map (register (set feature))))))))
+    ","
+    `(,(empty-map)
+       ,(empty-set)
+       ,(empty-set)
+       ,(empty-map)
+       ,(empty-map (empty-set)))
+    (lambda (feature features)
+      (bind (((constant present absent register feature-register)
+              feature)
+             ((constants presents absents registers feature-registers)
+              features))
+        `(,(map-union constants constant)
+           ,(union presents present)
+           ,(union absents absent)
+           ,(map-union registers register)
+           ,(map-union feauture-registers feature-register
+                       #'union)))))
+   "]"))
