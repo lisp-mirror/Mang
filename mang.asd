@@ -73,6 +73,15 @@
       :components
       (
        ))
+     (:module
+      "load"
+      :depends-on ("phonotactics"
+                   "grammar"
+                   "language"
+                   "history")
+      :components
+      ((:file "blocks")
+       ))
      ))
    #+nil
    (:module

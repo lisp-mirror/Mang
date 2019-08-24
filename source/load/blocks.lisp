@@ -1,0 +1,11 @@
+(in-package #:mang)
+
+(defun parse-section (name parser)
+  (declare (type string name)
+           (type function parser))
+  (>> (>> (parse-whitespace)
+          (parse-constant "##")
+          (parse-whitespace-no-newline)
+          (parse-constant name)
+          (parse-expression-end))
+      parser))
