@@ -30,3 +30,12 @@
   (parse-section "glyphs"
                  (parse-glyph-definitions binary-features valued-features
                                           privative-features)))
+
+(defun parse-glyph (glyphs)
+  (>>!
+    candidate (// (parse-anything)
+                  (parse-wrapped "<" (parse-identifier *mang-reserved-symbols*)
+                                 ">"))
+    ([av]if (@ glyphs candidate)
+        (succeed `(,candidate ,it))
+      (fail `(:unknown-glyph ,candidate)))))
