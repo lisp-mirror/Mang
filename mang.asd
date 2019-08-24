@@ -81,6 +81,8 @@
                    "history")
       :components
       ((:file "blocks")
+       (:file "features"
+              :depends-on ("blocks"))
        ))
      ))
    #+nil
