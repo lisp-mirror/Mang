@@ -44,6 +44,7 @@
      (:file "features"
             :depends-on ("globals"
                          "blocks"))
+     (:file "glyphs")
      (:module
       "phonotactics"
       :depends-on ("globals")
