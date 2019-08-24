@@ -57,7 +57,7 @@
 
 (defun parse-feature-section ()
   (parse-section
-   "feature"
+   "features"
    (parse-lines (parse-feature-definition)
                 `(,(empty-set)
                    ,(empty-map)
