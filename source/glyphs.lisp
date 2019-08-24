@@ -33,9 +33,9 @@
 
 (defun parse-glyph (glyphs)
   (>>!
-    candidate (// (parse-anything)
-                  (parse-wrapped "<" (parse-identifier *mang-reserved-symbols*)
-                                 ">"))
+    candidate (// (parse-wrapped "<" (parse-identifier *mang-reserved-symbols*)
+                                 ">")
+                  (parse-anything))
     ([av]if (@ glyphs candidate)
         (succeed `(,candidate ,it))
       (fail `(:unknown-glyph ,candidate)))))
