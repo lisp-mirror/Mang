@@ -16,62 +16,6 @@
            (run-fst sound-change (form<- word)))))
 
 ;;;; Parser
-;;; -> before-write/comp open-registers closed-registers
-(defun parse-before (glyphs categories features valued-features open-registers
-                     closed-registers)
-  (declare (type set features closed-registers)
-           (type map glyphs categories valued-features open-registers))
-  (// (<$ (>> (parse-whitespace)
-              (parse-eof))
-          `(,(empty-fst)
-            ,open-registers ,closed-registers))
-      (>>!
-        _ (parse-whitespace)
-        (first open-registers closed-registers)
-        (parse-compare/write glyphs categories features valued-features
-                             open-registers closed-registers)
-        _ (parse-whitespace)
-        (rest open-registers closed-registers)
-        (parse-before glyphs categories features valued-features
-                      open-registers closed-registers)
-        (succeed `(,(fst-sequence* first rest)
-                   ,open-registers ,closed-registers)))))
-
-(defun parse-emitter (glyphs categories features valued-features
-                      open-registers closed-registers)
-  (declare (type set features closed-registers)
-           (type map glyphs categories open-registers valued-features))
-  (// (parse-glyphs-emit glyphs)
-      (>>!
-        category (// (parse-category categories)
-                     (parse-constant "."))
-        _ (parse-whitespace)
-        (constant-features register-features)
-        (<? (parse-features-no-write features valued-features
-                                     open-registers closed-registers)
-            `(,(empty-map)
-               ,(empty-map)))
-        _ (parse-whitespace)
-        register (<? (parse-register))
-        (cond
-          ((and register (not (@ closed-registers register)))
-           (fail `(:register-not-written ,register ,closed-registers)))
-          ((and category (not register))
-           (fail `(:emit-category-no-register ,category)))
-          ((not (or register constant-features register-features))
-           (fail `(:empty-emitter)))
-          (category
-           (succeed
-            (fst-emit-category category register constant-features
-                               register-features)))
-          (register
-           (succeed
-            (fst-emit-register register constant-features register-features)))
-          (t
-           (succeed
-            (fst-emit constant-features (empty-map)
-                      register-features)))))))
-
 ;;; -> after-emit
 (defun parse-after (glyphs categories features valued-features open-registers
                     closed-registers)

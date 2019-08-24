@@ -204,14 +204,9 @@
    (parse-separated (// (<$> (parse-feature-spec binary-features valued-features
                                                  privative-features)
                              (lambda (feature)
-                               (bind (((valued present _)
+                               (bind (((constant present absent)
                                        feature))
-                                 `(,(map-union (convert 'set present
-                                                        :key-fn #'identity
-                                                        :value-fn
-                                                        (constantly t))
-                                               valued)
-                                    ,(empty-map)))))
+                                 `(,constant ,present ,absend ,(empty-map)))))
                         (>>!
                           (feature register)
                           (parse-register-feature binary-features
@@ -222,18 +217,24 @@
                                   (@ (@ feature-registers register)
                                      feature))
                               (succeed `(,(empty-map)
+                                          ,(empty-set)
+                                          ,(empty-set)
                                           ,(map (feature register))))
                               (fail `(:compare-unwritten-feature ,register
                                                                  ,feature)))))
                     ","
                     `(,(empty-map)
+                       ,(empty-set)
+                       ,(empty-set)
                        ,(empty-map))
                     (lambda (feature features)
-                      (bind (((constant register)
+                      (bind (((constant present absent register)
                               feature)
-                             ((constants registers)
+                             ((constants presents absents registers)
                               features))
                         `(,(map-union constants constant)
+                           ,(union presents present)
+                           ,(union absents absent)
                            ,(map-union registers register)))))
    "]"))
 
@@ -458,3 +459,81 @@
            (lambda (action)
              `(,action ,feature-registers ,phoneme-registers
                        ,category-registers)))))
+
+(defun parse-before (binary-features valued-features privative-features glyphs
+                     categories feature-registers phoneme-registers
+                     category-registers)
+  (declare (type set binary-features privative-features phoneme-registers
+                 category-registers)
+           (type map valued-features glyphs categories feature-registers))
+  (// (<$ (>> (parse-whitespace)
+              (parse-eof))
+          `(,(empty-fst)
+             ,open-registers ,closed-registers))
+      (>>!
+        (first feature-registers phoneme-registers category-registers)
+        (parse-comp/write binary-features valued-features privative-features
+                          glyphs categories feature-registers phoneme-registers
+                          category-registers)
+        _ (parse-whitespace-no-newline)
+        (rest feature-registers phoneme-registers category-registers)
+        (parse-before binary-features valued-features privative-features glyphs
+                      categories feature-registers phoneme-registers
+                      category-registers)
+        (succeed `(,(fst-sequence first rest)
+                    ,feature-registers ,phoneme-registers
+                    ,category-registers)))))
+
+(defun parse-emitter (binary-features valued-features privative-features glyphs
+                      categories feature-registers phoneme-registers
+                      category-registers)
+  (declare (type set binary-features privative-features phoneme-registers
+                 category-registers)
+           (type map valued-features glyphs categories feature-registers))
+  (// (>>!
+        category (// (parse-category categories)
+                     (parse-constant "."))
+        _ (parse-whitespace-no-newline)
+        (constant-features present-features absent-features register-features)
+        (<? (parse-features-no-write binary-features valued-features
+                                     privative-features feature-registers
+                                     phoneme-registers category-registers)
+            `(,(empty-map)
+               ,(empty-set)
+               ,(empty-set)
+               ,(empty-map)))
+        _ (parse-whitespace-no-newline)
+        register (<? (parse-register))
+        (cond
+          ((and register (not (or (@ phoneme-registers register)
+                                  (@ category-registers register))))
+           (fail `(:register-not-written ,register
+                                         ,(union phoneme-registers
+                                                 category-registers))))
+          ((and category (not register))
+           (fail `(:emit-category-no-register ,category)))
+          ((and category (not (@ category-registers register)))
+           (fail `(:emit-category-unwritten ,category ,register)))
+          ((and (not register)
+                (empty? constant-features)
+                (empty? register-features))
+           (fail `(:empty-emitter)))
+          (category
+           (succeed (fst-emit-category category register
+                                       :constant-supplement constant-features
+                                       :present-supplement present-features
+                                       :absent-supplement absent-features
+                                       :register-supplement register-features)))
+          (register
+           (succeed (fst-emit-register register
+                                       :constant-supplement constant-features
+                                       :present-supplement present-features
+                                       :absent-supplement absent-features
+                                       :register-supplement register-features)))
+          (t
+           (succeed (fst-emit-phoneme constant-features
+                                      :present-supplement present-features
+                                      :absent-supplement absent-features
+                                      :register-supplement
+                                      register-features)))))
+      (parse-glyphs-emit glyphs)))
