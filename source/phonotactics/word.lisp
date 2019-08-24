@@ -44,7 +44,7 @@
                       category))
                 (with categories name contents))))))
 
-(defun parse-category (categories)
+(defun parse-category-w (categories)
   (declare (type map categories))
   (// (>>!
         _ (>> (parse-whitespace-no-newline)
@@ -94,7 +94,7 @@
                (succeed (with back front)))))
     (>>!
       _ (parse-whitespace-no-newline)
-      front (// (<$> (parse-category categories)
+      front (// (<$> (parse-category-w categories)
                      (lambda (category)
                        (convert 'set
                                 category)))
@@ -217,7 +217,7 @@
             (parse-constant "()"))
         (>>!
           _ (parse-whitespace-no-newline)
-          front (// (<$> (parse-category categories)
+          front (// (<$> (parse-category-w categories)
                          (lambda (category)
                            (convert 'set
                                     category)))
