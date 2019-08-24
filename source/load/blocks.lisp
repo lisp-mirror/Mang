@@ -31,11 +31,11 @@
 
 (defun parse-separated (parser separator &optional (d '())
                                            (f #'cons))
-  (declare (type function parser separator f))
+  (declare (type function parser f))
   (>>!
     first parser
     rest (many (>> (parse-whitespace)
-                   separator
+                   (parse-constant separator)
                    (parse-whitespace)
                    parser)
                d f)
@@ -43,11 +43,11 @@
 
 (defun parse-separated-no-newline (parser separator &optional (d '())
                                                       (f #'cons))
-  (declare (type function parser separator f))
+  (declare (type function parser f))
   (>>!
     first parser
     rest (many (>> (parse-whitespace-no-newline)
-                   separator
+                   (parse-constant separator)
                    (parse-whitespace-no-newline)
                    parser)
                d f)
