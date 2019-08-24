@@ -57,6 +57,11 @@
                          "glyphs"
                          "categories"))
      (:file "sonority")  ; TODO: figure out how to describe and use sonority
+     (:file "sound-change"
+            :depends-on ("blocks"
+                         "features"
+                         "glyphs"
+                         "categories"))
      (:module
       "language"
       :components
