@@ -40,8 +40,8 @@
                    (parse-syllable-generator glyphs categories))
     (succeed `(,name ,definition))))
 
-(defun parse-syllable-block (glyphs categories)
-  (parse-subsection "syllables"
+(defun parse-syllable-block (name glyphs categories)
+  (parse-subsection name
                     (parse-lines (parse-syllable-definition glyphs categories)
                                  (empty-map)
                                  (lambda (syllable syllables)
@@ -88,6 +88,6 @@
 
 (defun parse-wordgen-block (glyphs categories)
   (>>!
-    syllables (parse-syllable-block glyphs categories)
+    syllables (parse-syllable-block "syllables" glyphs categories)
     gen (parse-wordgen-specs-block syllables)
     (succeed (dfsm<- gen))))
