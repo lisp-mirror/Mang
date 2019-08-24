@@ -296,7 +296,7 @@
   (declare (type map map))
   (<$> (parse-from-set (domain map))
        (lambda (result)
-         (@ map result))))
+         (list result (@ map result)))))
 
 (defun parse-to (parser)
   (?? parser
