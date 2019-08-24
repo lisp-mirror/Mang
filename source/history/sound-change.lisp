@@ -16,41 +16,6 @@
            (run-fst sound-change (form<- word)))))
 
 ;;;; Parser
-(defun fst-compare-features (features)
-  (fst-elementary (lambda (phoneme)
-                    (has-features? phoneme features))
-                  '()
-                  :consume? nil))
-
-(defun fst-compare-register (register)
-  (declare (special *phoneme-registry*))
-  (fst-elementary (lambda (phoneme)
-                    (has-features? phoneme
-                                   (gethash register *phoneme-registry*
-                                            (empty-map))))
-                  '()
-                  :consume? nil))
-
-(defun fst-emit (phoneme
-                 &optional
-                   (constant-supplement (empty-map))
-                   (register-supplement (empty-map)))
-  (declare (special *phoneme-registry*))
-  (fst-elementary
-   #'true
-   (lambda (glyph)
-     (declare (ignore glyph))
-     (list
-      (map-union phoneme
-                 (map-union constant-supplement
-                            (image (lambda (feature register)
-                                     (values feature
-                                             (@ (gethash register
-                                                         *phoneme-registry*)
-                                                feature)))
-                                   register-supplement)))))
-   :consume? nil))
-
 (defun fst-emit-register (register
                           &optional
                             (constant-supplement (empty-map))

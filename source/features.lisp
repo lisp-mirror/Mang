@@ -181,8 +181,12 @@
          (and (empty? (set-difference present features))
               (empty? (intersection absent features))))))
 
-(defun augment-feature-set (feature-set overwrite absent)
+(defun augment-feature-set (feature-set overwrite present absent)
   (filter (lambda (k v)
             (declare (ignore v))
             (not (@ absent k)))
-          (map-union feature-set overwrite)))
+          (map-union (map-union feature-set overwrite)
+                     (convert 'set
+                              present
+                              :key-fn #'identity
+                              :value-fn (constantly t)))))
