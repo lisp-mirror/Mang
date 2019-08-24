@@ -80,7 +80,7 @@
                  nil))
     _ (parse-whitespace)
     feature (parse-from-set binary-features)
-    (succeed `(:binary-feature ,feature ,sign))))
+    (succeed `(,feature ,sign))))
 
 (defun parse-valued-feature-spec (valued-features)
   (declare (type map valued-features))
@@ -91,17 +91,87 @@
           (parse-constant "=")
           (parse-whitespace))
     value (parse-from-set values)
-    (succeed `(:valued-feature ,feature ,value))))
+    (succeed `(,feature ,value))))
 
-(defun parse-present-feature-spec (binary-features valued-features
-                                   privative-features)
+(defun parse-present-feature-spec (privative-features)
+  (declare (type set privative-features))
+  (>>!
+    present? (?? (parse-constant "~")
+                 (succeed nil)
+                 (succeed t))
+    feature (parse-from-set privative-features)
+    (succeed `(,feature ,present?))))
+
+(defun parse-feature-spec (binary-features valued-features privative-features)
+  (declare (type set binary-features privative-features)
+           (type map valued-features))
+  (// (<$> (// (parse-binary-feature-spec binary-features)
+               (parse-valued-feature-spec valued-features))
+           (lambda (spec)
+             (bind (((feature value)
+                     spec))
+               `(,(map (feature value)
+                       :default (empty-set))
+                  ,(empty-set)
+                  ,(empty-set)))))
+      (<$> (parse-present-feature-spec privative-features)
+           (lambda (spec)
+             (bind (((feature present?)
+                     spec))
+               (if present?
+                   `(,(empty-map (empty-set))
+                      ,(set feature)
+                      ,(empty-set))
+                   `(,(empty-map (empty-set))
+                      ,(empty-set)
+                      ,(set feature))))))))
+
+(defun parse-feature-match (binary-features valued-features privative-features)
   (declare (type set binary-features privative-features)
            (type map valued-features))
   (>>!
-    present? (?? (parse-constant "~")
-                 (succeed t)
-                 (succeed nil))
-    feature (parse-from-set (union (union binary-features
-                                          (domain valued-features))
-                                   privative-features))
-    (succeed `(:present-feature ,feature ,present?))))
+    _ (>> (parse-constant "[")
+          (parse-whitespace))
+    (constant present absent)
+    (parse-separated
+     (parse-feature-spec binary-features valued-features
+                         (union (union binary-features (domain valued-features))
+                                privative-features))
+     "," `(,(empty-map)
+            ,(empty-set)
+            ,(empty-set))
+     (lambda (feature features)
+       (bind (((constant present absent)
+               features)
+              ((nconstant npresent nabsent)
+               feature))
+         `(,(map-union constant nconstant)
+            ,(union present npresent)
+            ,(union absent nabsent)))))
+    _ (>> (parse-whitespace)
+          (parse-constant "]"))
+    (succeed `(,constant ,present ,absent))))
+
+(defun parse-feature-set (binary-features valued-features privative-features)
+  (declare (type set binary-features privative-features)
+           (type map valued-features))
+  (>>!
+    _ (>> (parse-constant "[")
+          (parse-whitespace))
+    features
+    (parse-separated (parse-feature-spec binary-features valued-features
+                                         privative-features)
+                     "," (empty-map)
+                     (lambda (feature features)
+                       (bind (((constant present _)
+                               feature))
+                         (map-union (map-union constant
+                                               (convert 'map
+                                                        present
+                                                        :key-fn #'identity
+                                                        :value-fn
+                                                        (constantly t)))
+                                    features))))
+    _ (>> (parse-whitespace)
+          (parse-constant "]"))
+    (succeed features)))
