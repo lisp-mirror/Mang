@@ -7,9 +7,7 @@
           (parse-constant ":=")
           (parse-whitespace))
     phonemes (parse-separated (parse-glyph glyphs)
-                              "," (empty-set)
-                              (lambda (glyph glyphs)
-                                (with glyphs (cdr glyph))))
+                              ",")
     (succeed (map (name phonemes)
                   :default (empty-set)))))
 
