@@ -60,8 +60,7 @@
       "phonotactics"
       :depends-on ("globals")
       :components
-      ((:file "word")
-       (:file "sonority")
+      ((:file "sonority")
        ))
      (:module
       "grammar"
