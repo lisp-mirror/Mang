@@ -130,49 +130,42 @@
                                       privative-features)
   (declare (type set binary-features privative-features)
            (type map valued-features))
-  (>>!
-    _ (>> (parse-constant "[")
-          (parse-whitespace))
-    (constant present absent)
-    (parse-separated
-     (parse-feature-spec binary-features valued-features
-                         (union (union binary-features (domain valued-features))
-                                privative-features))
-     "," `(,(empty-map)
-            ,(empty-set)
-            ,(empty-set))
-     (lambda (feature features)
-       (bind (((constant present absent)
-               features)
-              ((nconstant npresent nabsent)
-               feature))
-         `(,(map-union constant nconstant)
-            ,(union present npresent)
-            ,(union absent nabsent)))))
-    _ (>> (parse-whitespace)
-          (parse-constant "]"))
-    (succeed `(,constant ,present ,absent))))
+  (parse-wrapped "["
+                 (parse-separated
+                  (parse-feature-spec binary-features valued-features
+                                      (union (union binary-features
+                                                    (domain valued-features))
+                                             privative-features))
+                  "," `(,(empty-map)
+                         ,(empty-set)
+                         ,(empty-set))
+                  (lambda (feature features)
+                    (bind (((constant present absent)
+                            features)
+                           ((nconstant npresent nabsent)
+                            feature))
+                      `(,(map-union constant nconstant)
+                         ,(union present npresent)
+                         ,(union absent nabsent)))))
+                 "]"))
 
 (defun parse-feature-set (binary-features valued-features privative-features)
   (declare (type set binary-features privative-features)
            (type map valued-features))
-  (>>!
-    _ (>> (parse-constant "[")
-          (parse-whitespace))
-    features
-    (parse-separated (parse-feature-spec binary-features valued-features
-                                         privative-features)
-                     "," (empty-map)
-                     (lambda (feature features)
-                       (bind (((constant present _)
-                               feature))
-                         (map-union (map-union constant
-                                               (convert 'map
-                                                        present
-                                                        :key-fn #'identity
-                                                        :value-fn
-                                                        (constantly t)))
-                                    features))))
-    _ (>> (parse-whitespace)
-          (parse-constant "]"))
-    (succeed features)))
+  (parse-wrapped "["
+                 (parse-separated (parse-feature-spec binary-features
+                                                      valued-features
+                                                      privative-features)
+                                  "," (empty-map)
+                                  (lambda (feature features)
+                                    (bind (((constant present _)
+                                            feature))
+                                      (map-union
+                                       (map-union constant
+                                                  (convert 'map
+                                                           present
+                                                           :key-fn #'identity
+                                                           :value-fn
+                                                           (constantly t)))
+                                       features))))
+                 "]"))
