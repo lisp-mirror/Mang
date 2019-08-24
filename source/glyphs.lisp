@@ -27,9 +27,9 @@
 (defun parse-glyph-section (binary-features valued-features privative-features)
   (declare (type set binary-features privative-features)
            (type map valued-features))
-  (parse-section "glyphs"
-                 (parse-glyph-definitions binary-features valued-features
-                                          privative-features)))
+  (parse-subsection "glyphs"
+                    (parse-glyph-definitions binary-features valued-features
+                                             privative-features)))
 
 (defun parse-glyph (glyphs)
   (>>!
