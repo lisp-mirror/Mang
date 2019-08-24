@@ -611,3 +611,12 @@
                                                            post-emit)
                                             (fst-elementary #'true #'list
                                                             :consume? t)))))))
+
+(defun apply-sound-change (word sound-change)
+  (declare (type cons word)
+           (type fst sound-change))
+  (bind ((*category-registry* (make-hash-table :test 'equal))
+         (*phoneme-registry* (make-hash-table :test 'equal)))
+    (declare (special *category-registry* *phoneme-registry*)
+             (type hash-table *category-registry* *phoneme-registry*))
+    (run-fst sound-change word)))
