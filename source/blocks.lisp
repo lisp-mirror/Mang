@@ -5,7 +5,7 @@
       (parse-constant "##")
       (parse-whitespace-no-newline)
       (parse-constant name)
-      (pars-expression-end)))
+      (parse-expression-end)))
 
 (defun parse-section (name parser)
   (declare (type string name)
