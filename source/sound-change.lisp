@@ -387,9 +387,9 @@
                     ,feature-registers ,phoneme-registers
                     ,category-registers)))))
 
-(defun parse-compare/write (binary-features valued-features privative-features
-                            glyphs categories feature-registers
-                            phoneme-registers category-registers)
+(defun parse-comp/write (binary-features valued-features privative-features
+                         glyphs categories feature-registers
+                         phoneme-registers category-registers)
   (declare (type set binary-features privative-features phoneme-registers
                  category-registers)
            (type map valued-features glyphs categories feature-registers))
