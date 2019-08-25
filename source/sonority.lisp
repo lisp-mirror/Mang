@@ -113,12 +113,15 @@
 
 (defun parse-sonority-class (glyphs categories)
   (declare (type map glyphs categories))
-  (parse-separated (<$> (// (parse-from-map categories)
-                            (parse-from-map glyphs))
-                        #'second)
+  (parse-separated (// (<$> (parse-from-map categories)
+                            (lambda (category)
+                              (convert 'set
+                                       (second category))))
+                       (<$> (parse-from-map glyphs)
+                            (lambda (glyph)
+                              (set (second glyph)))))
                    "," (empty-set)
-                   (lambda (part parts)
-                     (with parts part))))
+                   #'union))
 
 (defun parse-sonority-hierarchy (glyphs categories)
   (declare (type map glyphs categories))
