@@ -18,7 +18,8 @@
     "utility"
     :depends-on ("package")
     :components
-    ((:file "constant-functions")
+    ((:file "convenience")
+     (:file "constant-functions")
      (:file "anaphora")
      (:file "set")
      (:file "distribution")
