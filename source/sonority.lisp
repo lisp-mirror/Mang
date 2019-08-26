@@ -1,29 +1,27 @@
 (in-package #:mang)
 
 (defun syllable-nuclei (word hierarchy)
-  (labels ((_rec (n l acc)
-             (if (rest l)
-                 (bind (((p c &rest r)
-                         l))
-                   (cond
-                     ((= n 0)
-                      (_rec 1 l (if (before? p c hierarchy)
-                                    acc
-                                    (cons 0 acc))))
-                     (r
-                      (_rec (1+ n)
-                            (cons c r)
-                            (if (or (before? c p hierarchy)
-                                    (before? c (first r)
-                                             hierarchy))
-                                acc
-                                (cons n acc))))
-                     (t
-                      (if (before? c p hierarchy)
-                          (nreverse acc)
-                          (nreverse (cons n acc))))))
-                 (list n))))
-    (_rec 0 word '())))
+  (labels ((_scan-to-end (phoneme word i)
+             (if word
+                 (chop next-phoneme word
+                   (if (before? phoneme next-phoneme hierarchy)
+                       (values nil i)
+                       (bind (((:values _ end)
+                               (_scan-to-end phoneme word (1+ i))))
+                         (values i end))))
+                 (values i i))))
+    (when word
+      (bind (((:values begin end)
+              (_scan-to-end (first word)
+                            (rest word)
+                            0)))
+        (if begin
+            (append (loop :for n :from begin :to end
+                       :collect n)
+                    (syllable-nuclei (nthcdr end word)
+                                     hierarchy))
+            (syllable-nuclei (nthcdr end word)
+                             hierarchy))))))
 
 (defun syllable-init (word nucleus-index earliest-start hierarchy)
   (or (loop :for x :downfrom (1- nucleus-index)

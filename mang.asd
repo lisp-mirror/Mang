@@ -57,7 +57,7 @@
                          "blocks"
                          "glyphs"
                          "categories"))
-     (:file "sonority")  ; TODO: figure out how to describe and use sonority
+     (:file "sonority")
      (:file "sound-change"
             :depends-on ("globals"
                          "blocks"
