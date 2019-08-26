@@ -186,7 +186,7 @@
             (declare (ignore v))
             (not (@ absent k)))
           (map-union (map-union feature-set overwrite)
-                     (convert 'set
+                     (convert 'map
                               present
                               :key-fn #'identity
                               :value-fn (constantly t)))))

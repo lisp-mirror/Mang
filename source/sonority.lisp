@@ -48,41 +48,54 @@
       latest-end))
 
 (defun syllable-inits (word hierarchy)
-  (bind ((nuclei (nuclei word hierarchy)))
+  (bind ((nuclei (syllable-nuclei word hierarchy)))
     (cons 0 (loop :for (prev this)
                :on nuclei
                :if this
                :collect (1+ (syllable-init word this prev hierarchy))))))
 
 (defun syllable-codas (word hierarchy)
-  (bind ((nuclei (nuclei word hierarchy)))
+  (bind ((nuclei (syllable-nuclei word hierarchy)))
     (loop :for (this next)
        :on nuclei
        :if next
        :collect (syllable-coda word this next hierarchy))))
 
-(defun syllabalize (word hierarchy
-                    &optional (prefer-open? t))
-  (declare (type boolean prefer-open?))
-  (apply #'append
-         (intersperse '("")
-                      (if prefer-open?
-                          (bind ((inits (syllable-inits word hierarchy)))
-                            (loop :for (index next) :on inits
-                               :collect
-                               (subseq word index next)))
-                          (bind ((codas (cons 0 (syllable-codas word
-                                                                hierarchy))))
-                            (loop :for (prev index) :on codas
-                               :collect
-                               (subseq word prev index)))))))
+(defun mark-syllables (word nuclei inits constant-init present-init absent-init
+                       constant-nucleus present-nucleus absent-nucleus
+                       constant-coda present-coda absent-coda)
+  (declare (type list word nuclei inits)
+           (type map constant-init constant-nucleus constant-coda)
+           (type set present-init absent-init present-nucleus absent-nucleus
+                 present-coda absent-coda))
+  (loop :for i :from 0
+     :for phoneme :in word
+     :collect
+       (cond
+         ((member i nuclei)
+          (augment-feature-set phoneme constant-nucleus present-nucleus
+                               absent-nucleus))
+         (([a]and (find-previous i nuclei)
+                  (< (find-previous i inits)
+                     it))
+          (augment-feature-set phoneme constant-init present-init
+                               absent-init))
+         (t
+          (augment-feature-set phoneme constant-coda present-coda
+                               absent-coda)))))
 
-(defun resyllabalize (word hierarchy
-                      &optional (prefer-open? t))
-  (declare (type boolean prefer-open?))
-  (syllabalize (remove "" word
-                       :test #'string=)
-               hierarchy prefer-open?))
+(defun syllabalize (word hierarchy constant-init present-init absent-init
+                    constant-nucleus present-nucleus absent-nucleus
+                    constant-coda present-coda absent-coda)
+  (declare (type list word hierarchy)
+           (type map constant-init constant-nucleus constant-coda)
+           (type set present-init absent-init present-nucleus absent-nucleus
+                 present-coda absent-coda))
+  (mark-syllables word (syllable-nuclei word hierarchy)
+                  (syllable-inits word hierarchy)
+                  constant-init present-init absent-init constant-nucleus
+                  present-nucleus absent-nucleus constant-coda present-coda
+                  absent-coda))
 
 (defun parse-sonority-class (glyphs categories)
   (declare (type map glyphs categories))
