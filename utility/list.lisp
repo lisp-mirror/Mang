@@ -263,9 +263,10 @@
                           (numbers cons))
   (bind (((current &rest numbers)
           numbers))
-    (if (<= current number)
-        current
-        (find-previous number numbers))))
+    (if (> current number)
+        nil
+        (or (find-previous number numbers)
+            current))))
 
 (defmethod find-previous ((number real)
                           (numbers vector))
