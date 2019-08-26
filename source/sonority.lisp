@@ -1,23 +1,7 @@
 (in-package #:mang)
 
-(defmethod before? (a b (sequence cons))
-  (labels ((_find (x xs)
-             (when xs
-               (bind (((f &rest r)
-                       xs))
-                 (if (typecase f
-                       (set
-                        (@ f x))
-                       (function
-                        (funcall f x))
-                       (t
-                        (equal? f x)))
-                     (values r t)
-                     (_find x r))))))
-    (nth-value 1 (_find b (_find a sequence)))))
-
-(defmethod nuclei ((word cons)
-                   (hierarchy cons))
+(defmethod syllable-nuclei ((word cons)
+                            (hierarchy cons))
   (labels ((_rec (n l acc)
              (if (rest l)
                  (bind (((p c &rest r)
