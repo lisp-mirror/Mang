@@ -76,8 +76,7 @@
           (augment-feature-set phoneme constant-nucleus present-nucleus
                                absent-nucleus))
          (([d]or (not (find-previous i nuclei))
-                 (< (find-previous i inits)
-                    it))
+                 (< it (find-previous i inits)))
           (augment-feature-set phoneme constant-init present-init
                                absent-init))
          (t
