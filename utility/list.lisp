@@ -254,3 +254,23 @@
                      (values r t)
                      (_find x r))))))
     (nth-value 1 (_find b (_find a sequence)))))
+
+(defmethod find-previous ((number real)
+                          (numbers null))
+  nil)
+
+(defmethod find-previous ((number real)
+                          (numbers cons))
+  (bind (((current &rest numbers)
+          numbers))
+    (if (<= current number)
+        current
+        (find-previous number numbers))))
+
+(defmethod find-previous ((number real)
+                          (numbers vector))
+  (loop :for i :across numbers
+     :do (when (<= i number)
+           (return-from find-previous
+             i))
+     :finally (return nil)))
