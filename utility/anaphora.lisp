@@ -44,7 +44,7 @@
       (chop form forms
         (if forms
             `([d]if ,form
-                 ([d]or ,@forms)
-               it)
+                 nil
+               ([d]or ,@forms))
             form))
       nil))
