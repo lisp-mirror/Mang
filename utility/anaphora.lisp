@@ -29,3 +29,13 @@
   `([a]if ,test
        (progn
          ,@body)))
+
+(defmacro [a]and (&rest forms)
+  (if forms
+      (bind (((form &rest forms)
+              forms))
+        (if form
+            `([a]when ,form
+               ([a]and ,@forms))
+            form))
+      't))
