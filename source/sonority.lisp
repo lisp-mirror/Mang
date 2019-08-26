@@ -75,9 +75,9 @@
          ((member i nuclei)
           (augment-feature-set phoneme constant-nucleus present-nucleus
                                absent-nucleus))
-         (([a]and (find-previous i nuclei)
-                  (< (find-previous i inits)
-                     it))
+         (([d]or (not (find-previous i nuclei))
+                 (< (find-previous i inits)
+                    it))
           (augment-feature-set phoneme constant-init present-init
                                absent-init))
          (t
