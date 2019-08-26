@@ -1,10 +1,12 @@
 (in-package #:mang)
 
+;;; FIX: You know, all of this. This is obviously a sketch that doesn't do what
+;;; it is supposed to do at all.
 (defun syllable-nuclei (word hierarchy)
-  (labels ((_scan-to-end (phoneme word i)
+  (labels ((_scan-to-end (phoneme word i)  ; maybe an additional parameter here?
              (if word
                  (chop next-phoneme word
-                   (if (before? phoneme next-phoneme hierarchy)
+                   (if (before? next-phoneme phoneme hierarchy)
                        (values nil i)
                        (bind (((:values _ end)
                                (_scan-to-end phoneme word (1+ i))))
