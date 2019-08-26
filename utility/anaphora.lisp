@@ -32,10 +32,19 @@
 
 (defmacro [a]and (&rest forms)
   (if forms
-      (bind (((form &rest forms)
-              forms))
-        (if form
+      (chop form forms
+        (if forms
             `([a]when ,form
                ([a]and ,@forms))
             form))
       't))
+
+(defmacro [d]or (&rest forms)
+  (if forms
+      (chop form forms
+        (if forms
+            `([d]if ,form
+                 it
+               ([d]or ,@forms))
+            form))
+      nil))
