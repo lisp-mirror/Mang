@@ -50,14 +50,6 @@
 (defmethod learn (markov (obj word))
   (learn markov (form<- obj)))
 
-(defmethod resyllabalize ((word word)
-                          (hierarchy cons)
-                          &optional (prefer-open? t))
-  (declare (type boolean prefer-open?))
-  (word (resyllabalize (form<- word)
-                       hierarchy prefer-open?)
-        :origin word))
-
 (defclass dictionary-entry ()
   ((%word :type word
           :reader word<-

@@ -1,7 +1,6 @@
 (in-package #:mang)
 
-(defmethod syllable-nuclei ((word cons)
-                            (hierarchy cons))
+(defun syllable-nuclei (word hierarchy)
   (labels ((_rec (n l acc)
              (if (rest l)
                  (bind (((p c &rest r)
@@ -26,10 +25,7 @@
                  (list n))))
     (_rec 0 word '())))
 
-(defmethod syllable-init ((word cons)
-                          (nucleus-index integer)
-                          (earliest-start integer)
-                          (hierarchy cons))
+(defun syllable-init (word nucleus-index earliest-start hierarchy)
   (or (loop :for x :downfrom (1- nucleus-index)
          :for y :from (- nucleus-index 2)
          :downto earliest-start
@@ -40,10 +36,7 @@
                y))
       earliest-start))
 
-(defmethod syllable-coda ((word cons)
-                          (nucleus-index integer)
-                          (latest-end integer)
-                          (hierarchy cons))
+(defun syllable-coda (word nucleus-index latest-end hierarchy)
   (or (loop :for x :from (1+ nucleus-index)
          :for y :from (+ nucleus-index 2)
          :to latest-end
@@ -54,25 +47,22 @@
                y))
       latest-end))
 
-(defmethod syllable-inits ((word cons)
-                           (hierarchy cons))
+(defun syllable-inits (word hierarchy)
   (bind ((nuclei (nuclei word hierarchy)))
     (cons 0 (loop :for (prev this)
                :on nuclei
                :if this
                :collect (1+ (syllable-init word this prev hierarchy))))))
 
-(defmethod syllable-codas ((word cons)
-                           (hierarchy cons))
+(defun syllable-codas (word hierarchy)
   (bind ((nuclei (nuclei word hierarchy)))
     (loop :for (this next)
        :on nuclei
        :if next
        :collect (syllable-coda word this next hierarchy))))
 
-(defmethod syllabalize ((word cons)
-                        (hierarchy cons)
-                        &optional (prefer-open? t))
+(defun syllabalize (word hierarchy
+                    &optional (prefer-open? t))
   (declare (type boolean prefer-open?))
   (apply #'append
          (intersperse '("")
@@ -87,9 +77,8 @@
                                :collect
                                (subseq word prev index)))))))
 
-(defmethod resyllabalize ((word cons)
-                          (hierarchy cons)
-                          &optional (prefer-open? t))
+(defun resyllabalize (word hierarchy
+                      &optional (prefer-open? t))
   (declare (type boolean prefer-open?))
   (syllabalize (remove "" word
                        :test #'string=)
