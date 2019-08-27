@@ -115,7 +115,6 @@
 (defun parse-sonority-class (glyphs categories)
   (declare (type map glyphs categories))
   (>>!
-    _ (parse-whitespace)
     front (// (parse-from-map categories)
               (parse-from-map glyphs))
     back (many (>> (parse-whitespace)
@@ -126,13 +125,9 @@
                (empty-set)
                (lambda (phoneme phonemes)
                  (with phonemes phoneme)))
-    _ (parse-expression-end)
     (succeed (with back front))))
 
 (defun parse-sonority-hierarchy (glyphs categories)
   (declare (type map glyphs categories))
-  (>> (parse-whitespace)
-      (parse-constant "#sonority-hierarchy:")
-      (parse-expression-end)
-      (some (parse-sonority-class glyphs categories)
-            '() #'cons)))
+  (parse-section "sonority-hierarchy"
+                 (parse-lines (parse-sonority-class glyphs categories))))
