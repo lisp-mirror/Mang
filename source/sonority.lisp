@@ -1,29 +1,45 @@
 (in-package #:mang)
 
-;;; FIX: You know, all of this. This is obviously a sketch that doesn't do what
-;;; it is supposed to do at all.
 (defun syllable-nuclei (word hierarchy)
-  (labels ((_scan-to-end (phoneme word i)  ; maybe an additional parameter here?
-             (if word
-                 (chop next-phoneme word
-                   (if (before? next-phoneme phoneme hierarchy)
-                       (values nil i)
-                       (bind (((:values _ end)
-                               (_scan-to-end phoneme word (1+ i))))
-                         (values i end))))
-                 (values i i))))
+  (labels ((_scan-nuclei (word i)
+             (when word
+               (chop phoneme word
+                 (if word
+                     (bind ((next-phoneme (first word)))
+                       (cond
+                         ((before? next-phoneme phoneme hierarchy)
+                          (values (list i)
+                                  (1+ i)))
+                         ((before? phoneme next-phoneme hierarchy)
+                          (_scan-nuclei word (1+ i)))
+                         (t
+                          (bind (((:values next end)
+                                  (_scan-nuclei word (1+ i))))
+                            (if (> (first next)
+                                   (1+ i))
+                                (values next end)
+                                (values (cons i next)
+                                        end))))))
+                     (values (list i)
+                             (1+ i))))))
+           (_scan-candidate (word i)
+             ([a]when (rest word)
+               (chop (phoneme next-phoneme)
+                   word
+                 (if (before? next-phoneme phoneme hierarchy)
+                     (_scan-candidate it (1+ i))
+                     (1+ i))))))
     (when word
-      (bind (((:values begin end)
-              (_scan-to-end (first word)
-                            (rest word)
-                            0)))
-        (if begin
-            (append (loop :for n :from begin :to end
-                       :collect n)
-                    (syllable-nuclei (nthcdr (1+ end) word)
-                                     hierarchy))
-            (syllable-nuclei (nthcdr (1+ end) word)
-                             hierarchy))))))
+      (bind (((:values nuclei end)
+              (_scan-nuclei word 0))
+             (next-candidate (_scan-candidate word (1+ end))))
+        (if next-candidate
+            (append nuclei
+                    (mapcar (lambda (n)
+                              (+ n next-candidate))
+                            (syllable-nuclei (nthcdr next-candidate word)
+                                             hierarchy)))
+            nuclei)))))
 
 (defun syllable-init (word nucleus-index earliest-start hierarchy)
   (or (loop :for x :downfrom (1- nucleus-index)

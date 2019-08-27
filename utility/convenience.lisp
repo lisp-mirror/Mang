@@ -4,5 +4,6 @@
   `(bind (((,@(ensure-list curr-var)
               &rest ,list-var)
            ,list-var))
-     (declare (type list ,list-var))
+     (declare (type list ,list-var)
+              (ignorable ,list-var))
      ,@body))
