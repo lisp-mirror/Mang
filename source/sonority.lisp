@@ -20,9 +20,9 @@
         (if begin
             (append (loop :for n :from begin :to end
                        :collect n)
-                    (syllable-nuclei (nthcdr end word)
+                    (syllable-nuclei (nthcdr (1+ end) word)
                                      hierarchy))
-            (syllable-nuclei (nthcdr end word)
+            (syllable-nuclei (nthcdr (1+ end) word)
                              hierarchy))))))
 
 (defun syllable-init (word nucleus-index earliest-start hierarchy)
