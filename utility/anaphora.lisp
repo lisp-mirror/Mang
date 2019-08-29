@@ -43,8 +43,13 @@
   (if forms
       (chop form forms
         (if forms
-            `([d]if ,form
-                 nil
-               ([d]or ,@forms))
+            (bind ((g!test (gensym "test"))
+                   ((call it &rest args)
+                    form))
+              `(bind ((it ,it)
+                      (,g!test (,call it ,@args)))
+                 (if ,g!test
+                     ,g!test
+                     ([d]or ,@forms))))
             form))
       nil))
