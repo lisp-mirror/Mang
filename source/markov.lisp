@@ -37,14 +37,13 @@
                                  (intro (reverse (subseq in+out outro)))
                                  (outro (reverse (subseq in+out 0 outro))))
                             (values
-                             (bind ((result (or (@ memoized `(:intro ,intro
-                                                                     ,filter))
+                             (bind ((result (or (@ memoized `(,intro ,filter))
                                                 (lambda (word)
                                                   (postfix? intro
                                                             (filter filter
                                                                     word))))))
                                (setf memoized
-                                     (with memoized `(:intro ,intro)
+                                     (with memoized `(,intro ,filter)
                                            result))
                                result)
                              outro t))
