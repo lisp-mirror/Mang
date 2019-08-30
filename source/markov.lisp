@@ -1,25 +1,31 @@
 (in-package #:mang)
 
-;;;; everything :=
-;;;;  long     = 4:1,
-;;;;  middle   = 3:1,
-;;;;  short    = 2:1,
-;;;;  support  = 1:1,
-;;;;  fallback = 0:1,
-;;;;  C-long   = 4:1~C,
-;;;;  C-middle = 3:1~C,
-;;;;  C-short  = 2:1~C,
-;;;;  V-long   = 3:1~V,
-;;;;  V-middle = 2:1~V,
-;;;;  V-short  = 1:1~V
-;;;;  | (3 C-long   + [1000 long  ])
-;;;;  + (3 V-long   + [1000 long  ])
-;;;;  + (2 C-middle + [ 500 middle])
-;;;;  + (2 V-middle + [ 500 middle])
-;;;;  + (  C-short  + [ 200 short ])
-;;;;  + (2 V-short  + [ 200 short ])
-;;;;  + [1000 support ]
-;;;;  + [ 750 fallback]
+;;;;; everything :=
+;;;;;  long     = 4:1,
+;;;;;  middle   = 3:1,
+;;;;;  short    = 2:1,
+;;;;;  support  = 1:1,
+;;;;;  fallback = 0:1,
+;;;;;  C-long   = 4:1~C,
+;;;;;  C-middle = 3:1~C,
+;;;;;  C-short  = 2:1~C,
+;;;;;  V-long   = 3:1~V,
+;;;;;  V-middle = 2:1~V,
+;;;;;  V-short  = 1:1~V
+;;;;;  | (3 C-long   + 2 [1000 long  ])
+;;;;;  + (3 V-long   + 2 [1000 long  ])
+;;;;;  + (2 C-middle +   [ 500 middle])
+;;;;;  + (2 V-middle +   [ 500 middle])
+;;;;;  + (  C-short  +   [ 200 short ])
+;;;;;  + (2 V-short  +   [ 200 short ])
+;;;;;  + ([1000 support ] + 2 [500 support ])
+;;;;;  + ([ 750 fallback] +   [500 fallback])
+;;;; The part before the `|` defines the available markov chains, the part after
+;;;; defines the way they are used in the generator.
+;;;; The [n mc] construction loads the markov chain `mc` only when the current
+;;;; distribution under construction has a size lower than or equal to `n`.
+;;;; `()` locally construct a distribution.
+;;;; `+` adds distributions.
 
 ;;;; A markov spec returns a function taking one argument (which is an initial
 ;;;; part of a word) which returns two values. If the word part shouldn't be
