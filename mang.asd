@@ -64,6 +64,11 @@
                          "features"
                          "glyphs"
                          "categories"))
+     (:file "markov"
+            :depends-on ("globals"
+                         "blocks"
+                         "glyphs"
+                         "categories"))
      (:module
       "language"
       :components
