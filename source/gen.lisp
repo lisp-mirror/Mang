@@ -41,13 +41,13 @@
     (succeed `(,name ,definition))))
 
 (defun parse-syllable-block (name glyphs categories)
-  (parse-subsection name
-                    (parse-lines (parse-syllable-definition glyphs categories)
-                                 (empty-map)
-                                 (lambda (syllable syllables)
-                                   (bind (((name gen)
-                                           syllable))
-                                     (with syllables name gen))))))
+  (parse-section name
+                 (parse-lines (parse-syllable-definition glyphs categories)
+                              (empty-map)
+                              (lambda (syllable syllables)
+                                (bind (((name gen)
+                                        syllable))
+                                  (with syllables name gen))))))
 
 (defun parse-wordgen-spec (syllables)
   (>>!
@@ -81,10 +81,10 @@
                                 :collect n))))))
 
 (defun parse-wordgen-specs-block (syllables)
-  (parse-subsection "word-generators"
-                    (parse-lines (parse-wordgen-spec syllables)
-                                 (empty-set)
-                                 #'union)))
+  (parse-section "word-generators"
+                 (parse-lines (parse-wordgen-spec syllables)
+                              (empty-set)
+                              #'union)))
 
 (defun parse-wordgen-block (glyphs categories)
   (>>!

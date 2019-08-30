@@ -19,7 +19,7 @@
                  (map-union glyphs glyph))))
 
 (defun parse-category-section (glyphs)
-  (parse-subsection "categories" (parse-category-definitions glyphs)))
+  (parse-section "categories" (parse-category-definitions glyphs)))
 
 (defun parse-category (categories)
   (>>!

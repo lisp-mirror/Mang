@@ -2,7 +2,7 @@
 
 (defun parse-section-header (name)
   (>> (parse-whitespace)
-      (parse-constant "##")
+      (parse-constant "#")
       (parse-whitespace-no-newline)
       (parse-constant name)
       (parse-expression-end)))
@@ -11,19 +11,6 @@
   (declare (type string name)
            (type function parser))
   (>> (parse-section-header name)
-      parser))
-
-(defun parse-subsection-header (name)
-  (>> (parse-whitespace)
-      (parse-constant "#")
-      (parse-whitespace-no-newline)
-      (parse-constant name)
-      (parse-expression-end)))
-
-(defun parse-subsection (name parser)
-  (declare (type string name)
-           (type function parser))
-  (>> (parse-subsection-header name)
       parser))
 
 (defun parse-wrapped (before parser after)
