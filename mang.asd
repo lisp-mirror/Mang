@@ -35,6 +35,8 @@
                          "list"))
      (:file "parser-combinator"
             :depends-on ("anaphora"))
+     (:file "memoization"
+            :depends-on ("anaphora"))
      ))
    (:module
     "source"
