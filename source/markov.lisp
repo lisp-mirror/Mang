@@ -1,7 +1,25 @@
 (in-package #:mang)
 
-;;;; everything := 3:1~C 1000> 2:1~C 1000> 1:1~C 1000> 1:1 500> 0:1,
-;;;;               2:1~V 1000> 1:1~V 1000> 1:1 500> 0:1
+;;;; everything :=
+;;;;  long     = 4:1,
+;;;;  middle   = 3:1,
+;;;;  short    = 2:1,
+;;;;  support  = 1:1,
+;;;;  fallback = 0:1,
+;;;;  C-long   = 4:1~C,
+;;;;  C-middle = 3:1~C,
+;;;;  C-short  = 2:1~C,
+;;;;  V-long   = 3:1~V,
+;;;;  V-middle = 2:1~V,
+;;;;  V-short  = 1:1~V
+;;;;  | (3 C-long   + [1000 long  ])
+;;;;  + (3 V-long   + [1000 long  ])
+;;;;  + (2 C-middle + [ 500 middle])
+;;;;  + (2 V-middle + [ 500 middle])
+;;;;  + (  C-short  + [ 200 short ])
+;;;;  + (2 V-short  + [ 200 short ])
+;;;;  + [1000 support ]
+;;;;  + [ 750 fallback]
 
 ;;;; A markov spec returns a function taking one argument (which is an initial
 ;;;; part of a word) which returns two values. If the word part shouldn't be
@@ -15,12 +33,6 @@
   (defun parse-simple-markov-spec (glyphs categories)
     (declare (type map categories))
     (>>!
-      katz (<? (>>!
-                 katz (parse-number)
-                 _ (>> (parse-constant ">")
-                       (parse-whitespace-no-newline))
-                 (succeed katz))
-               0)
       intro (parse-number)
       outro (<? (>> (parse-whitespace-no-newline)
                     (parse-constant ":")
@@ -51,9 +63,8 @@
                                         (memoized
                                          (intro filter)
                                          (lambda (word dist-size)
-                                           (and (<= dist-size katz)
-                                                (postfix? intro
-                                                          (filter filter
-                                                                  word)))))))
+                                           (postfix? intro
+                                                     (filter filter
+                                                             word))))))
                               (values nil nil)))
                         (values nil nil)))))))))
