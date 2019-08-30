@@ -8,7 +8,7 @@
 ;;;; the first value a predicate. This predicate should succeed on intros which
 ;;;; should be able to receive the outro and fail otherwise. The predicate
 ;;;; should also be memoized.
-(bind ((memoized (empty-map)))
+(with-memoization
   (defun parse-simple-markov-spec (glyphs categories)
     (declare (type map categories))
     (>>!
@@ -37,14 +37,8 @@
                                  (intro (reverse (subseq in+out outro)))
                                  (outro (reverse (subseq in+out 0 outro))))
                             (values
-                             (bind ((result (or (@ memoized `(,intro ,filter))
-                                                (lambda (word)
-                                                  (postfix? intro
-                                                            (filter filter
-                                                                    word))))))
-                               (setf memoized
-                                     (with memoized `(,intro ,filter)
-                                           result))
-                               result)
+                             (memoized (intro filter)
+                                       (lambda (word)
+                                         (postfix? intro (filter filter word))))
                              outro t))
                           (values nil nil nil))))))))))
