@@ -46,3 +46,15 @@
                                                                       word))))))
                               (values nil nil)))
                         (values nil nil)))))))))
+
+(defun parse-unconditional-markov-spec ()
+  (>>!
+    _ (>> (parse-constant ".")
+          (parse-whitespace-no-newline))
+    length (<? (parse-number)
+               1)
+    (lambda (word)
+      (if (length>= word length)
+          (values #'true (reverse (subseq (reverse word)
+                                          0 length)))
+          (values nil nil)))))
