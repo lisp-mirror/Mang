@@ -32,10 +32,11 @@
                                           privative-features)))
 
 (defun parse-glyph (glyphs)
-  (>>!
-    candidate (// (parse-wrapped "<" (parse-identifier *mang-reserved-symbols*)
+  (// (<~ (parse-from-map glyphs)
+          `(:no-glyph-found))
+      (>>!
+        candidate (parse-wrapped "<" (parse-identifier *mang-reserved-symbols*)
                                  ">")
-                  (parse-anything))
-    ([av]if (@ glyphs candidate)
-        (succeed `(,candidate ,it))
-      (fail `(:unknown-glyph ,candidate)))))
+        ([av]if (@ glyphs candidate)
+            (succeed `(,candidate ,it))
+          (fail `(:unknown-glyph ,candidate))))))
