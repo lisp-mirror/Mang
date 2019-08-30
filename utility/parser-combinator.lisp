@@ -345,4 +345,5 @@
               (succeed parsed)))))
 
 (defun parse-number ()
-  (some (parse-unicode-property "Number")))
+  (<$> (some (parse-unicode-property "Number"))
+       #'parse-integer))
