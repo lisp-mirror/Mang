@@ -9,12 +9,12 @@
        (macrolet ((memoized ((&rest ,g!args)
                              &body ,g!body)
                     `([av]if (gethash (list ,@,g!args)
-                                      ,,g!memoized)
+                                      ,',g!memoized)
                          it
-                       (bind ((,,g!result (progn
-                                            ,@,g!body)))
+                       (bind ((,',g!result (progn
+                                             ,@,g!body)))
                          (setf (gethash (list ,@,g!args)
-                                        ,,g!memoized)
-                               ,,g!result)
-                         ,,g!result))))
+                                        ,',g!memoized)
+                               ,',g!result)
+                         ,',g!result))))
          ,@body))))
