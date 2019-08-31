@@ -32,11 +32,10 @@
 ;;;; learned by the markov chain specified by the spec, the two values should be
 ;;;; NIL. If the markov spec can learn something from the given word part, the
 ;;;; first return value is the distribution to be learned and the second value a
-;;;; predicate on two values. The first parameter of the predicate is the word
-;;;; generated so far, the second parameter the size of the distribution
-;;;; collected so far from other markov chains in the same run.
+;;;; predicate on one value. The parameter of the predicate is the word
+;;;; generated so far.
 (with-memoization
-  (defun parse-simple-markov-spec (glyphs categories)
+  (defun parse-markov-spec (glyphs categories)
     (declare (type map categories))
     (>>!
       intro (parse-number)
@@ -68,7 +67,7 @@
                                 (values (uniform-distribution (set outro))
                                         (memoized
                                          (intro filter)
-                                         (lambda (word dist-size)
+                                         (lambda (word)
                                            (postfix? intro
                                                      (filter filter
                                                              word))))))
