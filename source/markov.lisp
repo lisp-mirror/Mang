@@ -54,6 +54,7 @@
         (assert (> outro 0))
         (succeed (set
                   (lambda (word)
+                    (declare (type list word))
                     (if (length>= word match-length)
                         (bind ((rev-word (reverse word))
                                (rev-init (filter filter
@@ -65,6 +66,7 @@
                                 (map ((memoized
                                        (intro filter)
                                        (lambda (word)
+                                         (declare (type list word))
                                          (postfix? intro
                                                    (filter filter
                                                            word))))
@@ -74,6 +76,7 @@
                         (empty-map <nodist>)))))))))
 
 (defun parse-markov-definition (glyphs categories)
+  (declare (type map glyphs categories))
   (>>!
     name (parse-identifier)
     _ (>> (parse-whitespace-no-newline)
@@ -84,6 +87,7 @@
                   :default (empty-set)))))
 
 (defun parse-markov-definitions (glyphs categories)
+  (declare (type map glyphs categories))
   (parse-separated (parse-markov-definition glyphs categories)
                    ","
                    (empty-map (empty-set))
@@ -132,15 +136,20 @@
     (succeed (map (name `(,markov-definitions ,gen-spec))))))
 
 (defun parse-markovs (glyphs categories)
+  (declare (type map glyphs categories))
   (parse-lines (parse-markov glyphs categories)
                (empty-map)
                (lambda (markov markovs)
                  (map-union markovs markov))))
 
 (defun parse-markov-section (glyphs categories)
+  (declare (type map glyphs categories))
   (parse-section "markovs" (parse-markovs glyphs categories)))
 
 (defun learn-markov (markov spec word)
+  (declare (type map markov)
+           (type function spec)
+           (type list word))
   (loop :for length :below (length word)
      :do (setf markov
                (map-union markov
@@ -150,6 +159,9 @@
                 markov)))
 
 (defun learn (store markov-spec word categories)
+  (declare (type map store markov-spec)
+           (type list word)
+           (type set categories))
   (convert 'map
            categories
            :value-fn #'identity
