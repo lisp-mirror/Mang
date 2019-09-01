@@ -149,5 +149,13 @@
      :finally (return-from learn-markov
                 markov)))
 
-(defmethod learn (store markov word categories)
-  (todo store markov word categories))
+(defun learn (store markov-spec word categories)
+  (convert 'map
+           categories
+           :value-fn #'identity
+           :key-fn
+           (lambda (category)
+             (image (lambda (name markov)
+                      (values name (learn-markov markov (@ markov-spec name)
+                                                 word)))
+                    (@ store category)))))
