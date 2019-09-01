@@ -98,8 +98,7 @@
                                   var))))
           `(lambda (,g!bus)
              (bind (((:values ,g!result ,g!new-bus ,g!success?)
-                     (funcall (lambda ()
-                                (parser-call ,parser ,g!bus)))))
+                     (parser-call ,parser ,g!bus))))
                (if ,g!success?
                    (values ,g!result ,g!new-bus t)
                    (parser-call ,(if (and (symbolp var)
