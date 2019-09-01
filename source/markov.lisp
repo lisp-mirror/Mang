@@ -1,30 +1,31 @@
 (in-package #:mang)
 
 ;;;;; everything :=
-;;;;;  long     = 4:1,
-;;;;;  middle   = 3:1,
-;;;;;  short    = 2:1,
-;;;;;  support  = 1:1,
-;;;;;  fallback = 0:1,
-;;;;;  C-long   = 4:1~C,
-;;;;;  C-middle = 3:1~C,
-;;;;;  C-short  = 2:1~C,
-;;;;;  V-long   = 3:1~V,
-;;;;;  V-middle = 2:1~V,
-;;;;;  V-short  = 1:1~V
+;;;;;  long     = 4,
+;;;;;  middle   = 3,
+;;;;;  short    = 2,
+;;;;;  lsupport = 1:2,
+;;;;;  support  = 1,
+;;;;;  fallback = 0,
+;;;;;  C-long   = 4~C,
+;;;;;  C-middle = 3~C,
+;;;;;  C-short  = 2~C,
+;;;;;  V-long   = 3~V,
+;;;;;  V-middle = 2~V,
+;;;;;  V-short  = 1~V
 ;;;;;  | (3 C-long   + 2 [1000 long  ])
 ;;;;;  + (3 V-long   + 2 [1000 long  ])
 ;;;;;  + (2 C-middle +   [ 500 middle])
 ;;;;;  + (2 V-middle +   [ 500 middle])
 ;;;;;  + (  C-short  +   [ 200 short ])
 ;;;;;  + (2 V-short  +   [ 200 short ])
-;;;;;  + ([1000 support ] + 2 [500 support ])
+;;;;;  + ([1000 lsupport] + 2 [500 support ])
 ;;;;;  + ([ 750 fallback] +   [500 fallback])
 ;;;; The part before the `|` defines the available markov chains, the part after
 ;;;; defines the way they are used in the generator.
 ;;;; The [n mc] construction loads the markov chain `mc` only when the current
 ;;;; distribution under construction has a size lower than or equal to `n`.
-;;;; `()` locally construct a distribution.
+;;;; `()` locally constructs a distribution.
 ;;;; `+` adds distributions.
 
 ;;;; A markov spec returns a function taking one argument (which is an initial
@@ -109,6 +110,8 @@
                               cutoff (parse-number)
                               _ (parse-whitespace)
                               spec (parse-markov-gen-spec markov-definitions)
+                              _ (>> (parse-whitespace)
+                                    (parse-constant "]"))
                               (succeed `(:katz ,cutoff ,spec)))
                             (>>!
                               _ (>> (parse-constant "(")
@@ -116,7 +119,7 @@
                               spec (parse-markov-gen-spec markov-definitions)
                               _ (>> (parse-whitespace)
                                     (parse-constant ")"))
-                              (succeed spec)))
+                              (succeed `(:descent ,spec))))
                         "+")
        (lambda (spec)
          `(:sequence ,@spec))))
@@ -172,14 +175,50 @@
                                                  word)))
                     (@ store category)))))
 
-(defun generate-word (dfsm store categories
-                      &optional (negative-categories (empty-set)))
+(defun generate-from-word (word dfsm store categories
+                           &optional (negative-categories (empty-set)))
   (declare (type dfsm dfsm)
            (type map store)
            (type set categories negative-categories))
-  (labels ((_get-markov (categories)
-             (reduce (lambda (m1 m2)
-                       (map-union m1 m2 #'union))
-                     (image store categories))))
-    (generate dfsm (_get-markov categories)
-              (_get-markov negative-categories))))
+  (labels ((_extract-dist (markovs gen-spec dist)
+             (if (consp gen-spec)
+                 (bind (((type &rest args)
+                         gen-spec))
+                   (ecase type
+                     (:sequence
+                      (if args
+                          (bind (((curr &rest rest)
+                                  args)
+                                 (dist
+                                  (_extract-dist markovs curr dist)))
+                            (union dist (_extract-dist markovs
+                                                       `(:sequence ,rest)
+                                                       dist)))
+                          <nodist>))
+                     (:mult
+                      (bind (((mult spec)
+                              args))
+                        (mult (_extract-dist markovs spec dist)
+                              mult)))
+                     (:katz
+                      (bind (((cutoff spec)
+                              args))
+                        (if (<= (size dist)
+                                cutoff)
+                            (_extract-dist markovs spec dist)
+                            <nodist>)))
+                     (:descent
+                      (_extract-dist markovs (first args)
+                                     <nodist>))))
+                 (union dist (funcall (@ markovs gen-spec)
+                                      word))))
+           (_get-dist (categories)
+             (reduce (lambda (dist markov)
+                       (bind (((markovs gen-spec)
+                               markov))
+                         (union dist (_extract-dist markovs gen-spec
+                                                    <nodist>))))
+                     (image store categories)
+                     :initial-value <nodist>)))
+    (generate dfsm (_get-dist categories)
+              (_get-dist negative-categories))))
