@@ -175,10 +175,9 @@
                                                  word)))
                     (@ store category)))))
 
-(defun dist-from-markov (word dfsm store categories
+(defun dist-from-markov (word store categories
                          &optional (negative-categories (empty-set)))
-  (declare (type dfsm dfsm)
-           (type map store)
+  (declare (type map store)
            (type set categories negative-categories))
   (labels ((_extract-dist (markovs gen-spec dist)
              (if (consp gen-spec)
@@ -222,3 +221,41 @@
                      :initial-value <nodist>)))
     (diminish (_get-dist categories)
               (_get-dist negative-categories))))
+
+(defun generate-next (word dfsm state store categories
+                      &optional (negative-categories (empty-set)))
+  (declare (type dfsm dfsm)
+           (type map store)
+           (type set categories negative-categories))
+  (bind ((transition-table (transition-table<- dfsm))
+         (transitions (domain (@ transition-table state))))
+    (cond
+      ((@ (accepting-states<- dfsm)
+          state)
+       (values t nil))
+      ((empty? transitions)
+       (values nil nil))
+      (t
+       (bind ((transition
+               (extract-random (keep transitions
+                                     (dist-from-markov word store categories
+                                                       negative-categories)))))
+         (values transition (@ (@ transition-table state)
+                               transition)))))))
+
+(defun generate-word (dfsm store categories
+                      &optional (negative-categories (empty-set)))
+  (declare (type dfsm dfsm)
+           (type map store)
+           (type set categories negative-categories))
+  (bind ((word `(,(map (:begin t))))
+         (state (start-state<- dfsm)))
+    (loop :do
+         (bind (((outro new-state)
+                 (generate-next word dfsm state store categories
+                                negative-categories)))
+           (if new-state
+               (setf word (append word outro)
+                     state new-state)
+               (return-from generate-word
+                 (values word outro)))))))
