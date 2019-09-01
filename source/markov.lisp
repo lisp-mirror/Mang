@@ -149,10 +149,11 @@
 
 (defun parse-markov-section (glyphs categories)
   (declare (type map glyphs categories))
-  (parse-section "markovs" (parse-lines (parse-markov glyphs categories)
-                                        (empty-map)
-                                        (lambda (markov markovs)
-                                          (map-union markovs markov)))))
+  (parse-section "markovs"
+                 (parse-lines (parse-markov glyphs categories)
+                              (empty-map)
+                              (lambda (markov markovs)
+                                (map-union markovs markov)))))
 
 (defun learn-markov (markov spec word)
   (declare (type map markov)
