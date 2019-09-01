@@ -171,3 +171,15 @@
                       (values name (learn-markov markov (@ markov-spec name)
                                                  word)))
                     (@ store category)))))
+
+(defun generate-word (dfsm store categories
+                      &optional (negative-categories (empty-set)))
+  (declare (type dfsm dfsm)
+           (type map store)
+           (type set categories negative-categories))
+  (labels ((_get-markov (categories)
+             (reduce (lambda (m1 m2)
+                       (map-union m1 m2 #'union))
+                     (image store categories))))
+    (generate dfsm (_get-markov categories)
+              (_get-markov negative-categories))))
