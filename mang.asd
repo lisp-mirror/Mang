@@ -71,6 +71,7 @@
                          "blocks"
                          "glyphs"
                          "categories"))
+     #+nil
      (:module
       "language"
       :components
