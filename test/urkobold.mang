@@ -1,0 +1,45 @@
+# glyphs
+
+p := [ voice = unvoiced, manner = stop               , bilabial          ]
+t := [ voice = unvoiced, manner = stop               , alveolar          ]
+k := [ voice = unvoiced, manner = stop               , velar             ]
+f := [ voice = unvoiced, manner = fricative          , bilabial          ]
+s := [ voice = unvoiced, manner = fricative          , alveolar          ]
+š := [ voice = unvoiced, manner = fricative          , postalveolar      ]
+ś := [ voice = unvoiced, manner = fricative          , alveolar, palatal ]
+b := [ voice = voiced  , manner = stop               , bilabial          ]
+d := [ voice = voiced  , manner = stop               , alveolar          ]
+g := [ voice = voiced  , manner = stop               , velar             ]
+v := [ voice = voiced  , manner = fricative          , bilabial          ]
+z := [ voice = voiced  , manner = fricative          , alveolar          ]
+ž := [ voice = voiced  , manner = fricative          , postalveolar      ]
+ź := [ voice = voiced  , manner = fricative          , alveolar, palatal ]
+m := [ voice = voiced  , manner = nasal              , bilabial          ]
+n := [ voice = voiced  , manner = nasal              , alveolar          ]
+ň := [ voice = voiced  , manner = nasal              , velar             ]
+r := [ voice = voiced  , manner = approximant        , alveolar          ]
+l := [ voice = voiced  , manner = lateral-approximant, alveolar          ]
+
+¡ := [ manner = percussive, sublaminal ]
+
+i := [ height = high   , frontness = front , ~round ]
+y := [ height = high   , frontness = front ,  round ]
+u := [ height = high   , frontness = back  ,  round ]
+e := [ height = highmid, frontness = front , ~round ]
+o := [ height = highmid, frontness = back  ,  round ]
+· := [ height = mid    , frontness = center, ~round ]
+ö := [ height = lowmid , frontness = center,  round ]
+a := [ height = low    , frontness = front , ~round ]
+
+
+# categories
+C := p, t, k, f, s, š, ś, b, d, g, v, z, ž, ź, m, n, ň, r, l
+T := p, t, k
+D := b, d, g
+P := p, b
+F := f, s, š, ś, v, z, ž, ź
+S := f, s, š, ś, r, l
+Z := v, z, ž, ź, r, l
+L := r, l
+R := n, r, l
+N := m, n, ň
