@@ -175,8 +175,8 @@
                                                  word)))
                     (@ store category)))))
 
-(defun generate-from-word (word dfsm store categories
-                           &optional (negative-categories (empty-set)))
+(defun dist-from-markov (word dfsm store categories
+                         &optional (negative-categories (empty-set)))
   (declare (type dfsm dfsm)
            (type map store)
            (type set categories negative-categories))
@@ -191,9 +191,9 @@
                                   args)
                                  (dist
                                   (_extract-dist markovs curr dist)))
-                            (union dist (_extract-dist markovs
-                                                       `(:sequence ,rest)
-                                                       dist)))
+                            (_extract-dist markovs
+                                           `(:sequence ,rest)
+                                           dist))
                           <nodist>))
                      (:mult
                       (bind (((mult spec)
@@ -220,5 +220,5 @@
                                                     <nodist>))))
                      (image store categories)
                      :initial-value <nodist>)))
-    (generate dfsm (_get-dist categories)
+    (diminish (_get-dist categories)
               (_get-dist negative-categories))))
