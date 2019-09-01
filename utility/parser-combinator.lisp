@@ -110,6 +110,14 @@
                                 ,g!bus)))))
         (first bindings))))
 
+(defmacro //_ (parser &body parsers)
+  (if parsers
+      `(//!
+         _ ,parser
+         (//_ ,@parsers))
+      `(//!
+         ,parser)))
+
 (defun >>= (p pg)
   (declare (type function p pg))
   (lambda (s)
@@ -167,6 +175,14 @@
                          (values ,g!result ,g!bus nil)))
                    (values ,g!result ,g!bus nil)))))
         (first bindings))))
+
+(defmacro >>_ (parser &body parsers)
+  (if parsers
+      `(>>!
+         _ ,parser
+         (>>_ ,@parsers))
+      `(>>!
+         ,parser)))
 
 (defun ??== (ptest pgthen pgelse)
   (declare (type function ptest pgthen pgelse))
