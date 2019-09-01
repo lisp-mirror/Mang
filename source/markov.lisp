@@ -62,16 +62,16 @@
                               (bind ((intro (reverse (subseq rev-init 0 intro)))
                                      (outro (reverse (subseq rev-word 0
                                                              outro))))
-                               (map ((memoized
-                                      (intro filter)
-                                      (lambda (word)
-                                        (postfix? intro
-                                                  (filter filter
-                                                          word))))
-                                     (uniform-distribution (set outro)))
-                                    :default <nodist>))
+                                (map ((memoized
+                                       (intro filter)
+                                       (lambda (word)
+                                         (postfix? intro
+                                                   (filter filter
+                                                           word))))
+                                      (uniform-distribution (set outro)))
+                                     :default <nodist>))
                               (empty-map <nodist>)))
-                        (empty-map <nodist>))))))))
+                        (empty-map <nodist>)))))))))
 
 (defun parse-markov-definition (glyphs categories)
   (>>!
@@ -139,3 +139,15 @@
 
 (defun parse-markov-section (glyphs categories)
   (parse-section "markovs" (parse-markovs glyphs categories)))
+
+(defun learn-markov (markov spec word)
+  (loop :for length :below (length word)
+     :do (setf markov
+               (map-union markov
+                          (funcall spec (subseq word 0 length))
+                          #'union))
+     :finally (return-from learn-markov
+                markov)))
+
+(defmethod learn (store markov word categories)
+  (todo store markov word categories))
