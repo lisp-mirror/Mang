@@ -122,11 +122,13 @@
                                                _ (parse-whitespace)
                                                spec (parse-markov-gen-spec
                                                      markov-definitions)
-                                               (succeed `(:katu ,cutoff ,spec)))
+                                               (succeed `(:katz ,cutoff ,spec)))
                                          "]")
-                          (parse-wrapped "(" (parse-markov-gen-spec
-                                              markov-definitions)
-                                         ")"))
+                          (<$> (parse-wrapped "(" (parse-markov-gen-spec
+                                                   markov-definitions)
+                                              ")")
+                               (lambda (spec)
+                                 `(:descend ,spec))))
                         "+")
        (lambda (spec)
          `(:sequence ,@spec))))
