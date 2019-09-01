@@ -112,9 +112,12 @@
 
 (defmacro //_ (parser &body parsers)
   (if parsers
-      `(//!
-         _ ,parser
-         (//_ ,@parsers))
+      (bind ((g!err (gensym "err")))
+        `(//!
+           ,g!err ,parser
+           (<~> (//_ ,@parsers)
+                (lambda (err)
+                  (cons err ,g!err)))))
       `(//!
          ,parser)))
 
