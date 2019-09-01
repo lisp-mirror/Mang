@@ -52,6 +52,9 @@
                                  (second cat))))
                  (range glyphs))
       (bind ((match-length (+ intro outro)))
+        (declare (type (integer 0)
+                       intro outro match-length)
+                 (type set filter))
         (assert (> outro 0))
         (succeed (set
                   (lambda (word)
@@ -60,10 +63,12 @@
                         (bind ((rev-word (reverse word))
                                (rev-init (filter filter
                                                  (subseq rev-word outro))))
+                          (declare (type list rev-word rev-init))
                           (if (length>= rev-init intro)
                               (bind ((intro (reverse (subseq rev-init 0 intro)))
                                      (outro (reverse (subseq rev-word 0
                                                              outro))))
+                                (declare (type list intro outro))
                                 (map ((memoized
                                        (intro filter)
                                        (lambda (word)
@@ -84,16 +89,20 @@
           (parse-constant "=")
           (parse-whitespace-no-newline))
     markov-spec (parse-markov-spec glyphs categories)
-    (succeed (map (name markov-spec)
-                  :default (empty-set)))))
+    (locally
+        (declare (type string name)
+                 (type set markov-spec))
+      (succeed (map (name markov-spec)
+                    :default (empty-set))))))
 
 (defun parse-markov-definitions (glyphs categories)
   (declare (type map glyphs categories))
   (parse-separated (parse-markov-definition glyphs categories)
                    ","
                    (empty-map (empty-set))
-                   (lambda (spec specs)
-                     (map-union specs spec #'union))))
+                   (lambda (def defs)
+                     (declare (type map def defs))
+                     (map-union defs def #'union))))
 
 (defun parse-markov-gen-spec (markov-definitions)
   (declare (type map markov-definitions))
@@ -138,16 +147,12 @@
     gen-spec (parse-markov-gen-spec markov-definitions)
     (succeed (map (name `(,markov-definitions ,gen-spec))))))
 
-(defun parse-markovs (glyphs categories)
-  (declare (type map glyphs categories))
-  (parse-lines (parse-markov glyphs categories)
-               (empty-map)
-               (lambda (markov markovs)
-                 (map-union markovs markov))))
-
 (defun parse-markov-section (glyphs categories)
   (declare (type map glyphs categories))
-  (parse-section "markovs" (parse-markovs glyphs categories)))
+  (parse-section "markovs" (parse-lines (parse-markov glyphs categories)
+                                        (empty-map)
+                                        (lambda (markov markovs)
+                                          (map-union markovs markov)))))
 
 (defun learn-markov (markov spec word)
   (declare (type map markov)
@@ -250,12 +255,20 @@
            (type set categories negative-categories))
   (bind ((word `(,(map (:begin t))))
          (state (start-state<- dfsm)))
+    (declare (type (cons map list)
+                   word))
     (loop
        (bind (((outro new-state)
                (generate-next word dfsm state store categories
                               negative-categories)))
+         (declare (type (or list (eql t))
+                        outro))
          (if new-state
-             (setf word (append word outro)
-                   state new-state)
-             (return-from generate-word
-               (values word outro)))))))
+             (locally
+                 (declare (type cons outro))
+               (setf word (append word outro)
+                     state new-state))
+             (locally
+                 (declare (type boolean outro))
+               (return-from generate-word
+                 (values word outro))))))))
