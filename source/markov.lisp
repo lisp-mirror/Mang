@@ -68,7 +68,8 @@
                                         (postfix? intro
                                                   (filter filter
                                                           word))))
-                                     (uniform-distribution (set outro)))))
+                                     (uniform-distribution (set outro)))
+                                    :default <nodist>))
                               (values nil nil)))
                         (values nil nil)))))))))
 
