@@ -34,8 +34,9 @@
 ;;;; the return value is a map from predicates to probability distributions. The
 ;;;; parameter of the predicate is the word generated so far.
 (with-memoization
-  (defun parse-markov-spec (glyphs categories)
-    (declare (type map categories))
+  (defun parse-markov-spec (phonemes categories)
+    (declare (type set phonemes)
+             (type map categories))
     (>>!
       intro (parse-number)
       outro (<? (>> (parse-whitespace-no-newline)
@@ -50,7 +51,7 @@
                       (lambda (cat)
                         (convert 'set
                                  (second cat))))
-                 (range glyphs))
+                 phonemes)
       (bind ((match-length (+ intro outro)))
         (declare (type (integer 0)
                        intro outro match-length)
@@ -81,23 +82,25 @@
                               (empty-map <nodist>)))
                         (empty-map <nodist>)))))))))
 
-(defun parse-markov-definition (glyphs categories)
-  (declare (type map glyphs categories))
+(defun parse-markov-definition (phonemes categories)
+  (declare (type set phonemes)
+           (type map categories))
   (>>!
     name (parse-identifier)
     _ (>> (parse-whitespace-no-newline)
           (parse-constant "=")
           (parse-whitespace-no-newline))
-    markov-spec (parse-markov-spec glyphs categories)
+    markov-spec (parse-markov-spec phonemes categories)
     (locally
         (declare (type string name)
                  (type set markov-spec))
       (succeed (map (name markov-spec)
                     :default (empty-set))))))
 
-(defun parse-markov-definitions (glyphs categories)
-  (declare (type map glyphs categories))
-  (parse-separated (parse-markov-definition glyphs categories)
+(defun parse-markov-definitions (phonemes categories)
+  (declare (type set phonemes)
+           (type map categories))
+  (parse-separated (parse-markov-definition phonemes categories)
                    ","
                    (empty-map (empty-set))
                    (lambda (def defs)
@@ -133,24 +136,26 @@
        (lambda (spec)
          `(:sequence ,@spec))))
 
-(defun parse-markov (glyphs categories)
-  (declare (type map glyphs categories))
+(defun parse-markov (phonemes categories)
+  (declare (type set phonemes)
+           (type map categories))
   (>>!
     name (parse-identifier)
     _ (>> (parse-whitespace)
           (parse-constant ":=")
           (parse-whitespace))
-    markov-definitions (parse-markov-definitions glyphs categories)
+    markov-definitions (parse-markov-definitions phonemes categories)
     _ (>> (parse-whitespace)
           (parse-constant "|")
           (parse-whitespace))
     gen-spec (parse-markov-gen-spec markov-definitions)
     (succeed (map (name `(,markov-definitions ,gen-spec))))))
 
-(defun parse-markov-section (glyphs categories)
-  (declare (type map glyphs categories))
+(defun parse-markov-section (phonemes categories)
+  (declare (type set phonemes)
+           (type map categories))
   (parse-section "markovs"
-                 (parse-lines (parse-markov glyphs categories)
+                 (parse-lines (parse-markov phonemes categories)
                               (empty-map)
                               (lambda (markov markovs)
                                 (map-union markovs markov)))))
