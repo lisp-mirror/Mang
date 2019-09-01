@@ -28,12 +28,10 @@
 ;;;; `+` adds distributions.
 
 ;;;; A markov spec returns a function taking one argument (which is an initial
-;;;; part of a word) which returns two values. If the word part shouldn't be
-;;;; learned by the markov chain specified by the spec, the two values should be
-;;;; NIL. If the markov spec can learn something from the given word part, the
-;;;; first return value is the distribution to be learned and the second value a
-;;;; predicate on one value. The parameter of the predicate is the word
-;;;; generated so far.
+;;;; part of a word) which returns a map or nil, if the word part shouldn't be
+;;;; learned. If the markov spec can learn something from the given word part,
+;;;; the return value is a map from predicates to probability distributions. The
+;;;; parameter of the predicate is the word generated so far.
 (with-memoization
   (defun parse-markov-spec (glyphs categories)
     (declare (type map categories))
@@ -64,13 +62,13 @@
                               (bind ((intro (reverse (subseq rev-init 0 intro)))
                                      (outro (reverse (subseq rev-word 0
                                                              outro))))
-                                (values (uniform-distribution (set outro))
-                                        (memoized
-                                         (intro filter)
-                                         (lambda (word)
-                                           (postfix? intro
-                                                     (filter filter
-                                                             word))))))
+                               (map ((memoized
+                                      (intro filter)
+                                      (lambda (word)
+                                        (postfix? intro
+                                                  (filter filter
+                                                          word))))
+                                     (uniform-distribution (set outro)))))
                               (values nil nil)))
                         (values nil nil)))))))))
 
