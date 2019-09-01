@@ -250,12 +250,12 @@
            (type set categories negative-categories))
   (bind ((word `(,(map (:begin t))))
          (state (start-state<- dfsm)))
-    (loop :do
-         (bind (((outro new-state)
-                 (generate-next word dfsm state store categories
-                                negative-categories)))
-           (if new-state
-               (setf word (append word outro)
-                     state new-state)
-               (return-from generate-word
-                 (values word outro)))))))
+    (loop
+       (bind (((outro new-state)
+               (generate-next word dfsm state store categories
+                              negative-categories)))
+         (if new-state
+             (setf word (append word outro)
+                   state new-state)
+             (return-from generate-word
+               (values word outro)))))))
