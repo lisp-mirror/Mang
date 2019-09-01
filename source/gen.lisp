@@ -1,35 +1,34 @@
 (in-package #:mang)
 
 (defun parse-syllable-generator (glyphs categories)
-  (//!
-    e1 (parse-constant "()")
-    e2 (>>!
-         front (// (<$> (parse-category categories)
-                        (lambda (category)
-                          (convert 'set
-                                   category)))
-                   (parse-glyph glyphs)
-                   (parse-wrapped "["
-                                  (parse-separated (parse-syllable-generator
-                                                    glyphs categories)
-                                                   "|" (empty-set)
-                                                   (lambda (gen gens)
-                                                     (with gens gen)))
-                                  "]")
-                   (<$> (parse-wrapped "("
-                                       (parse-separated
-                                        (parse-syllable-generator glyphs
-                                                                  categories)
-                                        "|" (empty-set)
-                                        (lambda (gen gens)
-                                          (with gens gen)))
-                                       ")")
-                        (lambda (options)
-                          (with options '()))))
-         _ (parse-whitespace-no-newline)
-         back (<? (parse-syllable-generator glyphs categories))
-         (succeed `(,front ,@back)))
-    (fail `(,e1 ,e2))))
+  (//_
+      (parse-constant "()")
+    (>>!
+      front (// (<$> (parse-category categories)
+                     (lambda (category)
+                       (convert 'set
+                                category)))
+                (parse-glyph glyphs)
+                (parse-wrapped "["
+                               (parse-separated (parse-syllable-generator
+                                                 glyphs categories)
+                                                "|" (empty-set)
+                                                (lambda (gen gens)
+                                                  (with gens gen)))
+                               "]")
+                (<$> (parse-wrapped "("
+                                    (parse-separated
+                                     (parse-syllable-generator glyphs
+                                                               categories)
+                                     "|" (empty-set)
+                                     (lambda (gen gens)
+                                       (with gens gen)))
+                                    ")")
+                     (lambda (options)
+                       (with options '()))))
+      _ (parse-whitespace-no-newline)
+      back (<? (parse-syllable-generator glyphs categories))
+      (succeed `(,front ,@back)))))
 
 (defun parse-syllable-definition (glyphs categories)
   (>>!

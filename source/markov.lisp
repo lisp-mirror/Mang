@@ -109,29 +109,24 @@
 
 (defun parse-markov-gen-spec (markov-definitions)
   (declare (type map markov-definitions))
-  (<$> (parse-separated (// (<$> (parse-from-map markov-definitions)
+  (<$> (parse-separated (//_
+                            (<$> (parse-from-map markov-definitions)
                                  #'first)
-                            (>>!
-                              mult (parse-number)
-                              _ (parse-whitespace-no-newline)
-                              spec (parse-markov-gen-spec markov-definitions)
-                              (succeed `(:mult ,mult ,spec)))
-                            (>>!
-                              _ (>> (parse-constant "[")
-                                    (parse-whitespace))
-                              cutoff (parse-number)
-                              _ (parse-whitespace)
-                              spec (parse-markov-gen-spec markov-definitions)
-                              _ (>> (parse-whitespace)
-                                    (parse-constant "]"))
-                              (succeed `(:katz ,cutoff ,spec)))
-                            (>>!
-                              _ (>> (parse-constant "(")
-                                    (parse-whitespace))
-                              spec (parse-markov-gen-spec markov-definitions)
-                              _ (>> (parse-whitespace)
-                                    (parse-constant ")"))
-                              (succeed `(:descent ,spec))))
+                          (>>!
+                            mult (parse-number)
+                            _ (parse-whitespace-no-newline)
+                            spec (parse-markov-gen-spec markov-definitions)
+                            (succeed `(:mult ,mult ,spec)))
+                          (parse-wrapped "[" (>>!
+                                               cutoff (parse-number)
+                                               _ (parse-whitespace)
+                                               spec (parse-markov-gen-spec
+                                                     markov-definitions)
+                                               (succeed `(:katu ,cutoff ,spec)))
+                                         "]")
+                          (parse-wrapped "(" (parse-markov-gen-spec
+                                              markov-definitions)
+                                         ")"))
                         "+")
        (lambda (spec)
          `(:sequence ,@spec))))
