@@ -70,8 +70,8 @@
                                                           word))))
                                      (uniform-distribution (set outro)))
                                     :default <nodist>))
-                              (values nil nil)))
-                        (values nil nil)))))))))
+                              (empty-map <nodist>)))
+                        (empty-map <nodist>))))))))
 
 (defun parse-markov-definition (glyphs categories)
   (>>!
