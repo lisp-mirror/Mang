@@ -80,3 +80,42 @@
                               stream))))
     (with-open-file (stream file)
       (_rec stream files))))
+
+(defmacro parser-loop (stream (&rest bindings)
+                       &body finally)
+  (bind ((g!stream (gensym "stream"))
+         (g!block (gensym "block"))
+         (g!arg (gensym "arg")))
+    `(bind (,@(mapcar (lambda (binding)
+                        (bind (((var _ &optional (initial nil initial?))
+                                binding))
+                          `(,var ,(if initial?
+                                      initial
+                                      (make-sequence 'list
+                                                     (length var))))))
+                      bindings)
+              (,g!stream ,stream))
+       (block ,g!block
+         (loop (parser-call
+                (// (<$> (>> (parse-whitespace)
+                             (parse-eof))
+                         (lambda (,g!arg)
+                           (declare (ignore ,g!arg))
+                           (return-from ,g!block)))
+                    ,@(mapcar (lambda (binding)
+                                (bind (((var parser &optional _)
+                                        binding)
+                                       (var (ensure-list var))
+                                       (nvar (mapcar (lambda (sym)
+                                                       (gensym (format nil "~A"
+                                                                       sym)))
+                                                     var)))
+                                  `(<$> ,parser
+                                        (lambda (,g!arg)
+                                          (bind ((,nvar (ensure-list ,g!arg)))
+                                            ,@(mapcar (lambda (var nvar)
+                                                        `(setf ,var ,nvar))
+                                                      var nvar))))))
+                              bindings))
+                ,g!stream)))
+       ,@finally)))
