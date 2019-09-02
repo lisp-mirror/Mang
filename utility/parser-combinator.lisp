@@ -73,7 +73,7 @@
                     (<~> (apply #'//
                                 parsers)
                          (lambda (errors)
-                           (cons err errors)))))
+                           `(,err ,@errors)))))
       (<~> parser (lambda (err)
                     `(,err)))))
 
@@ -119,7 +119,8 @@
                 (lambda (err)
                   (cons err ,g!err)))))
       `(//!
-         ,parser)))
+         (<~> ,parser
+              #'list))))
 
 (defun >>= (p pg)
   (declare (type function p pg))
@@ -300,10 +301,14 @@
   (if list
       (bind (((curr &rest rest)
               list))
-        (// (<$ (parse-constant curr)
-                curr)
-            (parse-from-list rest)))
-      (fail `(:elements-not-found ,@list))))
+        (<~> (// (<$ (parse-constant curr)
+                     curr)
+                 (parse-from-list rest))
+             (lambda (err)
+               (bind (((err errs)
+                       err))
+                 `(:elements-not-found ,(second err) ,@(rest errs))))))
+      (fail `(:elements-not-found))))
 
 (defun parse-from-set (set)
   (declare (type set set))
