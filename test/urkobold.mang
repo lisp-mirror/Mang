@@ -20,7 +20,7 @@ n := [ voice = voiced  , manner = nasal              , alveolar          ]
 r := [ voice = voiced  , manner = approximant        , alveolar          ]
 l := [ voice = voiced  , manner = lateral-approximant, alveolar          ]
 
-¡ := [ manner = percussive, sublaminal ]
+' := [ manner = percussive, sublaminal ]
 
 i := [ height = high   , frontness = front , ~round ]
 y := [ height = high   , frontness = front ,  round ]
