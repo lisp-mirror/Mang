@@ -40,7 +40,7 @@
                    (parse-syllable-generator glyphs categories))
     (succeed `(,name ,definition))))
 
-(defun parse-syllable-block (name glyphs categories)
+(defun parse-syllable-section (name glyphs categories)
   (parse-section name
                  (parse-lines (parse-syllable-definition glyphs categories)
                               (empty-map)
@@ -77,24 +77,24 @@
                              (loop :for n :from min :to max
                                 :collect n))))))
 
-(defun parse-wordgen-specs-block (syllables)
+(defun parse-wordgen-specs-section (syllables)
   (parse-section "word-generators"
                  (parse-lines (parse-wordgen-spec syllables)
                               (empty-set)
                               #'union)))
 
-(defun parse-wordgen-block (glyphs categories)
+(defun parse-wordgen-section (glyphs categories)
   (>>!
-    syllables (parse-syllable-block "syllables" glyphs categories)
-    gen (parse-wordgen-specs-block syllables)
+    syllables (parse-syllable-section "syllables" glyphs categories)
+    gen (parse-wordgen-specs-section syllables)
     (succeed (dfsm<- gen))))
 
-(defun parse-clustergen-block (glyphs categories)
+(defun parse-clustergen-section (glyphs categories)
   (>>!
-    nuclei (parse-syllable-block "nuclei" glyphs categories)
-    begin (parse-syllable-block "begin" glyphs categories)
-    middle (parse-syllable-block "middle" glyphs categories)
-    end (parse-syllable-block "end" glyphs categories)
+    nuclei (parse-syllable-section "nuclei" glyphs categories)
+    begin (parse-syllable-section "begin" glyphs categories)
+    middle (parse-syllable-section "middle" glyphs categories)
+    end (parse-syllable-section "end" glyphs categories)
     (min max)
     (>> (parse-whitespace)
         (parse-constant "#")
