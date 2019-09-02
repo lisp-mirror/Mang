@@ -83,46 +83,54 @@
 
 (defmacro parser-loop (stream (&rest bindings)
                        &body finally)
-  (bind ((g!stream (gensym "stream"))
-         (g!block (gensym "block"))
+  (bind ((g!outer (gensym "outer"))
+         (g!inner (gensym "inner"))
+         (g!stream (gensym "stream"))
          (g!arg (gensym "arg")))
-    `(bind (,@(mapcar (lambda (binding)
-                        (bind (((var _ &optional (initial nil initial?))
-                                binding))
-                          (if (consp var)
-                              `(,var ,(if initial?
-                                          initial
-                                          (make-sequence 'list
-                                                         (length var))))
-                              `(,var ,initial))))
-                      bindings)
-              (,g!stream ,stream))
-       (block ,g!block
-         (loop (parser-call
-                (// (<$> (>> (parse-whitespace)
-                             (parse-eof))
-                         (lambda (,g!arg)
-                           (declare (ignore ,g!arg))
-                           (return-from ,g!block)))
-                    ,@(mapcar
-                       (lambda (binding)
-                         (bind (((var parser &optional _)
-                                 binding))
-                           `(<$> ,parser
-                                 (lambda (,g!arg)
-                                   ,(if (consp var)
-                                        (bind
-                                            ((nvar
-                                              (mapcar (lambda (sym)
-                                                        (gensym (format nil "~A"
-                                                                        sym)))
-                                                      var)))
-                                          `(bind ((,nvar ,g!arg))
-                                             ,@(mapcar (lambda (var nvar)
-                                                         `(setf ,var
-                                                                ,nvar))
-                                                       var nvar)))
-                                        `(setf ,var ,g!arg))))))
-                              bindings))
-                ,g!stream)))
-       ,@finally)))
+    `(block ,g!outer
+       (bind (,@(mapcar (lambda (binding)
+                          (bind (((var _ &optional (initial nil initial?))
+                                  binding))
+                            (if (consp var)
+                                `(,var ,(if initial?
+                                            initial
+                                            (make-sequence 'list
+                                                           (length var))))
+                                `(,var ,initial))))
+                        bindings)
+                (,g!stream ,stream))
+         (block ,g!inner
+           (loop (parser-call
+                  (<~>
+                   (// (<$> (>> (parse-whitespace)
+                                (parse-eof))
+                            (lambda (,g!arg)
+                              (declare (ignore ,g!arg))
+                              (return-from ,g!inner
+                                nil t)))
+                       ,@(mapcar
+                          (lambda (binding)
+                            (bind (((var parser &optional _)
+                                    binding))
+                              `(<$> ,parser
+                                    (lambda (,g!arg)
+                                      ,(if (consp var)
+                                           (bind
+                                               ((nvar
+                                                 (mapcar (lambda (sym)
+                                                           (gensym (format nil
+                                                                           "~A"
+                                                                           sym)))
+                                                         var)))
+                                             `(bind ((,nvar ,g!arg))
+                                                ,@(mapcar (lambda (var nvar)
+                                                            `(setf ,var
+                                                                   ,nvar))
+                                                          var nvar)))
+                                           `(setf ,var ,g!arg))))))
+                          bindings))
+                   (lambda (error)
+                     (return-from ,g!outer
+                       error)))
+                  ,g!stream))
+           ,@finally)))))
