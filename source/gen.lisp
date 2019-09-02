@@ -7,8 +7,9 @@
       front (// (<$> (parse-category categories)
                      (lambda (category)
                        (convert 'set
-                                category)))
-                (parse-glyph glyphs)
+                                (second category))))
+                (<$> (parse-glyph glyphs)
+                     #'second)
                 (parse-wrapped "["
                                (parse-separated (parse-syllable-generator
                                                  glyphs categories)
@@ -68,7 +69,7 @@
                    `(,count ,count))))
         `(1 1))
     _ (parse-whitespace-no-newline)
-    back (parse-wordgen-spec syllables)
+    back (<? (parse-wordgen-spec syllables))
     (succeed (image (lambda (count)
                       `(,@(repeat count gen)
                           ,@back))

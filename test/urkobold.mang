@@ -33,6 +33,7 @@ a := [ height = low    , frontness = front , ~round ]
 
 
 # categories
+
 C := p, t, k, f, s, š, ś, b, d, g, v, z, ž, ź, m, n, ň, r, l
 T := p, t, k
 D := b, d, g
@@ -43,3 +44,16 @@ Z := v, z, ž, ź, r, l
 L := r, l
 R := n, r, l
 N := m, n, ň
+
+
+# syllables
+
+begin := [(C|TS|DZ|F[N|L]|(R|PL)')V|V(L)N]
+mid   := [[C|TS|DZ|F[N|L]|[NL|R|P]L'|NL]V|V(L)N]
+
+solo := (C|(R|PL)'|TS|DZ|F[N|L])V(C|LN)
+
+
+# word-generators
+begin mid1-3
+solo
