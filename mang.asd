@@ -21,6 +21,8 @@
     ((:file "convenience")
      (:file "constant-functions")
      (:file "anaphora")
+     (:file "memoization"
+            :depends-on ("anaphora"))
      (:file "set")
      (:file "distribution")
      (:file "nfsm-dfsm"
