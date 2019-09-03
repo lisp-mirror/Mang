@@ -1,7 +1,8 @@
 (in-package #:mang)
 
 (defun parse-word (glyphs)
-  (some (parse-glyph glyphs)
+  (some (<$> (parse-glyph glyphs)
+             #'second)
         '() #'cons))
 
 (defun parse-gloss (glyphs)
