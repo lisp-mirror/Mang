@@ -74,6 +74,12 @@
                          "features"
                          "glyphs"
                          "categories"))
+     (:file "word"
+            :depends-on ("globals"
+                         "blocks"
+                         "glyphs"
+                         "gen"
+                         "markov"))
      #+nil
      (:module
       "language"
