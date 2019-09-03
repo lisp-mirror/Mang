@@ -19,16 +19,17 @@
                  (map-union glyphs glyph))))
 
 (defun parse-category-section (glyphs)
-  (parse-subsection "categories" (parse-category-definitions glyphs)))
+  (parse-section "categories" (parse-category-definitions glyphs)))
 
 (defun parse-category (categories)
-  (>>!
-    candidate (// (parse-wrapped "<" (parse-identifier *mang-reserved-symbols*)
+  (// (<~ (parse-from-map categories)
+          `(:no-category-found))
+      (>>!
+        candidate (parse-wrapped "<" (parse-identifier *mang-reserved-symbols*)
                                  ">")
-                  (parse-anything))
-    ([av]if (@ categories candidate)
-        (succeed `(,candidate ,it))
-      (fail `(:unknown-category ,candidate)))))
+        ([av]if (@ categories candidate)
+            (succeed `(,candidate ,it))
+          (fail `(:unknown-category ,candidate))))))
 
 (defmethod in-category? ((phoneme map)
                          (category sequence))

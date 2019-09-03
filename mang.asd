@@ -52,16 +52,13 @@
             :depends-on ("globals"
                          "blocks"
                          "glyphs"))
+     (:file "sonority"
+            :depends-on ("blocks"
+                         "glyphs"
+                         "categories"))
      (:file "gen"
             :depends-on ("globals"
                          "blocks"
-                         "glyphs"
-                         "categories"))
-     (:file "sonority")
-     (:file "sound-change"
-            :depends-on ("globals"
-                         "blocks"
-                         "features"
                          "glyphs"
                          "categories"))
      (:file "markov"
@@ -69,6 +66,13 @@
                          "blocks"
                          "glyphs"
                          "categories"))
+     (:file "sound-change"
+            :depends-on ("globals"
+                         "blocks"
+                         "features"
+                         "glyphs"
+                         "categories"))
+     #+nil
      (:module
       "language"
       :components

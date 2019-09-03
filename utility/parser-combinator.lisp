@@ -73,7 +73,7 @@
                     (<~> (apply #'//
                                 parsers)
                          (lambda (errors)
-                           (cons err errors)))))
+                           `(,err ,@errors)))))
       (<~> parser (lambda (err)
                     `(,err)))))
 
@@ -98,8 +98,7 @@
                                   var))))
           `(lambda (,g!bus)
              (bind (((:values ,g!result ,g!new-bus ,g!success?)
-                     (funcall (lambda ()
-                                (parser-call ,parser ,g!bus)))))
+                     (parser-call ,parser ,g!bus)))
                (if ,g!success?
                    (values ,g!result ,g!new-bus t)
                    (parser-call ,(if (and (symbolp var)
@@ -110,6 +109,18 @@
                                         (//! ,@bindings)))
                                 ,g!bus)))))
         (first bindings))))
+
+(defmacro //_ (parser &body parsers)
+  (if parsers
+      (bind ((g!err (gensym "err")))
+        `(//!
+           ,g!err ,parser
+           (<~> (//_ ,@parsers)
+                (lambda (err)
+                  (cons err ,g!err)))))
+      `(//!
+         (<~> ,parser
+              #'list))))
 
 (defun >>= (p pg)
   (declare (type function p pg))
@@ -168,6 +179,14 @@
                          (values ,g!result ,g!bus nil)))
                    (values ,g!result ,g!bus nil)))))
         (first bindings))))
+
+(defmacro >>_ (parser &body parsers)
+  (if parsers
+      `(>>!
+         _ ,parser
+         (>>_ ,@parsers))
+      `(>>!
+         ,parser)))
 
 (defun ??== (ptest pgthen pgelse)
   (declare (type function ptest pgthen pgelse))
@@ -282,10 +301,14 @@
   (if list
       (bind (((curr &rest rest)
               list))
-        (// (<$ (parse-constant curr)
-                curr)
-            (parse-from-list rest)))
-      (fail `(:elements-not-found ,@list))))
+        (<~> (// (<$ (parse-constant curr)
+                     curr)
+                 (parse-from-list rest))
+             (lambda (err)
+               (bind (((err errs)
+                       err))
+                 `(:elements-not-found ,(second err) ,@(rest errs))))))
+      (fail `(:elements-not-found))))
 
 (defun parse-from-set (set)
   (declare (type set set))
@@ -345,4 +368,5 @@
               (succeed parsed)))))
 
 (defun parse-number ()
-  (some (parse-unicode-property "Number")))
+  (<$> (some (parse-unicode-property "Number"))
+       #'parse-integer))

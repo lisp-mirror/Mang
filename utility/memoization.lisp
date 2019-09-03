@@ -1,0 +1,20 @@
+(in-package #:mang)
+
+(defmacro with-memoization (&body body)
+  (bind ((g!memoized (gensym "memoized"))
+         (g!args (gensym "args"))
+         (g!body (gensym "body"))
+         (g!result (gensym "result")))
+    `(bind ((,g!memoized (empty-map)))
+       (macrolet ((memoized ((&rest ,g!args)
+                             &body ,g!body)
+                    `([av]if (gethash (list ,@,g!args)
+                                      ,',g!memoized)
+                         it
+                       (bind ((,',g!result (progn
+                                             ,@,g!body)))
+                         (setf (gethash (list ,@,g!args)
+                                        ,',g!memoized)
+                               ,',g!result)
+                         ,',g!result))))
+         ,@body))))

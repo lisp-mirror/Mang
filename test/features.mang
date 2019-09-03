@@ -1,0 +1,23 @@
+# features
+
+privative : bilabial, labiodental, linguolabial, bidental, dental, sublaminal,
+            alveolar, postalveolar, retroflex, palatal, velar, uvular,
+            epiglottal, glottal
+
+valued : manner := stop, fricative, nasal, tap, trill, approximant,
+                   lateral-fricative, lateral-approximant, implosive, ejective,
+                   click, percussive
+
+valued : voice := unvoiced, breathy, voiced, creaky
+
+
+privative : round
+
+valued : height := high, highmid, mid, lowmid, low
+
+valued : frontness := front, centerfront, center, centerback, back
+
+
+privative : syllabic, onset, coda
+
+valued : stress := primary, secondary, unstressed

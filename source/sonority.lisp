@@ -114,18 +114,15 @@
 
 (defun parse-sonority-class (glyphs categories)
   (declare (type map glyphs categories))
-  (>>!
-    front (// (parse-from-map categories)
-              (parse-from-map glyphs))
-    back (many (>> (parse-whitespace)
-                   (parse-constant ",")
-                   (parse-whitespace)
-                   (// (parse-from-map categories)
-                       (parse-from-map glyphs)))
-               (empty-set)
-               (lambda (phoneme phonemes)
-                 (with phonemes phoneme)))
-    (succeed (with back front))))
+  (parse-separated (// (<$> (parse-category categories)
+                            (lambda (category)
+                              (convert 'set
+                                       (second category))))
+                       (<$> (parse-glyph glyphs)
+                            (lambda (glyph)
+                              (set (second glyph)))))
+                   "," (empty-set)
+                   #'union))
 
 (defun parse-sonority-hierarchy (glyphs categories)
   (declare (type map glyphs categories))

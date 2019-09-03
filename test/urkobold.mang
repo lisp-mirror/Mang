@@ -1,0 +1,317 @@
+# glyphs
+
+p := [ voice = unvoiced, manner = stop               , bilabial          ]
+t := [ voice = unvoiced, manner = stop               , alveolar          ]
+k := [ voice = unvoiced, manner = stop               , velar             ]
+f := [ voice = unvoiced, manner = fricative          , bilabial          ]
+s := [ voice = unvoiced, manner = fricative          , alveolar          ]
+š := [ voice = unvoiced, manner = fricative          , postalveolar      ]
+ś := [ voice = unvoiced, manner = fricative          , alveolar, palatal ]
+b := [ voice = voiced  , manner = stop               , bilabial          ]
+d := [ voice = voiced  , manner = stop               , alveolar          ]
+g := [ voice = voiced  , manner = stop               , velar             ]
+v := [ voice = voiced  , manner = fricative          , bilabial          ]
+z := [ voice = voiced  , manner = fricative          , alveolar          ]
+ž := [ voice = voiced  , manner = fricative          , postalveolar      ]
+ź := [ voice = voiced  , manner = fricative          , alveolar, palatal ]
+m := [ voice = voiced  , manner = nasal              , bilabial          ]
+n := [ voice = voiced  , manner = nasal              , alveolar          ]
+ň := [ voice = voiced  , manner = nasal              , velar             ]
+r := [ voice = voiced  , manner = approximant        , alveolar          ]
+l := [ voice = voiced  , manner = lateral-approximant, alveolar          ]
+
+' := [ manner = percussive, sublaminal ]
+
+i := [ height = high   , frontness = front , ~round ]
+y := [ height = high   , frontness = front ,  round ]
+u := [ height = high   , frontness = back  ,  round ]
+e := [ height = highmid, frontness = front , ~round ]
+o := [ height = highmid, frontness = back  ,  round ]
+· := [ height = mid    , frontness = center, ~round ]
+ö := [ height = lowmid , frontness = center,  round ]
+a := [ height = low    , frontness = front , ~round ]
+
+
+# categories
+
+C := p, t, k, f, s, š, ś, b, d, g, v, z, ž, ź, m, n, ň, r, l
+T := p, t, k
+D := b, d, g
+P := p, b
+F := f, s, š, ś, v, z, ž, ź
+S := f, s, š, ś, r, l
+Z := v, z, ž, ź, r, l
+L := r, l
+R := n, r, l
+N := m, n, ň
+
+V := i, y, u, e, o, ·, ö, a
+
+
+# syllables
+
+begin := [(C|TS|DZ|F[N|L]|(R|PL)')V|V(L)N]
+mid   := [[C|TS|DZ|F[N|L]|[NL|R|P]L'|NL]V|V(L)N]
+
+solo := (C|(R|PL)'|TS|DZ|F[N|L])V(C|LN)
+
+
+# word-generators
+
+begin mid1-3
+solo
+
+
+# sonority-hierarchy
+
+T, D
+F
+N
+L
+V
+
+
+# markovs
+
+everything :=
+ long     = 4,
+ middle   = 3,
+ short    = 2,
+ support  = 1,
+ fallback = 0,
+ clong    = 3~C,
+ cmiddle  = 2~C,
+ cshort   = 1~C,
+ vlong    = 3~V,
+ vmiddle  = 2~V,
+ vshort   = 1~V
+ | (2 long + 2 clong + 2 vlong + [1000 middle] + [1000 short])
+ + (clong + [1000 long])
+ + (vlong + [1000 long])
+ + (cmiddle + [1000 middle])
+ + (vmiddle + [1000 middle])
+ + (cshort + [1000 short])
+ + (vshort + [1000 short])
+ + (long + [1000 middle])
+ + (middle + [1000 short])
+ + (short + [1000 support])
+ + [2000 fallback]
+
+noun :=
+ long     = 4,
+ short    = 2,
+ fallback = 0
+ | 3 long + 2 short + [1000 fallback]
+
+verb :=
+ long     = 4,
+ short    = 2,
+ fallback = 0
+ | 3 long + 2 short + [1000 fallback]
+
+interjection :=
+ long     = 4,
+ short    = 2,
+ fallback = 0
+ | 3 long + 2 short + [1000 fallback]
+
+adjective :=
+ long     = 4,
+ short    = 2,
+ fallback = 0
+ | 3 long + 2 short + [1000 fallback]
+
+person :=
+ long     = 4,
+ middle   = 3,
+ short    = 2,
+ fallback = 0,
+ vowel    = 1~V
+ | long + 2 middle + 2 short + vowel + [1000 fallback]
+
+animal :=
+ long     = 4,
+ middle   = 3,
+ short    = 2,
+ fallback = 0,
+ vowel    = 1~V
+ | long + 2 middle + 2 short + vowel + [1000 fallback]
+
+plant :=
+ long     = 4,
+ middle   = 3,
+ short    = 2,
+ fallback = 0,
+ vowel    = 1~V
+ | long + 2 middle + 2 short + vowel + [1000 fallback]
+
+object :=
+ long     = 4,
+ middle   = 3,
+ short    = 2,
+ fallback = 0,
+ vowel    = 1~V
+ | long + 2 middle + 2 short + vowel + [1000 fallback]
+
+mass :=
+ long     = 4,
+ middle   = 3,
+ short    = 2,
+ fallback = 0,
+ vowel    = 1~V
+ | long + 2 middle + 2 short + vowel + [1000 fallback]
+
+abstract :=
+ long     = 4,
+ middle   = 3,
+ short    = 2,
+ fallback = 0,
+ vowel    = 1~V
+ | long + 2 middle + 2 short + vowel + [1000 fallback]
+
+body-part :=
+ middle   = 3,
+ short    = 2,
+ support  = 1,
+ fallback = 0
+ | 2 middle + 3 short + [1000 support] + [1000 fallback]
+
+food :=
+ middle   = 3,
+ short    = 2,
+ support  = 1,
+ fallback = 0
+ | 2 middle + 3 short + [1000 support] + [1000 fallback]
+
+sense :=
+ middle   = 3,
+ short    = 2,
+ support  = 1,
+ fallback = 0
+ | 2 middle + 3 short + [1000 support] + [1000 fallback]
+
+sound :=
+ middle   = 3,
+ short    = 2,
+ support  = 1,
+ fallback = 0
+ | 2 middle + 3 short + [1000 support] + [1000 fallback]
+
+smell :=
+ middle   = 3,
+ short    = 2,
+ support  = 1,
+ fallback = 0
+ | 2 middle + 3 short + [1000 support] + [1000 fallback]
+
+sight :=
+ middle   = 3,
+ short    = 2,
+ support  = 1,
+ fallback = 0
+ | 2 middle + 3 short + [1000 support] + [1000 fallback]
+
+tactile :=
+ middle   = 3,
+ short    = 2,
+ support  = 1,
+ fallback = 0
+ | 2 middle + 3 short + [1000 support] + [1000 fallback]
+
+taste :=
+ middle   = 3,
+ short    = 2,
+ support  = 1,
+ fallback = 0
+ | 2 middle + 3 short + [1000 support] + [1000 fallback]
+
+emotion :=
+ middle   = 3,
+ short    = 2,
+ support  = 1,
+ fallback = 0
+ | 2 middle + 3 short + [1000 support] + [1000 fallback]
+
+good :=
+ short-short = 2:2,
+ short       = 2,
+ support     = 1,
+ fallback    = 0
+ | short-short + short + 2 support + [500 fallback]
+
+bad :=
+ short-short = 2:2,
+ short       = 2,
+ support     = 1,
+ fallback    = 0
+ | short-short + short + 2 support + [500 fallback]
+
+funny :=
+ short-short = 2:2,
+ short       = 2,
+ support     = 1,
+ fallback    = 0
+ | short-short + short + 2 support + [500 fallback]
+
+sad :=
+ short-short = 2:2,
+ short       = 2,
+ support     = 1,
+ fallback    = 0
+ | short-short + short + 2 support + [500 fallback]
+
+light :=
+ short-short = 2:2,
+ short       = 2,
+ support     = 1,
+ fallback    = 0
+ | short-short + short + 2 support + [500 fallback]
+
+dark :=
+ short-short = 2:2,
+ short       = 2,
+ support     = 1,
+ fallback    = 0
+ | short-short + short + 2 support + [500 fallback]
+
+living :=
+ short-short = 2:2,
+ short       = 2,
+ support     = 1,
+ fallback    = 0
+ | short-short + short + 2 support + [500 fallback]
+
+dead :=
+ short-short = 2:2,
+ short       = 2,
+ support     = 1,
+ fallback    = 0
+ | short-short + short + 2 support + [500 fallback]
+
+active :=
+ short-short = 2:2,
+ short       = 2,
+ support     = 1,
+ fallback    = 0
+ | short-short + short + 2 support + [500 fallback]
+
+inert :=
+ short-short = 2:2,
+ short       = 2,
+ support     = 1,
+ fallback    = 0
+ | short-short + short + 2 support + [500 fallback]
+
+big :=
+ short-short = 2:2,
+ short       = 2,
+ support     = 1,
+ fallback    = 0
+ | short-short + short + 2 support + [500 fallback]
+
+small :=
+ short-short = 2:2,
+ short       = 2,
+ support     = 1,
+ fallback    = 0
+ | short-short + short + 2 support + [500 fallback]
