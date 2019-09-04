@@ -1,11 +1,13 @@
 (in-package #:mang)
 
 (defun parse-word (glyphs)
+  (declare (type map glyphs))
   (some (<$> (parse-glyph glyphs)
              #'second)
         '() #'cons))
 
 (defun parse-gloss (glyphs)
+  (declare (type map glyphs))
   (>>!
     gloss (parse-identifier *mang-reserved-symbols*)
     _ (>> (parse-whitespace)
@@ -13,3 +15,22 @@
           (parse-whitespace))
     word (parse-word glyphs)
     (succeed (map (gloss word)))))
+
+(defun parse-glosses (glyphs markovs store)
+  (declare (type map glyphs markovs store))
+  (>>!
+    categories (parse-separated (parse-identifier *mang-reserved-symbols*)
+                                "," (empty-set)
+                                (lambda (category categories)
+                                  (with categories category)))
+    _ (>> (parse-whitespace)
+          (parse-constant ":")
+          (parse-whitespace))
+    glosses (parse-lines (parse-gloss glyphs)
+                         (empty-map)
+                         (lambda (def defs)
+                           (map-union defs def)))
+    (succeed
+     `(,glosses ,(image (lambda (word)
+                          (learn store markovs word categories))
+                        (range glosses))))))
