@@ -1,18 +1,22 @@
 (in-package #:mang)
 
 ;;;;; everything :=
-;;;;;  long     = 4,
-;;;;;  middle   = 3,
-;;;;;  short    = 2,
-;;;;;  lsupport = 1:2,
-;;;;;  support  = 1,
-;;;;;  fallback = 0,
-;;;;;  C-long   = 4~C,
-;;;;;  C-middle = 3~C,
-;;;;;  C-short  = 2~C,
-;;;;;  V-long   = 3~V,
-;;;;;  V-middle = 2~V,
-;;;;;  V-short  = 1~V
+;;;;;  long      = 4,
+;;;;;  middle    = 3,
+;;;;;  short     = 2,
+;;;;;  lsupport  = 1:2,
+;;;;;  support   = 1,
+;;;;;  fallback  = 0,
+;;;;;  C-long    = 4~C,
+;;;;;  C-middle  = 3~C,
+;;;;;  C-short   = 2~C,
+;;;;;  V-long    = 3~V,
+;;;;;  V-middle  = 2~V,
+;;;;;  V-short   = 1~V,
+;;;;;  C-uniform = uniform {m,p,f,n,t,s,k,x,l,r} 2,
+;;;;;  C-Zipf    = zipf    {m,p,f,n,t,s,k,x,l,r} 1.06 3,
+;;;;;  V-uniform = uniform {i,a,u,e,o} 4,
+;;;;;  V-Zipf    = zipf    {i,a,u,e,o} 1.09 5
 ;;;;;  | (3 C-long   + 2 [1000 long  ])
 ;;;;;  + (3 V-long   + 2 [1000 long  ])
 ;;;;;  + (2 C-middle +   [ 500 middle])
@@ -21,6 +25,7 @@
 ;;;;;  + (2 V-short  +   [ 200 short ])
 ;;;;;  + ([1000 lsupport] + 2 [500 support ])
 ;;;;;  + ([ 750 fallback] +   [500 fallback])
+;;;;;  + C-uniform + C-Zipf + V-uniform + C-Zipf
 ;;;; The part before the `|` defines the available markov chains, the part after
 ;;;; defines the way they are used in the generator.
 ;;;; The [n mc] construction loads the markov chain `mc` only when the current
