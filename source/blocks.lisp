@@ -135,29 +135,19 @@
                   ,g!stream))
            ,@finally)))))
 
-(defmacro parser-case (bus &body cases)
+(defmacro parser-case (&body cases)
   (when cases
-    (bind ((g!bus (gensym "bus"))
-           (g!result (gensym "result"))
-           (g!success? (gensym "success?"))
-           ((args parser &body computation)
-            (first cases)))
-      (if (eq args t)
-          `(progn
-             ,parser ,@computation)
-          `(bind ((,g!bus (bus<- ,bus)))
-             ,(if (and (symbolp args)
-                       (string= (symbol-name args)
-                                "_"))
-                  `(bind (((:values _ _ ,g!success?)
-                           (parser-call ,parser ,g!bus)))
-                     (if ,g!success?
-                         (progn
-                           ,@computation)
-                         (parser-case ,g!bus ,@(rest cases))))
-                  `(bind (((:values ,g!result _ ,g!success?)
-                           (parser-call ,parser ,g!bus)))
-                     (if ,g!success?
-                         (bind ((,args ,g!result))
-                           ,@computation)
-                         (parser-case ,g!bus ,@(rest cases))))))))))
+    (chop case cases
+      (bind (((args parser &body computation)
+              case))
+        (if (and (symbolp args)
+                 (string= (symbol-name args)
+                          "_"))
+            `(?? ,parser
+                 (succeed (progn
+                            ,@computation))
+                 (parser-case ,@cases))
+            `(??! ,args ,parser
+                  (succeed (progn
+                             ,@computation))
+                  (parser-case ,@cases)))))))
