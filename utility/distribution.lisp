@@ -271,6 +271,7 @@
                                              sum)))))
        :finally (return dist))))
 
+#+nil
 (defmethod yule-distribution ((elements null)
                               (a real)
                               (b real)
@@ -278,6 +279,7 @@
   (declare (ignore elements a b c))
   <nodist>)
 
+#+nil
 (defmethod yule-distribution ((elements cons)
                               (a real)
                               (b real)
@@ -292,6 +294,7 @@
                                        (expt c r))))
        :finally (return dist))))
 
+#+nil
 (defmethod beta-distribution ((elements null)
                               (a real)
                               (b real)
@@ -299,6 +302,7 @@
   (declare (ignore elements a b c))
   <nodist>)
 
+#+nil
 (defmethod beta-distribution ((elements cons)
                               (a real)
                               (b real)
