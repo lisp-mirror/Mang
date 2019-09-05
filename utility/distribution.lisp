@@ -304,7 +304,8 @@
        :do (setf dist
                  (with dist element (* c (/ (expt (+ n 1 r)
                                                   b)
-                                            (expt r a))))))))
+                                            (expt r a)))))
+       :finally (return-from beta-distribution dist))))
 
 (defmethod print-object ((object [distribution])
                          stream)
