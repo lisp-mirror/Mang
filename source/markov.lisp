@@ -62,73 +62,63 @@
                        intro outro match-length)
                  (type set filter))
         (assert (> outro 0))
-        (succeed (set
-                  (lambda (word)
-                    (declare (type list word))
-                    (if (length>= word match-length)
-                        (bind ((rev-word (reverse word))
-                               (rev-init (filter filter
-                                                 (subseq rev-word outro))))
-                          (declare (type list rev-word rev-init))
-                          (if (length>= rev-init intro)
-                              (bind ((intro (reverse (subseq rev-init 0 intro)))
-                                     (outro (reverse (subseq rev-word 0
-                                                             outro))))
-                                (declare (type list intro outro))
-                                (map ((memoized
-                                       (intro filter)
-                                       (lambda (word)
-                                         (declare (type list word))
-                                         (postfix? intro
-                                                   (filter filter
-                                                           word))))
-                                      (uniform-distribution (set outro)))
-                                     :default <nodist>))
-                              (empty-map <nodist>)))
-                        (empty-map <nodist>)))))))))
+        (succeed `(,(set
+                     (lambda (word)
+                       (declare (type list word))
+                       (if (length>= word match-length)
+                           (bind ((rev-word (reverse word))
+                                  (rev-init (filter filter
+                                                    (subseq rev-word outro))))
+                             (declare (type list rev-word rev-init))
+                             (if (length>= rev-init intro)
+                                 (bind ((intro
+                                         (reverse (subseq rev-init 0 intro)))
+                                        (outro (reverse (subseq rev-word 0
+                                                                outro))))
+                                   (declare (type list intro outro))
+                                   (map ((memoized
+                                          (intro filter)
+                                          (lambda (word)
+                                            (declare (type list word))
+                                            (postfix? intro
+                                                      (filter filter
+                                                              word))))
+                                         (uniform-distribution (set outro)))
+                                        :default <nodist>))
+                                 (empty-map <nodist>)))
+                           (empty-map <nodist>))))
+                    ,(empty-map <nodist>)))))))
 
-(with-memoization
-  (defun parse-uniform-spec (phonemes)
-    (declare (type set phonemes))
-    (>>!
-      _ (>> (parse-constant "uniform")
-            (parse-whitespace))
-      elements (parse-wrapped "{"
-                              (parse-separated (parse-from-set phonemes)
-                                               ",")
-                              "}")
-      weight (>> (parse-whitespace)
-                 (parse-number))
-      (succeed (set (lambda (word)
-                      (declare (ignore word)
-                               (type list word))
-                      (map (#'true (memoized
-                                    (elements weight)
-                                    (uniform-distribution elements
-                                                          weight))))))))))
+(defun parse-uniform-spec (phonemes)
+  (declare (type set phonemes))
+  (>>!
+    _ (>> (parse-constant "uniform")
+          (parse-whitespace))
+    elements (parse-wrapped "{"
+                            (parse-separated (parse-from-set phonemes)
+                                             ",")
+                            "}")
+    weight (>> (parse-whitespace)
+               (parse-number))
+    (succeed `(,(empty-set)
+                ,(map (#'true (uniform-distribution elements weight)))))))
 
-(with-memoization
-  (defun parse-zipf-spec (phonemes)
-    (declare (type set phonemes))
-    (>>!
-      _ (>> (parse-constant "zipf")
-            (parse-whitespace))
-      elements (parse-wrapped "{"
-                              (parse-separated (parse-from-set phonemes)
-                                               ",")
-                              "}")
-      exponent (<? (>> (parse-whitespace)
-                       (parse-floating))
-                   1)
-      weight (<? (>> (parse-whitespace)
-                     (parse-number)))
-      (succeed (set (lambda (word)
-                      (declare (ignore word)
-                               (type list word))
-                      (map (#'true (memoized
-                                    (elements exponent weight)
-                                    (zipf-distribution elements exponent
-                                                       weight))))))))))
+(defun parse-zipf-spec (phonemes)
+  (declare (type set phonemes))
+  (>>!
+    _ (>> (parse-constant "zipf")
+          (parse-whitespace))
+    elements (parse-wrapped "{"
+                            (parse-separated (parse-from-set phonemes)
+                                             ",")
+                            "}")
+    exponent (<? (>> (parse-whitespace)
+                     (parse-floating))
+                 1)
+    weight (<? (>> (parse-whitespace)
+                   (parse-number)))
+    (succeed `(,(empty-set)
+                ,(map (#'true (zipf-distribution elements exponent weight)))))))
 
 (defun parse-markov-definition (phonemes categories)
   (declare (type set phonemes)
@@ -138,24 +128,31 @@
     _ (>> (parse-whitespace-no-newline)
           (parse-constant "=")
           (parse-whitespace-no-newline))
-    markov-spec (// (parse-markov-spec phonemes categories)
-                    (parse-uniform-spec phonemes)
-                    (parse-zipf-spec phonemes))
+    (markov-spec store)
+    (// (parse-markov-spec phonemes categories)
+        (parse-uniform-spec phonemes)
+        (parse-zipf-spec phonemes))
     (locally
         (declare (type string name)
                  (type set markov-spec))
-      (succeed (map (name markov-spec)
-                    :default (empty-set))))))
+      (succeed `(,(map (name markov-spec)
+                       :default (empty-set))
+                  ,store)))))
 
 (defun parse-markov-definitions (phonemes categories)
   (declare (type set phonemes)
            (type map categories))
   (parse-separated (parse-markov-definition phonemes categories)
                    ","
-                   (empty-map (empty-set))
+                   `(,(empty-map (empty-set))
+                      ,(empty-map <nodist>))
                    (lambda (def defs)
-                     (declare (type map def defs))
-                     (map-union defs def #'union))))
+                     (bind (((specs stores)
+                             defs)
+                            ((spec store)
+                             def))
+                       `(,(map-union specs spec #'union)
+                          ,(map-union stores store #'union))))))
 
 (defun parse-markov-gen-spec (markov-definitions)
   (declare (type map markov-definitions))
@@ -191,12 +188,14 @@
     _ (>> (parse-whitespace)
           (parse-constant ":=")
           (parse-whitespace))
-    markov-definitions (parse-markov-definitions phonemes categories)
+    (markov-definitions store)
+    (parse-markov-definitions phonemes categories)
     _ (>> (parse-whitespace)
           (parse-constant "|")
           (parse-whitespace))
     gen-spec (parse-markov-gen-spec markov-definitions)
-    (succeed (map (name `(,markov-definitions ,gen-spec))))))
+    (succeed `(,(map (name `(,markov-definitions ,gen-spec)))
+                ,store))))
 
 (defun parse-markov-section (phonemes categories)
   (declare (type set phonemes)
@@ -205,7 +204,12 @@
                  (parse-lines (parse-markov phonemes categories)
                               (empty-map)
                               (lambda (markov markovs)
-                                (map-union markovs markov)))))
+                                (bind (((markovs stores)
+                                        markovs)
+                                       ((markov store)
+                                        markov))
+                                  `(,(map-union markovs markov)
+                                     ,(map-union stores store #'union)))))))
 
 (defun learn-markov (markov spec word)
   (declare (type map markov)
