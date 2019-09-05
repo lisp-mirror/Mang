@@ -87,10 +87,10 @@
                                (:generator generator)
                                (:markov-spec markov-spec)
                                (:store store)
-                               (:dictionary dictionary))))
-              (return-from :loop
-                (values languages binary-features valued-features
-                        privative-features))))
+                               (:dictionary dictionary)))))
+            (return-from :loop
+              (values languages binary-features valued-features
+                      privative-features)))
            (t
             (error "Unexpected input")))))))
 
