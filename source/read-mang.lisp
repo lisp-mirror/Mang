@@ -65,11 +65,12 @@
                   (parse-clustergen-section glyphs categories))
               (assert language)
               (setf generator new-generator))
-             (new-markov-spec
+             ((new-markov-spec new-store)
               (parse-markov-section (range glyphs)
                                     categories)
               (assert language)
-              (setf markov-spec new-markov-spec))
+              (setf markov-spec new-markov-spec
+                    store new-store))
              ((new-dictionary new-store)
               (parse-dictionary glyphs generator store markov-spec)
               (assert language)
