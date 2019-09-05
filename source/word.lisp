@@ -62,7 +62,7 @@
     back (<? (>> (parse-expression-end)
                  (parse-whitespace)
                  (parse-glosses glyphs dfsm store markov-spec parts-of-speech)))
-    (succeed (map-union back front))))
+    (succeed (map-union back front #'map-union))))
 
 (defun parse-dictionary (glyphs dfsm store markov-spec)
   (declare (type map glyphs store markov-spec)
