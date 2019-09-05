@@ -74,7 +74,8 @@
              ((new-dictionary new-store)
               (parse-dictionary glyphs generator store markov-spec)
               (assert language)
-              (setf dictionary new-dictionary
+              (setf dictionary (map-union dictionary new-dictionary
+                                          #'map-union)
                     store new-store))
              (_
               (>> (parse-whitespace)
