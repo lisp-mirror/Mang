@@ -249,14 +249,14 @@
                         weight))
 
 (defmethod zipf-distribution ((elements null)
-                              (weight real)
-                              (exponent real))
+                              (exponent real)
+                              (weight real))
   (declare (ignore elements weight exponent))
   <nodist>)
 
 (defmethod zipf-distribution ((elements cons)
-                              (weight real)
-                              (exponent real))
+                              (exponent real)
+                              (weight real))
   (declare (type (real (0))
                  weight exponent))
   (bind ((dist <nodist>)
