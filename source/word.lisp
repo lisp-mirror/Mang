@@ -59,3 +59,8 @@
                  (parse-whitespace)
                  (parse-glosses glyphs dfsm store markov-spec)))
     (succeed (map-union back front))))
+
+(defun parse-dictionary (glyphs dfsm store markov-spec)
+  (declare (type map glyphs store markov-spec)
+           (type dfsm dfsm))
+  (parse-section "dictionary" (parse-glosses glyphs dfsm store markov-spec)))
