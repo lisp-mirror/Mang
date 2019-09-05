@@ -59,10 +59,12 @@
   (>>!
     (front store)
     (parse-gloss glyphs dfsm store markov-spec parts-of-speech)
-    back (<? (>> (parse-expression-end)
-                 (parse-whitespace)
-                 (parse-glosses glyphs dfsm store markov-spec parts-of-speech)))
-    (succeed (map-union back front #'map-union))))
+    (back store)
+    (<? (>> (parse-expression-end)
+            (parse-whitespace)
+            (parse-glosses glyphs dfsm store markov-spec parts-of-speech)))
+    (succeed `(,(map-union back front #'map-union)
+                ,store))))
 
 (defun parse-dictionary (glyphs dfsm store markov-spec)
   (declare (type map glyphs store markov-spec)
