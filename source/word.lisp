@@ -6,11 +6,14 @@
              #'second)
         '() #'cons))
 
-(defun parse-gloss (glyphs dfsm store markov-spec)
+(defun parse-gloss (glyphs dfsm store markov-spec parts-of-speech)
   (declare (type map glyphs store markov-spec)
-           (type dfsm dfsm))
+           (type dfsm dfsm)
+           (type set parts-of-speech))
   (>>!
     gloss (parse-identifier  *mang-reserved-symbols*)
+    _ (parse-whitespace)
+    part-of-speech (parse-from-set parts-of-speech)
     _ (>> (parse-whitespace)
           (parse-constant ":=")
           (parse-whitespace))
@@ -39,7 +42,7 @@
         (if negative-categories
             (fail `(:save-with-negative-categories ,gloss ,word
                                                    ,negative-categories))
-            (succeed `(,(map (gloss word))
+            (succeed `(,(map (part-of-speech (map (gloss word))))
                         ,(learn store markov-spec word
                                 (or categories (empty-set))))))
         (if categories
@@ -49,18 +52,27 @@
                           ,(learn store markov-spec word categories))))
             (fail `(:generate-without-categories ,gloss))))))
 
-(defun parse-glosses (glyphs dfsm store markov-spec)
+(defun parse-glosses (glyphs dfsm store markov-spec parts-of-speech)
   (declare (type map glyphs store markov-spec)
-           (type dfsm dfsm))
+           (type dfsm dfsm)
+           (type set parts-of-speech))
   (>>!
     (front store)
-    (parse-gloss glyphs dfsm store markov-spec)
+    (parse-gloss glyphs dfsm store markov-spec parts-of-speech)
     back (<? (>> (parse-expression-end)
                  (parse-whitespace)
-                 (parse-glosses glyphs dfsm store markov-spec)))
+                 (parse-glosses glyphs dfsm store markov-spec parts-of-speech)))
     (succeed (map-union back front))))
 
 (defun parse-dictionary (glyphs dfsm store markov-spec)
   (declare (type map glyphs store markov-spec)
            (type dfsm dfsm))
-  (parse-section "dictionary" (parse-glosses glyphs dfsm store markov-spec)))
+  (parse-section "dictionary"
+                 (>>!
+                   parts-of-speech (parse-separated (parse-identifier)
+                                                    "," (empty-set)
+                                                    (lambda (pos poss)
+                                                      (with poss pos)))
+                   dictionary (parse-glosses glyphs dfsm store markov-spec
+                                             parts-of-speech)
+                   (succeed dictionary))))
