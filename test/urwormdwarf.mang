@@ -1,0 +1,77 @@
+## urwormdwarven
+
+# glyphs
+
+y := [voice = voiced, height = high, frontness = center, ~round, syllabic, ~long]
+ÿ := [voice = creaky, height = high, frontness = center, ~round, syllabic, ~long]
+ẙ := [voice = voiced, height = high, frontness = center, ~round, syllabic,  long]
+u := [voice = voiced, height = high, frontness = back  ,  round, syllabic, ~long]
+ü := [voice = creaky, height = high, frontness = back  ,  round, syllabic, ~long]
+ů := [voice = voiced, height = high, frontness = back  ,  round, syllabic,  long]
+a := [voice = voiced, height = low , frontness = back  ,  round, syllabic, ~long]
+ä := [voice = creaky, height = low , frontness = back  ,  round, syllabic, ~long]
+å := [voice = voiced, height = low , frontness = back  ,  round, syllabic,  long]
+
+m  := [voice = voiced, bilabial   , manner = nasal            ]
+n  := [voice = voiced, dental     , manner = nasal            ]
+ṇ  := [voice = voiced, retroflex  , manner = nasal            ]
+ň  := [voice = voiced, uvular     , manner = nasal            ]
+b  := [voice = voiced, bilabial   , manner = stop             ]
+d  := [voice = voiced, dental     , manner = stop             ]
+g  := [voice = voiced, uvular     , manner = stop             ]
+v  := [voice = voiced, labiodental, manner = fricative        ]
+ẑ  := [voice = voiced, bidental   , manner = fricative        ]
+z  := [voice = voiced, dental     , manner = fricative        ]
+ẓ  := [voice = voiced, retroflex  , manner = fricative        ]
+x  := [voice = voiced, uvular     , manner = fricative        ]
+h  := [voice = voiced, glottal    , manner = fricative        ]
+bv := [voice = voiced, bilabial   , manner = affricate        ]
+dẓ := [voice = voiced, retroflex  , manner = affricate        ]
+gx := [voice = voiced, retroflex  , manner = affricate        ]
+l  := [voice = voiced, dental     , manner = lateral-fricative]
+r  := [voice = voiced, retroflex  , manner = trill            ]
+
+
+# categories
+
+C := m, n, ṇ, ň, b, d, g, ẑ, z, ẓ, x, h, bv, dẓ, gx, l, r
+B := m, n, ň, b, d, g, v, ẑ, z, ẓ, x, h, dẓ, gx, l, r
+M := m, n, ṇ, ň, b, d, g, v, ẑ, z, ẓ, x, h, bv, dẓ, l, r
+E := m, n, ṇ, ň, z, ẓ, x, r
+
+V := y, ÿ, ẙ, u, ü, ů, a, ä, å
+U := y, u, a
+
+
+# syllables
+
+begin := BV
+mid   := MV
+end   := MVE
+solo  := BVE
+
+
+# word-generators
+
+begin mid0-2 end
+solo
+
+
+# markovs
+
+everything :=
+ C-Zipf   = zipf {m, n, b, d, ň, g, z, v, ẑ, x, h, ẓ, ṇ, l, r, bv, gx, dẓ} 1.06 4,
+ V-Zipf   = zipf {y, a, u, ä, ü, ÿ, ů, ẙ, å} 1.09 10,
+ C-medium = 2~C,
+ V-short  = 1~V,
+ long     = 3,
+ medium   = 2,
+ short    = 1,
+ fallback = 0
+ | (C-Zipf + [1000 C-medium])
+ + (V-Zipf + [1000 V-short ])
+ + C-medium + V-short
+ + (3 long   + [500 medium  ])
+ + (2 medium + [500 short   ])
+ + (  short  + [500 fallback])
+ + [1000 fallback]
