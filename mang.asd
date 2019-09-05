@@ -80,6 +80,15 @@
                          "glyphs"
                          "gen"
                          "markov"))
+     (:file "read-mang"
+            :depends-on ("blocks"
+                         "features"
+                         "glyphs"
+                         "categories"
+                         "sonority"
+                         "gen"
+                         "markov"
+                         "word"))
      #+nil
      (:module
       "language"
