@@ -93,3 +93,14 @@
                         privative-features))))
            (t
             (error "Unexpected input")))))))
+
+(defun read-mang-files (file &rest files)
+  (labels ((_rec (stream files)
+             (if files
+                 (chop file files
+                   (with-open-file (filestream file)
+                     (_rec (make-concatenated-stream stream filestream)
+                           files)))
+                 (read-mang stream))))
+    (with-open-file (stream file)
+      (_rec stream files))))
