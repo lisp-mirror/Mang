@@ -45,6 +45,9 @@
    (+ lw rw w))
   (<nodist> 0))
 
+(defmethod size ((collection [distribution]))
+  (weight collection))
+
 (defmatch expected-cost ([distribution])
     real
   ((<distribution> lw l w _ r rw)
@@ -246,21 +249,26 @@
                         weight))
 
 (defmethod zipf-distribution ((elements null)
-                              (a real)
-                              (b real))
-  (declare (ignore elements a b))
+                              (weight real)
+                              (exponent real))
+  (declare (ignore elements weight exponent))
   <nodist>)
 
 (defmethod zipf-distribution ((elements cons)
-                              (a real)
-                              (b real))
+                              (weight real)
+                              (exponent real))
   (declare (type (real (0))
-                 a b))
-  (bind ((dist <nodist>))
+                 weight exponent))
+  (bind ((dist <nodist>)
+         (n (size elements))
+         (sum (loop :for n :from 1 :to n
+                 :sum (/ (expt n exponent)))))
     (loop :for element :in elements
-       :for r :from 1
+       :for k :from 1
        :do (setf dist
-                 (with dist element (/ a (expt r b))))
+                 (with dist element (* weight
+                                       (/ (* (expt k exponent)
+                                             sum)))))
        :finally (return dist))))
 
 (defmethod yule-distribution ((elements null)
