@@ -48,3 +48,14 @@
               (succeed `(,(map (gloss word))
                           ,(learn store markov-spec word categories))))
             (fail `(:generate-without-categories ,gloss))))))
+
+(defun parse-glosses (glyphs dfsm store markov-spec)
+  (declare (type map glyphs store markov-spec)
+           (type dfsm dfsm))
+  (>>!
+    (front store)
+    (parse-gloss glyphs dfsm store markov-spec)
+    back (<? (>> (parse-expression-end)
+                 (parse-whitespace)
+                 (parse-glosses glyphs dfsm store markov-spec)))
+    (succeed (map-union back front))))
