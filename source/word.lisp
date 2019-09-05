@@ -75,9 +75,10 @@
                                                     "," (empty-set)
                                                     (lambda (pos poss)
                                                       (with poss pos)))
-                   dictionary (parse-glosses glyphs dfsm store markov-spec
-                                             parts-of-speech)
-                   (succeed dictionary))))
+                   (dictionary store)
+                   (parse-glosses glyphs dfsm store markov-spec
+                                  parts-of-speech)
+                   (succeed `(,dictionary ,store)))))
 
 (defun write-dictionary (stream glyphs dictionary
                          &optional sort-by-gloss?)
