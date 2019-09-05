@@ -136,18 +136,19 @@
            ,@finally)))))
 
 (defmacro parser-case (&body cases)
-  (when cases
-    (chop case cases
-      (bind (((args parser &body computation)
-              case))
-        (if (and (symbolp args)
-                 (string= (symbol-name args)
-                          "_"))
-            `(?? ,parser
-                 (succeed (progn
-                            ,@computation))
-                 (parser-case ,@cases))
-            `(??! ,args ,parser
-                  (succeed (progn
-                             ,@computation))
-                  (parser-case ,@cases)))))))
+  (if cases
+      (chop case cases
+        (bind (((args parser &body computation)
+                case))
+          (if (and (symbolp args)
+                   (string= (symbol-name args)
+                            "_"))
+              `(?? ,parser
+                   (succeed (progn
+                              ,@computation))
+                   (parser-case ,@cases))
+              `(??! ,args ,parser
+                    (succeed (progn
+                               ,@computation))
+                    (parser-case ,@cases)))))
+      `(fail `(:parser-case-failed))))
