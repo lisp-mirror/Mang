@@ -7,7 +7,8 @@
       (parse-identifier)))
 
 (defun read-mang (stream)
-  (bind ((languages (empty-map (map (:glyphs (empty-map (empty-set)))
+  (bind ((bus (bus<- stream))
+         (languages (empty-map (map (:glyphs (empty-map (empty-set)))
                                     (:categories (empty-map))
                                     (:generator (dfsm<- (empty-set)))
                                     (:markov-spec (empty-map))
@@ -25,7 +26,7 @@
          (dictionary (empty-map (empty-map))))
     (block :loop
       (loop
-         (parser-case stream
+         (parser-case bus
            (name
             (parse-language)
             (when language

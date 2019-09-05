@@ -145,7 +145,7 @@
       (if (eq args t)
           `(progn
              ,parser ,@computation)
-          `(bind ((,g!bus (bus<- ,bus)))
+          `(bind ((,g!bus ,bus))
              ,(if (and (symbolp args)
                        (string= (symbol-name args)
                                 "_"))
