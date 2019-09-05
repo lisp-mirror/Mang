@@ -82,6 +82,26 @@
                               (empty-map <nodist>)))
                         (empty-map <nodist>)))))))))
 
+(with-memoization
+  (defun parse-uniform-spec (phonemes)
+    (declare (type map phonemes))
+    (>>!
+      _ (>> (parse-constant "uniform")
+            (parse-whitespace))
+      elements (parse-wrapped "{"
+                              (parse-separated (parse-from-set phonemes)
+                                               ",")
+                              "}")
+      weight (>> (parse-whitespace)
+                 (parse-number))
+      (succeed (set (lambda (word)
+                      (declare (ignore word)
+                               (type list word))
+                      (map (#'true (memoized
+                                    (elements weight)
+                                    (uniform-distribution elements
+                                                          weight))))))))))
+
 (defun parse-markov-definition (phonemes categories)
   (declare (type set phonemes)
            (type map categories))
@@ -90,7 +110,8 @@
     _ (>> (parse-whitespace-no-newline)
           (parse-constant "=")
           (parse-whitespace-no-newline))
-    markov-spec (parse-markov-spec phonemes categories)
+    markov-spec (// (parse-markov-spec phonemes categories)
+                    (parse-uniform-spec phonemes))
     (locally
         (declare (type string name)
                  (type set markov-spec))
