@@ -370,3 +370,11 @@
 (defun parse-number ()
   (<$> (some (parse-unicode-property "Number"))
        #'parse-integer))
+
+(defun parse-floating ()
+  (>>!
+    full (parse-number)
+    decimal (>> (parse-constant ".")
+                (some (parse-unicode-property "Number")))
+    (succeed (+ full (/ (parse-integer decimal)
+                        (expt 10 (size decimal)))))))
