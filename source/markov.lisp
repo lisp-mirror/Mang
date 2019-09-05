@@ -102,6 +102,29 @@
                                     (uniform-distribution elements
                                                           weight))))))))))
 
+(with-memoization
+  (defun parse-zipf-spec (phonemes)
+    (declare (type set phonemes))
+    (>>!
+      _ (>> (parse-constant "zipf")
+            (parse-whitespace))
+      elements (parse-wrapped "{"
+                              (parse-separated (parse-from-set phonemes)
+                                               ",")
+                              "}")
+      exponent (<? (>> (parse-whitespace)
+                       (parse-floating))
+                   1)
+      weight (<? (>> (parse-whitespace)
+                     (parse-number)))
+      (succeed (set (lambda (word)
+                      (declare (ignore word)
+                               (type list word))
+                      (map (#'true (memoized
+                                    (elements exponent weight)
+                                    (zipf-distribution elements exponent
+                                                       weight))))))))))
+
 (defun parse-markov-definition (phonemes categories)
   (declare (type set phonemes)
            (type map categories))
@@ -111,7 +134,8 @@
           (parse-constant "=")
           (parse-whitespace-no-newline))
     markov-spec (// (parse-markov-spec phonemes categories)
-                    (parse-uniform-spec phonemes))
+                    (parse-uniform-spec phonemes)
+                    (parse-zipf-spec phonemes))
     (locally
         (declare (type string name)
                  (type set markov-spec))
