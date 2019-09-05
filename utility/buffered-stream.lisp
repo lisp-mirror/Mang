@@ -13,6 +13,18 @@
            :initform nil
            :accessor child<-)))
 
+(defmethod bus<- ((obj stream))
+  (make-instance 'bus
+                 :stream obj))
+
+(defmethod bus<- ((obj string))
+  (with-input-from-string (stream obj)
+    (make-instance 'bus
+                   :stream stream)))
+
+(defmethod bus<- ((obj bus))
+  obj)
+
 (defun bus-flatten (bus)
   (declare (type bus bus))
   (with-accessors ((child child<-)
