@@ -134,3 +134,18 @@
                        error)))
                   ,g!stream))
            ,@finally)))))
+
+(defmacro parser-case (bus &body cases)
+  (when cases
+    (bind ((g!bus (gensym "bus"))
+           (g!result (gensym "result"))
+           (g!success? (gensym "success?"))
+           ((args parser &body computation)
+            (first cases)))
+      `(bind ((,g!bus ,bus)
+              ((:values ,g!result _ ,g!success?)
+               (parser-call ,parser ,g!bus)))
+         (if ,g!success?
+             (bind ((,args ,g!result))
+               ,@computation)
+             (parser-case ,@(rest cases)))))))
