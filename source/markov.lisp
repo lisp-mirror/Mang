@@ -84,7 +84,7 @@
 
 (with-memoization
   (defun parse-uniform-spec (phonemes)
-    (declare (type map phonemes))
+    (declare (type set phonemes))
     (>>!
       _ (>> (parse-constant "uniform")
             (parse-whitespace))
