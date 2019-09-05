@@ -6,31 +6,45 @@
              #'second)
         '() #'cons))
 
-(defun parse-gloss (glyphs)
-  (declare (type map glyphs))
+(defun parse-gloss (glyphs dfsm store markov-spec)
+  (declare (type map glyphs store markov-spec)
+           (type dfsm dfsm))
   (>>!
-    gloss (parse-identifier *mang-reserved-symbols*)
+    gloss (parse-identifier  *mang-reserved-symbols*)
     _ (>> (parse-whitespace)
           (parse-constant ":=")
           (parse-whitespace))
-    word (parse-word glyphs)
-    (succeed (map (gloss word)))))
-
-(defun parse-glosses (glyphs markovs store)
-  (declare (type map glyphs markovs store))
-  (>>!
-    categories (parse-separated (parse-identifier *mang-reserved-symbols*)
-                                "," (empty-set)
-                                (lambda (category categories)
-                                  (with categories category)))
-    _ (>> (parse-whitespace)
-          (parse-constant ":")
-          (parse-whitespace))
-    glosses (parse-lines (parse-gloss glyphs)
-                         (empty-map)
-                         (lambda (def defs)
-                           (map-union defs def)))
-    (succeed
-     `(,glosses ,(image (lambda (word)
-                          (learn store markovs word categories))
-                        (range glosses))))))
+    word (// (parse-word glyphs)
+             (parse-constant "#"))
+    _ (parse-whitespace)
+    (categories negative-categories)
+    (<? (>>!
+          categories (parse-wrapped "{" (parse-separated (parse-from-map store)
+                                                         "," (empty-set)
+                                                         (lambda (cat cats)
+                                                           (with cats
+                                                                 (first cat))))
+                                    "}")
+          negative-categories
+          (<? (>> (parse-whitespace)
+                  (parse-wrapped "{" (parse-separated (parse-from-map store)
+                                                      "," (empty-set)
+                                                      (lambda (cat cats)
+                                                        (with cats
+                                                              (first cat))))
+                                 "}")))
+          (succeed `(,categories ,negative-categories)))
+        `(nil nil))
+    (if word
+        (if negative-categories
+            (fail `(:save-with-negative-categories ,gloss ,word
+                                                   ,negative-categories))
+            (succeed `(,(map (gloss word))
+                        ,(learn store markov-spec word
+                                (or categories (empty-set))))))
+        (if categories
+            (bind ((word (generate-word dfsm store categories
+                                        (or negative-categories (empty-set)))))
+              (succeed `(,(map (gloss word))
+                          ,(learn store markov-spec word categories))))
+            (fail `(:generate-without-categories ,gloss))))))
