@@ -74,7 +74,8 @@
            (type dfsm dfsm))
   (parse-section "dictionary"
                  (>>!
-                   parts-of-speech (parse-separated (parse-identifier)
+                   parts-of-speech (parse-separated (parse-identifier
+                                                     *mang-reserved-symbols*)
                                                     "," (empty-set)
                                                     (lambda (pos poss)
                                                       (with poss pos)))
