@@ -123,7 +123,7 @@
                                 (:markov-spec (empty-map
                                                (empty-map
                                                 (constantly <nodist>))))
-                                (:store (empty-map (constantly <nodist>)))
+                                (:store (empty-map (empty-map <nodist>)))
                                 (:dictionary (empty-map (empty-map)))))
                 r
                 nil))))
