@@ -132,7 +132,7 @@ dangerous :=
 
 
 # dictionary
-verb, noun, adjective, pronoun, adposition, conjunction, particle
+verb, noun, adjective, pronoun, adposition, conjunction, determiner, particle
 
 build   verb        := gůhyx {everything, verb, positive}
 breathe verb        := ẑůhuz {everything, verb, positive}

@@ -199,7 +199,8 @@
           (parse-whitespace))
     gen-spec (parse-markov-gen-spec markov-definitions)
     (succeed `(,(map (name `(,markov-definitions ,gen-spec)))
-                ,store))))
+                ,(map (name store)
+                      :default (empty-map <nodist>))))))
 
 (defun parse-markov-section (glyphs categories)
   (declare (type map glyphs categories))
@@ -213,7 +214,10 @@
                                        ((markov store)
                                         markov))
                                   `(,(map-union markovs markov)
-                                     ,(map-union stores store #'union)))))))
+                                     ,(map-union stores store
+                                                 (lambda (m1 m2)
+                                                   (map-union m1 m2
+                                                              #'union)))))))))
 
 (defun learn-markov (markov spec word)
   (declare (type map markov)
