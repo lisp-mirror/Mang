@@ -89,7 +89,15 @@
                     store dictionary)
         `(,languages ,binary-features ,valued-features ,privative-features))
     (succeed `(,binary-features ,valued-features ,privative-features
-                                ,languages))))
+                                ,(if language
+                                     (with languages language
+                                           (map (:glyphs glyphs)
+                                                (:categories categories)
+                                                (:generator generator)
+                                                (:markov-spec markov-spec)
+                                                (:store store)
+                                                (:dictionary dictionary)))
+                                     languages)))))
 
 (defun read-mang-files (file &rest files)
   (apply #'load-by-parser*
