@@ -46,8 +46,8 @@ U := y, u, a
 # syllables
 
 begin := (B)V
-mid   := MV
-end   := MVE
+mid   := MU
+end   := MUE
 solo  := BVE
 
 
@@ -75,3 +75,57 @@ everything :=
  + (2 medium + [500 short   ])
  + (  short  + [500 fallback])
  + [1000 fallback]
+
+noun :=
+ C-short  = 1~C,
+ V-short  = 1~V,
+ medium   = 2,
+ short    = 1,
+ fallback = 0
+ | medium
+ + (C-short + [500 short])
+ + (V-short + [500 short])
+ + [500 fallback]
+
+verb :=
+ C-short  = 1~C,
+ V-short  = 1~V,
+ medium   = 2,
+ short    = 1,
+ fallback = 0
+ | medium
+ + (C-short + [500 short])
+ + (V-short + [500 short])
+ + [500 fallback]
+
+adjective :=
+ C-short  = 1~C,
+ V-short  = 1~V,
+ medium   = 2,
+ short    = 1,
+ fallback = 0
+ | medium
+ + (C-short + [500 short])
+ + (V-short + [500 short])
+ + [500 fallback]
+
+positive :=
+ C-medium = 2~C,
+ C-short  = 1~C,
+ V-short  = 1~V,
+ fallback = 0
+ | C-medium + C-short + V-short + [500 fallback]
+
+negative :=
+ C-medium = 2~C,
+ C-short  = 1~C,
+ V-short  = 1~V,
+ fallback = 0
+ | C-medium + C-short + V-short + [500 fallback]
+
+dangerous :=
+ C-medium = 2~C,
+ C-short  = 1~C,
+ V-short  = 1~V,
+ fallback = 0
+ | C-medium + C-short + V-short + [500 fallback]
