@@ -42,6 +42,12 @@
   (declare (type function p fs))
   (<$~> p fs #'identity))
 
+(defmacro <$!> (vars parser &body body)
+  (bind ((g!arg (gensym "arg")))
+    `(<$> ,parser (lambda (,g!arg)
+                    (bind ((,vars ,g!arg))
+                      ,@body)))))
+
 (defun <~> (p fe)
   (declare (type function p fe))
   (<$~> p #'identity fe))
