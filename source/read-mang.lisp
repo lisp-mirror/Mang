@@ -77,7 +77,7 @@
                 (declare (ignore a b))
                 `(,binary-features ,valued-features ,privative-features
                                    ,languages)))))
-        
+
 (defun read-mang-files (file &rest files)
   (apply #'load-by-parser*
          (parse-mang)
