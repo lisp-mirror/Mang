@@ -45,7 +45,7 @@ U := y, u, a
 
 # syllables
 
-begin := BV
+begin := (B)V
 mid   := MV
 end   := MVE
 solo  := BVE
