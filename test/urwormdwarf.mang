@@ -27,7 +27,7 @@ x  := [voice = voiced, uvular     , manner = fricative        ]
 h  := [voice = voiced, glottal    , manner = fricative        ]
 bv := [voice = voiced, bilabial   , manner = affricate        ]
 dẓ := [voice = voiced, retroflex  , manner = affricate        ]
-gx := [voice = voiced, retroflex  , manner = affricate        ]
+gx := [voice = voiced, uvular     , manner = affricate        ]
 l  := [voice = voiced, dental     , manner = lateral-fricative]
 r  := [voice = voiced, retroflex  , manner = trill            ]
 
