@@ -102,7 +102,8 @@
     weight (>> (parse-whitespace)
                (parse-number))
     (succeed `(,(empty-set)
-                ,(map (#'true (uniform-distribution elements weight)))))))
+                ,(map (#'true (uniform-distribution elements weight))
+                      :default <nodist>)))))
 
 (defun parse-zipf-spec (glyphs)
   (declare (type map glyphs))
@@ -120,7 +121,8 @@
     weight (<? (>> (parse-whitespace)
                    (parse-number)))
     (succeed `(,(empty-set)
-                ,(map (#'true (zipf-distribution elements exponent weight)))))))
+                ,(map (#'true (zipf-distribution elements exponent weight))
+                      :default <nodist>)))))
 
 (defun parse-markov-definition (glyphs categories)
   (declare (type map glyphs categories))
@@ -201,7 +203,8 @@
   (declare (type map glyphs categories))
   (parse-section "markovs"
                  (parse-lines (parse-markov glyphs categories)
-                              (empty-map)
+                              `(,(empty-map)
+                                 ,(empty-map <nodist>))
                               (lambda (markov markovs)
                                 (bind (((markovs stores)
                                         markovs)
