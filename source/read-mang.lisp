@@ -83,10 +83,11 @@
           `(,languages ,language ,binary-features ,valued-features
                        ,privative-features ,glyphs ,categories ,generator
                        ,markov-spec ,store ,dictionary)))
-    (languages _ binary-features valued-features privative-features _ _ _ _ _ _)
-    (parse-mang languages language binary-features valued-features
-                privative-features glyphs categories generator markov-spec store
-                dictionary)
+    (languages binary-features valued-features privative-features)
+    (<? (parse-mang languages language binary-features valued-features
+                    privative-features glyphs categories generator markov-spec
+                    store dictionary)
+        `(,languages ,binary-features ,valued-features ,privative-features))
     (succeed `(,binary-features ,valued-features ,privative-features
                                 ,languages))))
 
