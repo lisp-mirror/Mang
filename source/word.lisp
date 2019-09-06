@@ -2,9 +2,12 @@
 
 (defun parse-word (glyphs)
   (declare (type map glyphs))
-  (some (<$> (parse-glyph glyphs)
-             #'second)
-        '() #'cons))
+  (<$> (some (<$> (parse-glyph glyphs)
+                  #'second)
+             '() #'cons)
+       (lambda (word)
+         (append `(,(map (:begin t)))
+                 word `(,(map (:end t)))))))
 
 (defun parse-gloss (glyphs dfsm store markov-spec parts-of-speech)
   (declare (type map glyphs store markov-spec)
@@ -109,7 +112,7 @@
                                                        s1 "<"
                                                        (arb (origin s2 glyphs))
                                                        ">"))
-                                                    word
+                                                    (butlast (rest word))
                                                     :initial-value "")
                                                    categories))))
                                  map)))
