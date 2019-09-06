@@ -207,7 +207,7 @@
   (parse-section "markovs"
                  (parse-lines (parse-markov glyphs categories)
                               `(,(empty-map)
-                                 ,(empty-map <nodist>))
+                                 ,(empty-map (empty-map <nodist>)))
                               (lambda (markov markovs)
                                 (bind (((markovs stores)
                                         markovs)
