@@ -104,6 +104,9 @@
                 ,dictionary))))
 
 (defun read-mang-files (file &rest files)
-  (apply #'load-by-parser*
-         (parse-mang)
-         file files))
+  (bind (((languages _ binary-features valued-features privative-features
+                     &rest _)
+          (apply #'load-by-parser*
+                 (parse-mang)
+                 file files)))
+    (values binary-features valued-features privative-features languages)))
