@@ -83,21 +83,26 @@
           `(,languages ,language ,binary-features ,valued-features
                        ,privative-features ,glyphs ,categories ,generator
                        ,markov-spec ,store ,dictionary)))
-    (languages binary-features valued-features privative-features)
+    (languages language binary-features valued-features privative-features
+               glyphs categories generator markov-spec store dictionary)
     (<? (parse-mang languages language binary-features valued-features
                     privative-features glyphs categories generator markov-spec
                     store dictionary)
-        `(,languages ,binary-features ,valued-features ,privative-features))
-    (succeed `(,binary-features ,valued-features ,privative-features
-                                ,(if language
-                                     (with languages language
-                                           (map (:glyphs glyphs)
-                                                (:categories categories)
-                                                (:generator generator)
-                                                (:markov-spec markov-spec)
-                                                (:store store)
-                                                (:dictionary dictionary)))
-                                     languages)))))
+        `(,languages ,language ,binary-features ,valued-features
+                     ,privative-features ,glyphs ,categories ,generator
+                     ,markov-spec ,store ,dictionary))
+    (succeed `(,(if language
+                    (with languages language
+                          (map (:glyphs glyphs)
+                               (:categories categories)
+                               (:generator generator)
+                               (:markov-spec markov-spec)
+                               (:store store)
+                               (:dictionary dictionary)))
+                    languages)
+                ,language ,binary-features ,valued-features ,privative-features
+                ,glyphs ,categories ,generator ,markov-spec ,store
+                ,dictionary))))
 
 (defun read-mang-files (file &rest files)
   (apply #'load-by-parser*
