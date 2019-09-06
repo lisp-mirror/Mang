@@ -104,9 +104,26 @@
                 ,dictionary))))
 
 (defun read-mang-files (file &rest files)
-  (bind (((languages _ binary-features valued-features privative-features
-                     &rest _)
+  (bind (((:values r _ ?)
           (apply #'load-by-parser*
                  (parse-mang)
                  file files)))
-    (values binary-features valued-features privative-features languages)))
+    (if ?
+        (bind (((languages _ binary-features valued-features privative-features
+                           &rest _)
+                r))
+          (values binary-features valued-features privative-features languages
+                  nil t))
+        (values (empty-set)
+                (empty-map (empty-set))
+                (empty-set)
+                (empty-map (map (:glyphs (empty-map (empty-set)))
+                                (:categories (empty-map))
+                                (:generator (dfsm<- (empty-set)))
+                                (:markov-spec (empty-map
+                                               (empty-map
+                                                (constantly <nodist>))))
+                                (:store (empty-map (constantly <nodist>)))
+                                (:dictionary (empty-map (empty-map)))))
+                r
+                nil))))
