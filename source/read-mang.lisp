@@ -73,8 +73,7 @@
                        ,privative-features ,glyphs ,categories ,generator
                        ,markov-spec ,store ,dictionary))
         (<$!> (markov-spec store)
-            (parse-markov-section (range glyphs)
-                                  categories)
+            (parse-markov-section glyphs categories)
           `(,languages ,language ,binary-features ,valued-features
                        ,privative-features ,glyphs ,categories ,generator
                        ,markov-spec ,store ,dictionary))
