@@ -14,7 +14,7 @@
            (type dfsm dfsm)
            (type set parts-of-speech))
   (>>!
-    gloss (parse-identifier  *mang-reserved-symbols*)
+    gloss (parse-identifier *mang-reserved-symbols*)
     _ (parse-whitespace)
     part-of-speech (parse-from-set parts-of-speech)
     _ (>> (parse-whitespace)
