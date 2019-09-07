@@ -129,33 +129,3 @@ dangerous :=
  V-short  = 1~V,
  fallback = 0
  | C-medium + C-short + V-short + [500 fallback]
-
-
-# dictionary
-verb, noun, adjective, pronoun, adposition, conjunction, determiner, particle
-
-build   verb        := gůhyx {everything, verb, positive}
-breathe verb        := ẑůhuz {everything, verb, positive}
-die     verb        := gädyň {everything, verb, negative}
-eat     verb        := nymuṇ {everything, verb, positive}
-drink   verb        := luẑyṇ {everything, verb, positive}
-have    verb        := gyvan {everything, verb}
-
-person  noun        := dåmy  {everything, noun, positive}
-beetle  noun        := ẑymaẑ {everything, noun, positive, dangerous}
-
-good    adjective   := dÿla  {everything, adjective, positive}
-
-1P      pronoun     := må    {everything}
-2P      pronoun     := gaṇ   {everything}
-3P      pronoun     := luň   {everything}
-
-above   adposition  := dẙẓ   {everything}
-below   adposition  := nüm   {everything, positive}
-
-and     conjunction := ňyn   {everything}
-
-ADJ     particle    := ẑyx   {everything}
-
-
-bad     adjective := # {everything, adjective, negative} {positive}
