@@ -344,3 +344,13 @@
   (:method ((collection [distribution]))
     (extract collection (random (float (weight collection)
                                        1d0)))))
+
+(defmethod deep-union ((collection1 [distribution])
+                       (collection2 [distribution])
+                       &optional
+                         (val-fn (lambda (a b)
+                                   (declare (ignore b))
+                                   a)))
+  (declare (type function val-fn)
+           (ignore val-fn))
+  (union collection1 collection2))
