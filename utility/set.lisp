@@ -103,3 +103,33 @@
                           set2))
                  set1)
           :initial-value (empty-set)))
+
+(defmethod deep-union ((collection1 t)
+                       (collection2 t)
+                       &optional
+                         (val-fn (lambda (a b)
+                                   (declare (ignore b))
+                                   a)))
+  (declare (type function val-fn))
+  (funcall val-fn collection1 collection2))
+
+(defmethod deep-union ((collection1 set)
+                       (collection2 set)
+                       &optional
+                         (val-fn (lambda (a b)
+                                   (declare (ignore b))
+                                   a)))
+  (declare (type function val-fn)
+           (ignore val-fn))
+  (union collection1 collection2))
+
+(defmethod deep-union ((collection1 map)
+                       (collection2 map)
+                       &optional
+                         (val-fn (lambda (a b)
+                                   (declare (ignore b))
+                                   a)))
+  (declare (type function val-fn))
+  (map-union collection1 collection2
+             (lambda (a b)
+               (deep-union a b val-fn))))
