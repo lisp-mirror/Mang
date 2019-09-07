@@ -25,7 +25,8 @@
     _ (parse-whitespace)
     (categories negative-categories)
     (<? (>>!
-          categories (parse-wrapped "{" (parse-separated (parse-from-map store)
+          categories (parse-wrapped "{" (parse-separated (parse-from-map
+                                                          markov-spec)
                                                          "," (empty-set)
                                                          (lambda (cat cats)
                                                            (with cats
