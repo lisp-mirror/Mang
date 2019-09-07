@@ -125,6 +125,8 @@
     (succeed `(,(empty-set)
                 ,(map (#'true (zipf-distribution elements exponent weight))
                       :default <nodist>)))))
+;;; -> (Set (Word -> Map (Word -> Bool) (Dist Word)),
+;;;     Map (Word -> Bool) (Dist Word))
 
 (defun parse-markov-definition (glyphs categories)
   (declare (type map glyphs categories))
@@ -143,21 +145,25 @@
                  (type set markov-spec))
       (succeed `(,(map (name markov-spec)
                        :default (empty-set))
-                  ,store)))))
+                  ,(map (name store)))))))
+;;; -> (Map Name (Set (Word -> Map (Word -> Bool) (Dist Word))),
+;;;     Map Name (Map (Word -> Bool) (Dist Word)))
 
 (defun parse-markov-definitions (glyphs categories)
   (declare (type map glyphs categories))
   (parse-separated (parse-markov-definition glyphs categories)
                    ","
                    `(,(empty-map (empty-set))
-                      ,(empty-map <nodist>))
+                      ,(empty-map (empty-map <nodist>)))
                    (lambda (def defs)
                      (bind (((specs stores)
                              defs)
                             ((spec store)
                              def))
-                       `(,(map-union specs spec #'union)
-                          ,(map-union stores store #'union))))))
+                       `(,(deep-union specs spec)
+                          ,(deep-union stores store))))))
+;;; -> (Map Name (Set (Word -> Map (Word -> Bool) (Dist Word))),
+;;;     Map Name (Map (Word -> Bool) (Dist Word)))
 
 (defun parse-markov-gen-spec (markov-definitions)
   (declare (type map markov-definitions))
@@ -198,26 +204,26 @@
           (parse-constant "|")
           (parse-whitespace))
     gen-spec (parse-markov-gen-spec markov-definitions)
-    (succeed `(,(map (name `(,markov-definitions ,gen-spec)))
+    (succeed `(,(map (name `(,markov-definitions ,gen-spec))
+                     :default (empty-map (empty-set)))
                 ,(map (name store)
-                      :default (empty-map <nodist>))))))
+                      :default (empty-map (empty-map <nodist>)))))))
+;;; -> (Map Name (Map Name (Set (Word -> Map (Word -> Bool) (Dist Word)))),
+;;;     Map Name (Map Name (Map (Word -> Bool) (Dist Word))))
 
 (defun parse-markov-section (glyphs categories)
   (declare (type map glyphs categories))
   (parse-section "markovs"
                  (parse-lines (parse-markov glyphs categories)
-                              `(,(empty-map)
-                                 ,(empty-map (empty-map <nodist>)))
+                              `(,(empty-map (empty-map (empty-set)))
+                                 ,(empty-map (empty-map (empty-map <nodist>))))
                               (lambda (markov markovs)
                                 (bind (((markovs stores)
                                         markovs)
                                        ((markov store)
                                         markov))
-                                  `(,(map-union markovs markov)
-                                     ,(map-union stores store
-                                                 (lambda (m1 m2)
-                                                   (map-union m1 m2
-                                                              #'union)))))))))
+                                  `(,(deep-union markovs markov)
+                                     ,(deep-union stores store)))))))
 
 (defun learn-markov (markov spec word)
   (declare (type map markov)
@@ -225,9 +231,8 @@
            (type list word))
   (loop :for length :below (length word)
      :do (setf markov
-               (map-union markov
-                          (funcall spec (subseq word 0 length))
-                          #'union))
+               (deep-union markov
+                           (funcall spec (subseq word 0 length))))
      :finally (return-from learn-markov
                 markov)))
 
@@ -235,15 +240,18 @@
   (declare (type map store markov-spec)
            (type list word)
            (type set categories))
-  (convert 'map
-           categories
-           :value-fn #'identity
-           :key-fn
-           (lambda (category)
-             (image (lambda (name markov)
-                      (values name (learn-markov markov (@ markov-spec name)
-                                                 word)))
-                    (@ store category)))))
+  (deep-union (convert 'map
+                       categories
+                       :value-fn #'identity
+                       :key-fn
+                       (lambda (category)
+                         (image (lambda (name markov)
+                                  (values name (learn-markov markov
+                                                             (@ markov-spec
+                                                                name)
+                                                             word)))
+                                (@ store category))))
+              store))
 
 (defun dist-from-markov (word store categories
                          &optional (negative-categories (empty-set)))
