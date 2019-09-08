@@ -1,28 +1,28 @@
 # dictionary
 verb, noun, adjective, pronoun, adposition, conjunction, determiner, particle
 
-build   verb        := gůhyx {everything, verb, positive}
-breathe verb        := ẑůhuz {everything, verb, positive}
-die     verb        := gädyň {everything, verb, negative}
-eat     verb        := nymuṇ {everything, verb, positive}
-drink   verb        := luẑyṇ {everything, verb, positive}
-have    verb        := gyvan {everything, verb}
+build   verb        gůhyx {everything, verb, positive}
+breathe verb        ẑůhuz {everything, verb, positive}
+die     verb        gädyň {everything, verb, negative}
+eat     verb        nymuṇ {everything, verb, positive}
+drink   verb        luẑyṇ {everything, verb, positive}
+have    verb        gyvan {everything, verb}
 
-person  noun        := dåmy  {everything, noun, positive}
-beetle  noun        := ẑymaẑ {everything, noun, positive, dangerous}
+person  noun        dåmy  {everything, noun, positive}
+beetle  noun        ẑymaẑ {everything, noun, positive, dangerous}
 
-good    adjective   := dÿla  {everything, adjective, positive}
+good    adjective   dÿla  {everything, adjective, positive}
 
-1P      pronoun     := må    {everything}
-2P      pronoun     := gaṇ   {everything}
-3P      pronoun     := luň   {everything}
+1P      pronoun     må    {everything}
+2P      pronoun     gaṇ   {everything}
+3P      pronoun     luň   {everything}
 
-above   adposition  := dẙẓ   {everything}
-below   adposition  := nüm   {everything, positive}
+above   adposition  dẙẓ   {everything}
+below   adposition  nüm   {everything, positive}
 
-and     conjunction := ňyn   {everything}
+and     conjunction ňyn   {everything}
 
-ADJ     particle    := ẑyx   {everything}
+ADJ     particle    ẑyx   {everything}
 
 
-bad     adjective := # {everything, adjective, negative} {positive}
+bad     adjective # {everything, adjective, negative} {positive}
