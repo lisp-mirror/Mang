@@ -5,7 +5,7 @@
          (g!args (gensym "args"))
          (g!body (gensym "body"))
          (g!result (gensym "result")))
-    `(bind ((,g!memoized (empty-map)))
+    `(bind ((,g!memoized (make-hash-table :test 'equal)))
        (macrolet ((memoized ((&rest ,g!args)
                              &body ,g!body)
                     `([av]if (gethash (list ,@,g!args)
