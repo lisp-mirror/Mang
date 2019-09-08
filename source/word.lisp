@@ -53,7 +53,8 @@
                                               (with cats (first cat))))
                        "}")
         (empty-set))
-    (bind ((word (generate-word dfsm store categories negative-categories)))
+    (bind ((word (generate-word dfsm store markov-spec categories
+                                negative-categories)))
       (succeed `(,(map (part-of-speech (map (gloss `(,word ,categories)))))
                   ,(learn store markov-spec word categories))))))
 

@@ -256,9 +256,10 @@
                            :initial-value (empty-map <nodist>))))
          (first (@ markov-spec category))))))))
 
-(defun dist-from-markov (word store categories
+(defun dist-from-markov (word store markov-spec categories
                          &optional (negative-categories (empty-set)))
-  (declare (type map store)
+  (declare (type list word)
+           (type map store markov-spec)
            (type set categories negative-categories))
   (labels ((_extract-dist (markovs gen-spec dist)
              (if (consp gen-spec)
@@ -272,7 +273,7 @@
                                  (dist
                                   (_extract-dist markovs curr dist)))
                             (_extract-dist markovs
-                                           `(:sequence ,rest)
+                                           `(:sequence ,@rest)
                                            dist))
                           <nodist>))
                      (:mult
@@ -287,26 +288,33 @@
                                 cutoff)
                             (_extract-dist markovs spec dist)
                             <nodist>)))
-                     (:descent
+                     (:descend
                       (_extract-dist markovs (first args)
                                      <nodist>))))
-                 (union dist (funcall (@ markovs gen-spec)
-                                      word))))
+                 (reduce #'union
+                         (convert 'set
+                                  (@ markovs gen-spec)
+                                  :pair-fn
+                                  (lambda (predicate dist)
+                                    (if (funcall predicate word)
+                                        dist
+                                        <nodist>)))
+                         :initial-value <nodist>)))
            (_get-dist (categories)
-             (reduce (lambda (dist markov)
-                       (bind (((markovs gen-spec)
-                               markov))
-                         (union dist (_extract-dist markovs gen-spec
-                                                    <nodist>))))
-                     (image store categories)
+             (reduce (lambda (dist category)
+                       (union (_extract-dist (@ store category)
+                                             (second (@ markov-spec category))
+                                             <nodist>)
+                              dist))
+                     categories
                      :initial-value <nodist>)))
     (diminish (_get-dist categories)
               (_get-dist negative-categories))))
 
-(defun generate-next (word dfsm state store categories
+(defun generate-next (word dfsm state store markov-spec categories
                       &optional (negative-categories (empty-set)))
   (declare (type dfsm dfsm)
-           (type map store)
+           (type map store markov-spec)
            (type set categories negative-categories))
   (bind ((transition-table (transition-table<- dfsm))
          (transitions (domain (@ transition-table state))))
@@ -319,15 +327,16 @@
       (t
        (bind ((transition
                (extract-random (keep transitions
-                                     (dist-from-markov word store categories
+                                     (dist-from-markov word store markov-spec
+                                                       categories
                                                        negative-categories)))))
          (values transition (@ (@ transition-table state)
                                transition)))))))
 
-(defun generate-word (dfsm store categories
+(defun generate-word (dfsm store markov-spec categories
                       &optional (negative-categories (empty-set)))
   (declare (type dfsm dfsm)
-           (type map store)
+           (type map store markov-spec)
            (type set categories negative-categories))
   (bind ((word `(,(map (:begin t))))
          (state (start-state<- dfsm)))
@@ -335,7 +344,7 @@
                    word))
     (loop
        (bind (((outro new-state)
-               (generate-next word dfsm state store categories
+               (generate-next word dfsm state store markov-spec categories
                               negative-categories)))
          (declare (type (or list (eql t))
                         outro))
