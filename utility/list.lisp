@@ -209,6 +209,10 @@
 (defun intro (n sequence)
   (subseq sequence 0 (min n (length sequence))))
 
+(defun intros (sequence)
+  (loop :for n :from 0 :to (length sequence)
+     :collect (intro n sequence)))
+
 (defun outro (n sequence)
   (reverse (intro n (reverse sequence))))
 
