@@ -9,52 +9,60 @@
          (append `(,(map (:begin t)))
                  word `(,(map (:end t)))))))
 
+(defun parse-defined-gloss (glyphs store markov-spec parts-of-speech)
+  (declare (type map glyphs store markov-spec)
+           (type set parts-of-speech))
+  (>>!
+    gloss (parse-identifier (with *mang-reserved-symbols* "-"))
+    _ (parse-whitespace)
+    part-of-speech (parse-from-set parts-of-speech)
+    _ (parse-whitespace)
+    word (parse-word glyphs)
+    _ (parse-whitespace)
+    categories
+    (<? (parse-wrapped "{" (parse-separated (parse-from-map markov-spec)
+                                            "," (empty-set)
+                                            (lambda (cat cats)
+                                              (with cats (first cat))))
+                       "}")
+        (empty-set))
+    (succeed `(,(map (part-of-speech (map (gloss `(,word ,categories)))))
+                ,(learn store markov-spec word categories)))))
+
+(defun parse-generated-gloss (dfsm store markov-spec parts-of-speech)
+  (declare (type map store markov-spec)
+           (type dfsm dfsm)
+           (type set parts-of-speech))
+  (>>!
+    gloss (parse-identifier (with *mang-reserved-symbols* "-"))
+    _ (parse-whitespace)
+    part-of-speech (parse-from-set parts-of-speech)
+    _ (>> (parse-whitespace)
+          (parse-constant "#")
+          (parse-whitespace))
+    categories
+    (parse-wrapped "{" (parse-separated (parse-from-map markov-spec)
+                                        "," (empty-set)
+                                        (lambda (cat cats)
+                                          (with cats (first cat))))
+                   "}")
+    negative-categories
+    (<? (parse-wrapped "{" (parse-separated (parse-from-map markov-spec)
+                                            "," (empty-set)
+                                            (lambda (cat cats)
+                                              (with cats (first cat))))
+                       "}")
+        (empty-set))
+    (bind ((word (generate-word dfsm store categories negative-categories)))
+      (succeed `(,(map (part-of-speech (map (gloss `(,word ,categories)))))
+                  ,(learn store markov-spec word categories))))))
+
 (defun parse-gloss (glyphs dfsm store markov-spec parts-of-speech)
   (declare (type map glyphs store markov-spec)
            (type dfsm dfsm)
            (type set parts-of-speech))
-  (>>!
-    gloss (parse-identifier *mang-reserved-symbols*)
-    _ (parse-whitespace)
-    part-of-speech (parse-from-set parts-of-speech)
-    _ (>> (parse-whitespace)
-          (parse-constant ":=")
-          (parse-whitespace))
-    word (// (parse-word glyphs)
-             (parse-constant "#"))
-    _ (parse-whitespace)
-    (categories negative-categories)
-    (<? (>>!
-          categories (parse-wrapped "{" (parse-separated (parse-from-map
-                                                          markov-spec)
-                                                         "," (empty-set)
-                                                         (lambda (cat cats)
-                                                           (with cats
-                                                                 (first cat))))
-                                    "}")
-          negative-categories
-          (<? (>> (parse-whitespace)
-                  (parse-wrapped "{" (parse-separated (parse-from-map store)
-                                                      "," (empty-set)
-                                                      (lambda (cat cats)
-                                                        (with cats
-                                                              (first cat))))
-                                 "}")))
-          (succeed `(,categories ,negative-categories)))
-        `(nil nil))
-    (if word
-        (if negative-categories
-            (fail `(:save-with-negative-categories ,gloss ,word
-                                                   ,negative-categories))
-            (succeed `(,(map (part-of-speech (map (gloss word))))
-                        ,(learn store markov-spec word
-                                (or categories (empty-set))))))
-        (if categories
-            (bind ((word (generate-word dfsm store categories
-                                        (or negative-categories (empty-set)))))
-              (succeed `(,(map (gloss (list word categories)))
-                          ,(learn store markov-spec word categories))))
-            (fail `(:generate-without-categories ,gloss))))))
+  (// (parse-defined-gloss glyphs store markov-spec parts-of-speech)
+      (parse-generated-gloss dfsm store markov-spec parts-of-speech)))
 
 (defun parse-glosses (glyphs dfsm store markov-spec parts-of-speech)
   (declare (type map glyphs store markov-spec)
