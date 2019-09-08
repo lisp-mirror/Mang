@@ -26,7 +26,8 @@
                                               (with cats (first cat))))
                        "}")
         (empty-set))
-    (succeed `(,(map (part-of-speech (map (gloss `(,word ,categories)))))
+    (succeed `(,(map (part-of-speech (map (gloss `(,word ,categories))))
+                     :default (empty-map))
                 ,(learn store markov-spec word categories)))))
 
 (defun parse-generated-gloss (dfsm store markov-spec parts-of-speech)
@@ -47,15 +48,17 @@
                                           (with cats (first cat))))
                    "}")
     negative-categories
-    (<? (parse-wrapped "{" (parse-separated (parse-from-map markov-spec)
-                                            "," (empty-set)
-                                            (lambda (cat cats)
-                                              (with cats (first cat))))
-                       "}")
-        (empty-set))
+    (>> (parse-whitespace)
+        (<? (parse-wrapped "{" (parse-separated (parse-from-map markov-spec)
+                                                "," (empty-set)
+                                                (lambda (cat cats)
+                                                  (with cats (first cat))))
+                           "}")
+            (empty-set)))
     (bind ((word (generate-word dfsm store markov-spec categories
                                 negative-categories)))
-      (succeed `(,(map (part-of-speech (map (gloss `(,word ,categories)))))
+      (succeed `(,(map (part-of-speech (map (gloss `(,word ,categories))))
+                       :default (empty-map))
                   ,(learn store markov-spec word categories))))))
 
 (defun parse-gloss (glyphs dfsm store markov-spec parts-of-speech)
@@ -75,7 +78,9 @@
     (back store)
     (<? (>> (parse-expression-end)
             (parse-whitespace)
-            (parse-glosses glyphs dfsm store markov-spec parts-of-speech)))
+            (parse-glosses glyphs dfsm store markov-spec parts-of-speech))
+        `(,(empty-map (empty-map))
+           ,store))
     (succeed `(,(map-union back front #'map-union)
                 ,store))))
 
@@ -89,6 +94,7 @@
                                                     "," (empty-set)
                                                     (lambda (pos poss)
                                                       (with poss pos)))
+                   _ (parse-whitespace)
                    (dictionary store)
                    (parse-glosses glyphs dfsm store markov-spec
                                   parts-of-speech)
@@ -137,8 +143,8 @@
        :do
          (terpri stream)
          (if (empty? categories)
-             (format stream "~A ~A := ~A"
+             (format stream "~A ~A ~A"
                      gloss pos word)
-             (format stream "~A ~A := ~A {~{~A~^,~}}"
+             (format stream "~A ~A ~A {~{~A~^,~}}"
                      gloss pos word (convert 'list
                                              categories))))))
