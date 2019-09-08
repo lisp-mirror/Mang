@@ -60,8 +60,9 @@ solo
 # markovs
 
 everything :=
- C-Zipf   = zipf {m, n, b, d, ň, g, z, v, ẑ, x, h, ẓ, ṇ, l, r, bv, gx, dẓ} 1.06 70,
- V-Zipf   = zipf {y, a, u, ä, ü, ÿ, ů, ẙ, å} 1.09 100,
+ end      = uniform {#} 20,
+ C-Zipf   = zipf {m, n, b, d, ň, g, z, v, ẑ, x, h, ẓ, ṇ, l, r, bv, gx, dẓ} 0.94 70,
+ V-Zipf   = zipf {y, a, u, ä, ü, ÿ, ů, ẙ, å} 0.97 30,
  C-medium = 2~C,
  V-short  = 1~V,
  long     = 3,
@@ -75,6 +76,7 @@ everything :=
  + (2 medium + [500 short   ])
  + (  short  + [500 fallback])
  + [1000 fallback]
+ + end
 
 verb :=
  C-short  = 1~C,
