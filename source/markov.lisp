@@ -262,44 +262,45 @@
            (type map store markov-spec)
            (type set categories negative-categories))
   (labels ((_extract-dist (markovs gen-spec dist)
-             (if (consp gen-spec)
-                 (bind (((type &rest args)
-                         gen-spec))
-                   (ecase type
-                     (:sequence
-                      (if args
-                          (bind (((curr &rest rest)
-                                  args)
-                                 (dist
-                                  (_extract-dist markovs curr dist)))
-                            (_extract-dist markovs
-                                           `(:sequence ,@rest)
-                                           dist))
-                          <nodist>))
-                     (:mult
-                      (bind (((mult spec)
-                              args))
-                        (mult (_extract-dist markovs spec dist)
-                              mult)))
-                     (:katz
-                      (bind (((cutoff spec)
-                              args))
-                        (if (<= (size dist)
-                                cutoff)
-                            (_extract-dist markovs spec dist)
-                            <nodist>)))
-                     (:descend
-                      (_extract-dist markovs (first args)
-                                     <nodist>))))
-                 (reduce #'union
-                         (convert 'set
-                                  (@ markovs gen-spec)
-                                  :pair-fn
-                                  (lambda (predicate dist)
-                                    (if (funcall predicate word)
-                                        dist
-                                        <nodist>)))
-                         :initial-value <nodist>)))
+             (union (if (consp gen-spec)
+                        (bind (((type &rest args)
+                                gen-spec))
+                          (ecase type
+                            (:sequence
+                             (if args
+                                 (bind (((curr &rest rest)
+                                         args)
+                                        (dist
+                                         (_extract-dist markovs curr dist)))
+                                   (_extract-dist markovs
+                                                  `(:sequence ,@rest)
+                                                  dist))
+                                 <nodist>))
+                            (:mult
+                             (bind (((mult spec)
+                                     args))
+                               (mult (_extract-dist markovs spec dist)
+                                     mult)))
+                            (:katz
+                             (bind (((cutoff spec)
+                                     args))
+                               (if (<= (size dist)
+                                       cutoff)
+                                   (_extract-dist markovs spec dist)
+                                   <nodist>)))
+                            (:descend
+                             (_extract-dist markovs (first args)
+                                            <nodist>))))
+                        (reduce #'union
+                                (convert 'set
+                                         (@ markovs gen-spec)
+                                         :pair-fn
+                                         (lambda (predicate dist)
+                                           (if (funcall predicate word)
+                                               dist
+                                               <nodist>)))
+                                :initial-value <nodist>))
+                    dist))
            (_get-dist (categories)
              (reduce (lambda (dist category)
                        (union (_extract-dist (@ store category)
