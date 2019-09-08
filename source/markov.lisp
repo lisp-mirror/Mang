@@ -331,8 +331,9 @@
                                      (dist-from-markov word store markov-spec
                                                        categories
                                                        negative-categories)))))
-         (values transition (@ (@ transition-table state)
-                               transition)))))))
+         (values (ensure-list transition)
+                 (@ (@ transition-table state)
+                    transition)))))))
 
 (defun generate-word (dfsm store markov-spec categories
                       &optional (negative-categories (empty-set)))
@@ -344,7 +345,7 @@
     (declare (type (cons map list)
                    word))
     (loop
-       (bind (((outro new-state)
+       (bind (((:values outro new-state)
                (generate-next word dfsm state store markov-spec categories
                               negative-categories)))
          (declare (type (or list (eql t))
