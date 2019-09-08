@@ -87,7 +87,9 @@
   (>>!
     syllables (parse-syllable-section "syllables" glyphs categories)
     gen (parse-wordgen-specs-section syllables)
-    (succeed (dfsm<- gen))))
+    (succeed (dfsm<- `(,(map (:begin t))
+                        ,gen
+                        ,(map (:end t)))))))
 
 (defun parse-clustergen-section (glyphs categories)
   (>>!
@@ -122,10 +124,12 @@
                 (<$> (parse-number)
                      (lambda (count)
                        `(,count ,count))))))
-    (succeed (dfsm<- (image (lambda (count)
-                              (list begin (intersperse middle
-                                                       (repeat count nuclei))
-                                    end))
-                            (convert 'set
-                                     (loop :for n :from min :to max
-                                        :collect n)))))))
+    (succeed (dfsm<- `(,(map (:begin t))
+                       ,(image (lambda (count)
+                                 (list begin (intersperse middle
+                                                          (repeat count nuclei))
+                                       end))
+                               (convert 'set
+                                        (loop :for n :from min :to max
+                                           :collect n)))
+                        ,(map (:end t)))))))
