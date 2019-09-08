@@ -136,7 +136,7 @@
                        :initial-value (empty-map)))
                      #'string<
                      :key (if sort-by-gloss?
-                              #'second
+                              #'first
                               #'third))))
     (loop :for (gloss pos word categories)
        :in dict
