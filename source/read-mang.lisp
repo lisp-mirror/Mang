@@ -19,7 +19,8 @@
                                                    (constantly <nodist>))))
                                                 (:store
                                                  (empty-map
-                                                  (empty-map <nodist>)))
+                                                  (empty-map
+                                                   (empty-map <nodist>))))
                                                 (:dictionary
                                                  (empty-map (empty-map))))))
                      (language nil)
