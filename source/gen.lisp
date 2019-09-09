@@ -108,6 +108,8 @@
               min (parse-number)
               _ (>> (parse-expression-end)
                     (parse-whitespace)
+                    (parse-constant "#")
+                    (parse-whitespace)
                     (parse-constant "max")
                     (parse-whitespace-no-newline)
                     (parse-constant ":")
