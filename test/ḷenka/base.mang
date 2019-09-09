@@ -1,0 +1,202 @@
+# glyphs
+p := [bilabial    , manner=stop               , voice=unvoiced, ~round]
+t := [alveolar    , manner=stop               , voice=unvoiced, ~round]
+k := [velar       , manner=stop               , voice=unvoiced, ~round]
+q := [unvular     , manner=stop               , voice=unvoiced, ~round]
+b := [bilabial    , manner=stop               , voice=voiced  , ~round]
+d := [alveolar    , manner=stop               , voice=voiced  , ~round]
+g := [velar       , manner=stop               , voice=voiced  , ~round]
+m := [bilabial    , manner=nasal              , voice=voiced  , ~round]
+n := [alveolar    , manner=nasal              , voice=voiced  , ~round]
+ň := [velar       , manner=nasal              , voice=voiced  , ~round]
+ṛ := [alveolar    , manner=trill              , voice=unvoiced, ~round]
+r := [alveolar    , manner=trill              , voice=voiced  , ~round]
+ř := [uvular      , manner=trill              , voice=voiced  , ~round]
+f := [bilabial    , manner=fricative          , voice=unvoiced, ~round]
+s := [alveolar    , manner=fricative          , voice=unvoiced, ~round]
+š := [postalveolar, manner=fricative          , voice=unvoiced, ~round]
+h := [glottal     , manner=fricative          , voice=unvoiced, ~round]
+v := [bilabial    , manner=fricative          , voice=voiced  , ~round]
+z := [alveolar    , manner=fricative          , voice=voiced  , ~round]
+ž := [postalveolar, manner=fricative          , voice=voiced  , ~round]
+ḷ := [alveolar    , manner=lateral-fricative  , voice=unvoiced, ~round]
+l := [alveolar    , manner=lateral-approximant, voice=voiced  , ~round]
+j := [palatal     , manner=approximant        , voice=voiced  , ~round]
+ẉ := [velar       , manner=approximant        , voice=unvoiced,  round]
+w := [velar       , manner=approximant        , voice=voiced  ,  round]
+
+i := [~round, height=high, frontness=front]
+u := [ round, height=high, frontness=back ]
+e := [~round, height=mid , frontness=front]
+o := [ round, height=mid , frontness=back ]
+a := [~round, height=low , frontness=front]
+
+
+# categories
+C := p,t,k,q,b,d,g,m,n,ň,ṛ,r,ř,f,s,š,h,v,z,ž,ḷ,l,j,ẉ,w
+V := i,u,e,o,a
+voiced        := b,d,g,m,n,ň,r,ř,v,z,ž,l,j,w
+unvoiced      := p,t,k,q,ṛ,f,s,š,h,ḷ,ẉ
+voiced-coda   := m,n,ň,r,ř,l,j,w
+unvoiced-coda := ṛ,ḷ,ẉ
+
+
+# nuclei
+V
+
+# begin
+C
+
+# middle
+C
+voiced-coda voiced
+unvoiced-coda unvoiced
+
+# end
+()
+C
+
+# min: 1
+# max: 4
+
+
+# markovs
+everything :=
+ end       = uniform {#},
+ C-Zipf    = zipf {j,s,š,n,t,z,ž,d,l,ṛ,r,ḷ,w,f,m,p,v,b,ẉ,ň,k,g,ř,h,q} 0.95 1,
+ C-long    = 4~C,
+ C-mid     = 3~C,
+ C-short   = 2~C,
+ C-support = 1~C,
+ V-Zipf    = zipf {a,i,e,o,u} 0.94 1,
+ V-short   = 2~V,
+ V-support = 1~V,
+ long      = 4,
+ mid       = 3,
+ short     = 2,
+ support   = 1,
+ fallback  = 0,
+ | (3 C-long + 2 C-mid + C-short + [1000 C-support])
+ + (                     V-short + [ 500 V-support])
+ + (3   long + 2  mid  +   short + [1000   support] + [1000 fallback])
+ + C-Zipf + V-Zipf + [5000 C-Zipf + V-Zipf] + [5000 fallback]
+
+noun :=
+ C-long  = 4~C,
+ C-mid   = 3~C,
+ C-short = 2~C,
+ V-mid   = 3~V,
+ V-short = 2~V
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+
+verb :=
+ C-long  = 4~C,
+ C-mid   = 3~C,
+ C-short = 2~C,
+ V-mid   = 3~V,
+ V-short = 2~V
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+
+adjective :=
+ C-long  = 4~C,
+ C-mid   = 3~C,
+ C-short = 2~C,
+ V-mid   = 3~V,
+ V-short = 2~V
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+
+determiner :=
+ C-long  = 4~C,
+ C-mid   = 3~C,
+ C-short = 2~C,
+ V-mid   = 3~V,
+ V-short = 2~V
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+
+pronoun :=
+ C-long  = 4~C,
+ C-mid   = 3~C,
+ C-short = 2~C,
+ V-mid   = 3~V,
+ V-short = 2~V
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+
+preposition :=
+ C-long  = 4~C,
+ C-mid   = 3~C,
+ C-short = 2~C,
+ V-mid   = 3~V,
+ V-short = 2~V
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+
+article :=
+ C-long  = 4~C,
+ C-mid   = 3~C,
+ C-short = 2~C,
+ V-mid   = 3~V,
+ V-short = 2~V
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+
+positive :=
+ long  = 4,
+ mid   = 3,
+ short = 2
+ | 3 long + 2 mid + short
+
+negative :=
+ long  = 4,
+ mid   = 3,
+ short = 2
+ | 3 long + 2 mid + short
+
+animate :=
+ mid   = 3,
+ short = 2
+ | 3 mid + short
+
+inanimate :=
+ mid   = 3,
+ short = 2
+ | 3 mid + short
+
+
+# dictionary
+noun, verb, adjective, determiner, pronoun, preposition
+
+BEN           preposition pe     {everything, preposition}
+die           verb        paqoň  {everything, verb, negative}
+grass         noun        twori  {everything, noun, animate}
+go            verb        tasi   {everything, verb}
+ILL           preposition taw    {everything, preposition}
+FIRST_P       pronoun     žaj    {everything, pronoun}
+SECOND_P      pronoun     doẉ    {everything, pronoun}
+THIRD_P_ANIM  pronoun     siw    {everything, pronoun, animate}
+THIRD_P_INAN  pronoun     hu     {everything, pronoun, inanimate}
+REFL          pronoun     lej    {everything, pronoun}
+stone         noun        kem    {everything, noun, inanimate}
+GEN           preposition kun    {everything, pronoun}
+sweetroot     noun        qubaň  {everything, noun, inanimate, positive}
+tree          noun        seqaw  {everything, noun, inanimate}
+tongue        noun        ḷenka  {everything, noun, animate}
+thin_leaf     noun        sahi   {everything, noun, animate}
+look          verb        šiẉhin {everything, verb}
+have          verb        še     {everything, verb, positive}
+animate       noun        šuẉ    {everything, noun, animate}
+offspring     noun        žasa   {everything, noun, animate, positive}
+sibling       noun        heřdi  {everything, noun, animate, positive}
+hut           noun        hejda  {everything, noun, inanimate, positive}
+thick_leaf    noun        hawgeň {everything, noun, animate}
+INDF          determiner  me     {everything, determiner}
+cause         verb        matiň  {everything, verb}
+dark          adjective   masaň  {everything, adjective}
+eat           verb        nin    {everything, verb, positive}
+ABL           preposition řiň    {everything, preposition}
+INESS         preposition jo     {everything, preposition}
+DEF_INAN      determiner  ẉa     {everything, determiner, inanimate}
+
+DEF_ANIM      determiner  #      {everything, determiner, animate} {inanimate}
+PROX          determiner  #      {everything, determiner}
+MED           determiner  #      {everything, determiner}
+DIST          determiner  #      {everything, determiner}
+male          adjective   #      {everything, adjective}
+female        adjective   #      {everything, adjective}
