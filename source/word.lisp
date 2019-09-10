@@ -9,11 +9,22 @@
          (append `(,(map (:begin t)))
                  word `(,(map (:end t)))))))
 
+(defun parse-gloss ()
+  (some (>>* (parse-anything)
+             parsed (if (find-if (lambda (parsed-char)
+                                   (or (has-property parsed-char "Whitespace")
+                                       (has-property parsed-char "Control")
+                                       (@ (set #\-)
+                                          parsed-char)))
+                                 parsed)
+                        (fail nil)
+                        (succeed parsed)))))
+
 (defun parse-defined-entry (glyphs store markov-spec parts-of-speech)
   (declare (type map glyphs store markov-spec)
            (type set parts-of-speech))
   (>>!
-    gloss (parse-identifier (with *mang-reserved-symbols* "-"))
+    gloss (parse-gloss)
     _ (parse-whitespace)
     part-of-speech (parse-from-set parts-of-speech)
     _ (parse-whitespace)
@@ -35,7 +46,7 @@
            (type dfsm dfsm)
            (type set parts-of-speech))
   (>>!
-    gloss (parse-identifier (with *mang-reserved-symbols* "-"))
+    gloss (parse-gloss)
     _ (parse-whitespace)
     part-of-speech (parse-from-set parts-of-speech)
     _ (>> (parse-whitespace)
