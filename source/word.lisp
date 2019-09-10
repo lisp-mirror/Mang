@@ -9,7 +9,7 @@
          (append `(,(map (:begin t)))
                  word `(,(map (:end t)))))))
 
-(defun parse-defined-gloss (glyphs store markov-spec parts-of-speech)
+(defun parse-defined-entry (glyphs store markov-spec parts-of-speech)
   (declare (type map glyphs store markov-spec)
            (type set parts-of-speech))
   (>>!
@@ -30,7 +30,7 @@
                      :default (empty-map))
                 ,(learn store markov-spec word categories)))))
 
-(defun parse-generated-gloss (dfsm store markov-spec parts-of-speech)
+(defun parse-generated-entry (dfsm store markov-spec parts-of-speech)
   (declare (type map store markov-spec)
            (type dfsm dfsm)
            (type set parts-of-speech))
@@ -61,24 +61,24 @@
                        :default (empty-map))
                   ,(learn store markov-spec word categories))))))
 
-(defun parse-gloss (glyphs dfsm store markov-spec parts-of-speech)
+(defun parse-entry (glyphs dfsm store markov-spec parts-of-speech)
   (declare (type map glyphs store markov-spec)
            (type dfsm dfsm)
            (type set parts-of-speech))
-  (// (parse-defined-gloss glyphs store markov-spec parts-of-speech)
-      (parse-generated-gloss dfsm store markov-spec parts-of-speech)))
+  (// (parse-defined-entry glyphs store markov-spec parts-of-speech)
+      (parse-generated-entry dfsm store markov-spec parts-of-speech)))
 
-(defun parse-glosses (glyphs dfsm store markov-spec parts-of-speech)
+(defun parse-entries (glyphs dfsm store markov-spec parts-of-speech)
   (declare (type map glyphs store markov-spec)
            (type dfsm dfsm)
            (type set parts-of-speech))
   (>>!
     (front store)
-    (parse-gloss glyphs dfsm store markov-spec parts-of-speech)
+    (parse-entry glyphs dfsm store markov-spec parts-of-speech)
     (back store)
     (<? (>> (parse-expression-end)
             (parse-whitespace)
-            (parse-glosses glyphs dfsm store markov-spec parts-of-speech))
+            (parse-entries glyphs dfsm store markov-spec parts-of-speech))
         `(,(empty-map (empty-map))
            ,store))
     (succeed `(,(map-union back front #'map-union)
@@ -96,7 +96,7 @@
                                                       (with poss pos)))
                    _ (parse-whitespace)
                    (dictionary store)
-                   (parse-glosses glyphs dfsm store markov-spec
+                   (parse-entries glyphs dfsm store markov-spec
                                   parts-of-speech)
                    (succeed `(,dictionary ,store)))))
 
