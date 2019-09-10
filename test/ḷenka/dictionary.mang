@@ -1,0 +1,40 @@
+# dictionary
+noun, verb, adjective, determiner, pronoun, preposition
+
+BEN           preposition pe     {everything, preposition}
+die           verb        paqoň  {everything, verb, negative}
+grass         noun        twori  {everything, noun, animate}
+go            verb        tasi   {everything, verb}
+ILL           preposition taw    {everything, preposition}
+P1            pronoun     žaj    {everything, pronoun}
+P2            pronoun     doẉ    {everything, pronoun}
+P3.ANIM       pronoun     siw    {everything, pronoun, animate}
+P3.INAN       pronoun     hu     {everything, pronoun, inanimate}
+REFL          pronoun     lej    {everything, pronoun}
+stone         noun        kem    {everything, noun, inanimate}
+GEN           preposition kun    {everything, pronoun}
+sweetroot     noun        qubaň  {everything, noun, inanimate, positive}
+tree          noun        seqaw  {everything, noun, inanimate}
+tongue        noun        ḷenka  {everything, noun, animate}
+thin_leaf     noun        sahi   {everything, noun, animate}
+look          verb        šiẉhin {everything, verb}
+have          verb        še     {everything, verb, positive}
+animate       noun        šuẉ    {everything, noun, animate}
+offspring     noun        žasa   {everything, noun, animate, positive}
+sibling       noun        heřdi  {everything, noun, animate, positive}
+hut           noun        hejda  {everything, noun, inanimate, positive}
+thick_leaf    noun        hawgeň {everything, noun, animate}
+INDF          determiner  me     {everything, determiner}
+cause         verb        matiň  {everything, verb}
+dark          adjective   masaň  {everything, adjective}
+eat           verb        nin    {everything, verb, positive}
+ABL           preposition řiň    {everything, preposition}
+INESS         preposition jo     {everything, preposition}
+DEF_INAN      determiner  ẉa     {everything, determiner, inanimate}
+
+DEF_ANIM      determiner  #      {everything, determiner, animate} {inanimate}
+PROX          determiner  #      {everything, determiner}
+MED           determiner  #      {everything, determiner}
+DIST          determiner  #      {everything, determiner}
+male          adjective   #      {everything, adjective}
+female        adjective   #      {everything, adjective}

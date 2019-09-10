@@ -1,8 +1,9 @@
+## ḷenka
 # glyphs
 p := [bilabial    , manner=stop               , voice=unvoiced, ~round]
 t := [alveolar    , manner=stop               , voice=unvoiced, ~round]
 k := [velar       , manner=stop               , voice=unvoiced, ~round]
-q := [unvular     , manner=stop               , voice=unvoiced, ~round]
+q := [uvular      , manner=stop               , voice=unvoiced, ~round]
 b := [bilabial    , manner=stop               , voice=voiced  , ~round]
 d := [alveolar    , manner=stop               , voice=voiced  , ~round]
 g := [velar       , manner=stop               , voice=voiced  , ~round]
@@ -63,12 +64,12 @@ C
 # markovs
 everything :=
  end       = uniform {#},
- C-Zipf    = zipf {j,s,š,n,t,z,ž,d,l,ṛ,r,ḷ,w,f,m,p,v,b,ẉ,ň,k,g,ř,h,q} 0.95 1,
+ C-Zipf    = zipf {j,s,š,n,t,z,ž,d,l,ṛ,r,ḷ,w,f,m,p,v,b,ẉ,ň,k,g,ř,h,q} 0.95,
  C-long    = 4~C,
  C-mid     = 3~C,
  C-short   = 2~C,
  C-support = 1~C,
- V-Zipf    = zipf {a,i,e,o,u} 0.94 1,
+ V-Zipf    = zipf {a,i,e,o,u} 0.94,
  V-short   = 2~V,
  V-support = 1~V,
  long      = 4,
@@ -158,45 +159,3 @@ inanimate :=
  mid   = 3,
  short = 2
  | 3 mid + short
-
-
-# dictionary
-noun, verb, adjective, determiner, pronoun, preposition
-
-BEN           preposition pe     {everything, preposition}
-die           verb        paqoň  {everything, verb, negative}
-grass         noun        twori  {everything, noun, animate}
-go            verb        tasi   {everything, verb}
-ILL           preposition taw    {everything, preposition}
-FIRST_P       pronoun     žaj    {everything, pronoun}
-SECOND_P      pronoun     doẉ    {everything, pronoun}
-THIRD_P_ANIM  pronoun     siw    {everything, pronoun, animate}
-THIRD_P_INAN  pronoun     hu     {everything, pronoun, inanimate}
-REFL          pronoun     lej    {everything, pronoun}
-stone         noun        kem    {everything, noun, inanimate}
-GEN           preposition kun    {everything, pronoun}
-sweetroot     noun        qubaň  {everything, noun, inanimate, positive}
-tree          noun        seqaw  {everything, noun, inanimate}
-tongue        noun        ḷenka  {everything, noun, animate}
-thin_leaf     noun        sahi   {everything, noun, animate}
-look          verb        šiẉhin {everything, verb}
-have          verb        še     {everything, verb, positive}
-animate       noun        šuẉ    {everything, noun, animate}
-offspring     noun        žasa   {everything, noun, animate, positive}
-sibling       noun        heřdi  {everything, noun, animate, positive}
-hut           noun        hejda  {everything, noun, inanimate, positive}
-thick_leaf    noun        hawgeň {everything, noun, animate}
-INDF          determiner  me     {everything, determiner}
-cause         verb        matiň  {everything, verb}
-dark          adjective   masaň  {everything, adjective}
-eat           verb        nin    {everything, verb, positive}
-ABL           preposition řiň    {everything, preposition}
-INESS         preposition jo     {everything, preposition}
-DEF_INAN      determiner  ẉa     {everything, determiner, inanimate}
-
-DEF_ANIM      determiner  #      {everything, determiner, animate} {inanimate}
-PROX          determiner  #      {everything, determiner}
-MED           determiner  #      {everything, determiner}
-DIST          determiner  #      {everything, determiner}
-male          adjective   #      {everything, adjective}
-female        adjective   #      {everything, adjective}
