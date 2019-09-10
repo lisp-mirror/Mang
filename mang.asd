@@ -89,24 +89,5 @@
                          "gen"
                          "markov"
                          "word"))
-     #+nil
-     (:module
-      "language"
-      :components
-      ((:file "dictionary")
-       (:file "learn"
-              :depends-on ("dictionary"))
-       (:file "export")
-       ))
-     ))
-   #+nil
-   (:module
-    "test"
-    :depends-on ("package" "source")
-    :components
-    ((:file "urwormdwarf")
-     (:file "urkobold")
-     (:file "urdokrin")
-     (:file "dragon")
      ))
    ))
