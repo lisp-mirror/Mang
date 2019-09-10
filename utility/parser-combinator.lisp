@@ -370,7 +370,7 @@
                              (has-property parsed-char "Whitespace")
                              (has-property parsed-char "Control")))
                        parsed)
-              (fail nil)
+              (fail `(:non-identifier-character ,parsed))
               (succeed parsed)))))
 
 (defun parse-number ()
