@@ -66,20 +66,26 @@
                    (succeed result))
                  stream)))
 
-(defun load-by-parser* (parser file &rest files)
+(defun on-files (f file &rest files)
   (labels ((_rec (stream files)
              (if files
                  (with-open-file (filestream (first files))
                    (_rec (make-concatenated-stream stream filestream)
                          (rest files)))
-                 (parser-call (>>!
-                                result parser
-                                _ (>> (parse-whitespace)
-                                      (parse-eof))
-                                (succeed result))
-                              stream))))
+                 (funcall f stream))))
     (with-open-file (stream file)
       (_rec stream files))))
+
+(defun load-by-parser* (parser file &rest files)
+  (apply #'on-files
+         (lambda (stream)
+           (parser-call (>>!
+                          result parser
+                          _ (<? (>> (parse-whitespace)
+                                    (parse-eof)))
+                          (succeed result))
+                        stream))
+         file files))
 
 (defmacro parser-loop (stream (&rest bindings)
                        &body finally)
