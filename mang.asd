@@ -3,7 +3,6 @@
 (asdf:defsystem #:mang
   :description "Library for generating language families"
   :author "Thomas Bartscher <thomas-bartscher@weltraumschlangen.de>"
-  :license "MPL-v2.0"
   :depends-on (#:cells
                #:fset
                #:cl-adt
