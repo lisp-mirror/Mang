@@ -60,12 +60,13 @@
                    "}")
     negative-categories
     (>> (parse-whitespace)
-        (<? (parse-wrapped "{" (parse-separated (parse-from-map markov-spec)
+        (// (parse-wrapped "{" (parse-separated (parse-from-map markov-spec)
                                                 "," (empty-set)
                                                 (lambda (cat cats)
                                                   (with cats (first cat))))
                            "}")
-            (empty-set)))
+            (>> (parse-constant "{}")
+                (succeed (empty-set)))))
     (bind ((word (generate-word dfsm store markov-spec categories
                                 negative-categories)))
       (succeed `(,(map (part-of-speech (map (gloss `(,word ,categories))))
