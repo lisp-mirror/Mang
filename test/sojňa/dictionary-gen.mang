@@ -1,3 +1,7 @@
+## sojňa
+# dictionary
+noun, verb, adjective, adverb, determiner, pronoun, article, preposition
+
 DEF_ANIM article    # {everything, article, animate} {noun, verb, adjective, adverb, determiner, pronoun, preposition, inanimate}
 INDF     article    # {everything, article} {noun, verb, adjective, adverb, determiner, pronoun, preposition}
 MED      determiner # {everything, determiner} {noun, verb, adjective, adverb, article, pronoun, preposition}

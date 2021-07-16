@@ -39,25 +39,27 @@
                glyphs categories sonority-hierarchy generator markov-spec store
                dictionary)
     (// (<$!> name (parse-language)
-          (bind ((new-language (@ languages name)))
-            `(,(if language
-                   (with languages language
-                         (map (:glyphs glyphs)
-                              (:categories categories)
-                              (:sonority-hierarchy sonority-hierarchy)
-                              (:generator generator)
-                              (:markov-spec markov-spec)
-                              (:store store)
-                              (:dictionary dictionary)))
-                   languages)
-              ,name ,binary-features ,valued-features ,privative-features
-              ,(@ new-language :glyphs)
-              ,(@ new-language :categories)
-              ,(@ new-language :sonority-hierarchy)
-              ,(@ new-language :generator)
-              ,(@ new-language :markov-spec)
-              ,(@ new-language :store)
-              ,(@ new-language :dictionary))))
+          (bind ((languages (if language
+                                (with languages language
+                                      (map (:glyphs glyphs)
+                                           (:categories categories)
+                                           (:sonority-hierarchy
+                                            sonority-hierarchy)
+                                           (:generator generator)
+                                           (:markov-spec markov-spec)
+                                           (:store store)
+                                           (:dictionary dictionary)))
+                                languages))
+                 (new-language (@ languages name)))
+            `(,languages ,name ,binary-features ,valued-features
+                         ,privative-features
+                         ,(@ new-language :glyphs)
+                         ,(@ new-language :categories)
+                         ,(@ new-language :sonority-hierarchy)
+                         ,(@ new-language :generator)
+                         ,(@ new-language :markov-spec)
+                         ,(@ new-language :store)
+                         ,(@ new-language :dictionary))))
         (<$!> (binary-features valued-features privative-features)
             (parse-feature-section)
           (print "parsing features")
