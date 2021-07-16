@@ -29,80 +29,104 @@
                      (privative-features (empty-set))
                      (glyphs (empty-map (empty-set)))
                      (categories (empty-map))
+                     (sonority-hierarchy '())
                      (generator (dfsm<- (empty-set)))
                      (markov-spec (empty-map (empty-map (constantly <nodist>))))
                      (store (empty-map (empty-map <nodist>)))
                      (dictionary (empty-map (empty-map))))
   (>>!
     (languages language binary-features valued-features privative-features
-               glyphs categories generator markov-spec store dictionary)
+               glyphs categories sonority-hierarchy generator markov-spec store
+               dictionary)
     (// (<$!> name (parse-language)
           (bind ((new-language (@ languages name)))
             `(,(if language
                    (with languages language
                          (map (:glyphs glyphs)
                               (:categories categories)
+                              (:sonority-hierarchy sonority-hierarchy)
                               (:generator generator)
                               (:markov-spec markov-spec)
                               (:store store)
                               (:dictionary dictionary)))
                    languages)
-               ,name ,binary-features ,valued-features ,privative-features
-               ,(@ new-language :glyphs)
-               ,(@ new-language :categories)
-               ,(@ new-language :generator)
-               ,(@ new-language :markov-spec)
-               ,(@ new-language :store)
-               ,(@ new-language :dictionary))))
+              ,name ,binary-features ,valued-features ,privative-features
+              ,(@ new-language :glyphs)
+              ,(@ new-language :categories)
+              ,(@ new-language :sonority-hierarchy)
+              ,(@ new-language :generator)
+              ,(@ new-language :markov-spec)
+              ,(@ new-language :store)
+              ,(@ new-language :dictionary))))
         (<$!> (binary-features valued-features privative-features)
             (parse-feature-section)
+          (print "parsing features")
           `(,languages ,language ,binary-features ,valued-features
-                       ,privative-features ,glyphs ,categories ,generator
-                       ,markov-spec ,store ,dictionary))
+                       ,privative-features ,glyphs ,categories
+                       ,sonority-hierarchy ,generator ,markov-spec ,store
+                       ,dictionary))
         (<$!> glyphs (parse-glyph-section binary-features valued-features
                                           privative-features)
+          (print "parsing glyphs")
           `(,languages ,language ,binary-features ,valued-features
-                       ,privative-features ,glyphs ,categories ,generator
-                       ,markov-spec ,store ,dictionary))
+                       ,privative-features ,glyphs ,categories
+                       ,sonority-hierarchy ,generator ,markov-spec ,store
+                       ,dictionary))
         (<$!> categories (parse-category-section glyphs)
+          (print "parsing categories")
           `(,languages ,language ,binary-features ,valued-features
-                       ,privative-features ,glyphs ,categories ,generator
-                       ,markov-spec ,store ,dictionary))
+                       ,privative-features ,glyphs ,categories
+                       ,sonority-hierarchy ,generator ,markov-spec ,store
+                       ,dictionary))
+        (<$!> sonority-hierarchy (parse-sonority-hierarchy glyphs categories)
+          (print "parsing sonority hierarchy")
+          `(,languages ,language ,binary-features ,valued-features
+                       ,privative-features ,glyphs ,categories
+                       ,sonority-hierarchy ,generator ,markov-spec ,store
+                       ,dictionary))
         (<$!> generator (// (parse-wordgen-section glyphs categories)
                             (parse-clustergen-section glyphs categories))
+          (print "parsing generators")
           `(,languages ,language ,binary-features ,valued-features
-                       ,privative-features ,glyphs ,categories ,generator
-                       ,markov-spec ,store ,dictionary))
+                       ,privative-features ,glyphs ,categories
+                       ,sonority-hierarchy ,generator ,markov-spec ,store
+                       ,dictionary))
         (<$!> (markov-spec store)
             (parse-markov-section glyphs categories)
+          (print "parsing markov specs")
           `(,languages ,language ,binary-features ,valued-features
-                       ,privative-features ,glyphs ,categories ,generator
-                       ,markov-spec ,store ,dictionary))
+                       ,privative-features ,glyphs ,categories
+                       ,sonority-hierarchy ,generator ,markov-spec ,store
+                       ,dictionary))
         (<$!> (dictionary store)
             (parse-dictionary glyphs generator store markov-spec)
+          (print "parsing dictionary")
           `(,languages ,language ,binary-features ,valued-features
-                       ,privative-features ,glyphs ,categories ,generator
-                       ,markov-spec ,store ,dictionary)))
+                       ,privative-features ,glyphs ,categories
+                       ,sonority-hierarchy ,generator ,markov-spec ,store
+                       ,dictionary)))
     (languages language binary-features valued-features privative-features
-               glyphs categories generator markov-spec store dictionary)
+               glyphs categories sonority-hierarchy generator markov-spec store
+               dictionary)
     (<? (parse-mang languages language binary-features valued-features
-                    privative-features glyphs categories generator markov-spec
-                    store dictionary)
+                    privative-features glyphs categories sonority-hierarchy
+                    generator markov-spec store dictionary)
         `(,languages ,language ,binary-features ,valued-features
-                     ,privative-features ,glyphs ,categories ,generator
-                     ,markov-spec ,store ,dictionary))
+                     ,privative-features ,glyphs ,categories ,sonority-hierarchy
+                     ,generator ,markov-spec ,store ,dictionary))
     (succeed `(,(if language
                     (with languages language
                           (map (:glyphs glyphs)
                                (:categories categories)
+                               (:sonority-hierarchy sonority-hierarchy)
                                (:generator generator)
                                (:markov-spec markov-spec)
                                (:store store)
                                (:dictionary dictionary)))
                     languages)
-                ,language ,binary-features ,valued-features ,privative-features
-                ,glyphs ,categories ,generator ,markov-spec ,store
-                ,dictionary))))
+               ,language ,binary-features ,valued-features ,privative-features
+               ,glyphs ,categories ,sonority-hierarchy ,generator ,markov-spec
+               ,store ,dictionary))))
 
 (defun read-mang-files (file &rest files)
   (bind (((:values r _ ?)
