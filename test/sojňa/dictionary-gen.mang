@@ -1,0 +1,3 @@
+DEF_ANIM article    # {everything, article, animate} {inanimate}
+INDF     article    # {everything, article}
+MED      determiner # {everything, determiner}
