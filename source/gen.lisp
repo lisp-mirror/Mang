@@ -90,22 +90,36 @@
     (succeed (dfsm<- `(,gen
                        ,(map (:end t)))))))
 
+(defun parse-syllable-generators (glyphs categories)
+  (parse-lines (parse-syllable-generator glyphs categories)
+               (empty-set)
+               (lambda (gen gens)
+                 (with gens gen))))
+
 (defun parse-clustergen-section (glyphs categories)
   (>>!
-    nuclei (parse-syllable-section "nuclei" glyphs categories)
-    begin (parse-syllable-section "begin" glyphs categories)
-    middle (parse-syllable-section "middle" glyphs categories)
-    end (parse-syllable-section "end" glyphs categories)
+    nuclei
+    (parse-section "nuclei"
+                   (parse-syllable-generators glyphs categories))
+    begin
+    (parse-section "begin"
+                   (parse-syllable-generators glyphs categories))
+    middle
+    (parse-section "middle"
+                   (parse-syllable-generators glyphs categories))
+    end
+    (parse-section "end"
+                   (parse-syllable-generators glyphs categories))
     (min max)
     (>> (parse-whitespace)
         (parse-constant "#")
         (parse-whitespace-no-newline)
         (// (>>!
-              min(>> (parse-constant "min")
-                     (parse-whitespace-no-newline)
-                     (parse-constant ":")
-                     (parse-whitespace-no-newline)
-                     (parse-number))
+              min (>> (parse-constant "min")
+                      (parse-whitespace-no-newline)
+                      (parse-constant ":")
+                      (parse-whitespace-no-newline)
+                      (parse-number))
               max (>> (parse-expression-end)
                       (parse-whitespace)
                       (parse-constant "#")
