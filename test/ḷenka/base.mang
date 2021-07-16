@@ -76,7 +76,7 @@ everything :=
  mid       = 3,
  short     = 2,
  support   = 1,
- fallback  = 0,
+ fallback  = 0
  | (3 C-long + 2 C-mid + C-short + [1000 C-support])
  + (                     V-short + [ 500 V-support])
  + (3   long + 2  mid  +   short + [1000   support] + [1000 fallback])
