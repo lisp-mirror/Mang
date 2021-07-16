@@ -260,11 +260,11 @@
                            :initial-value (empty-map <nodist>))))
          (first (@ markov-spec category))))))))
 
-(defun dist-from-markov (word store markov-spec categories
+(defun dist-from-markov (word store markov-spec transitions categories
                          &optional (negative-categories (empty-set)))
   (declare (type list word)
            (type map store markov-spec)
-           (type set categories negative-categories))
+           (type set transitions categories negative-categories))
   (labels ((_extract-dist (markovs gen-spec dist)
              (union (if (consp gen-spec)
                         (bind (((type &rest args)
@@ -301,7 +301,7 @@
                                          :pair-fn
                                          (lambda (predicate dist)
                                            (if (funcall predicate word)
-                                               dist
+                                               (keep transitions dist)
                                                <nodist>)))
                                 :initial-value <nodist>))
                     dist))
@@ -331,10 +331,9 @@
        (values nil nil))
       (t
        (bind ((transition
-               (extract-random (keep transitions
-                                     (dist-from-markov word store markov-spec
-                                                       categories
-                                                       negative-categories)))))
+               (extract-random (dist-from-markov word store markov-spec
+                                                 transitions categories
+                                                 negative-categories))))
          (values (ensure-list transition)
                  (@ (@ transition-table state)
                     transition)))))))
