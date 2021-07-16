@@ -81,8 +81,8 @@
          (lambda (stream)
            (parser-call (>>!
                           result parser
-                          _ (<? (>> (parse-whitespace)
-                                    (parse-eof)))
+                          _ (>> (parse-whitespace)
+                                (parse-eof))
                           (succeed result))
                         stream))
          file files))
