@@ -21,21 +21,21 @@
      (:file "constant-functions")
      (:file "anaphora")
      (:file "memoization"
-            :depends-on ("anaphora"))
+      :depends-on ("anaphora"))
      (:file "set")
      (:file "distribution")
      (:file "nfsm-dfsm"
-            :depends-on ("set" "distribution"))
+      :depends-on ("set" "distribution"))
      (:file "pointer")
      (:file "list")
      (:file "finite-state-transducer"
-            :depends-on ("constant-functions"
-                         "list"))
+      :depends-on ("constant-functions"
+                   "list"))
      (:file "buffered-stream"
-            :depends-on ("anaphora"
-                         "list"))
+      :depends-on ("anaphora"
+                   "list"))
      (:file "parser-combinator"
-            :depends-on ("anaphora"))
+      :depends-on ("anaphora"))
      ))
    (:module
     "source"
@@ -44,49 +44,49 @@
     ((:file "globals")
      (:file "blocks")
      (:file "features"
-            :depends-on ("globals"
-                         "blocks"))
+      :depends-on ("globals"
+                   "blocks"))
      (:file "glyphs"
-            :depends-on ("globals"
-                         "blocks"))
+      :depends-on ("globals"
+                   "blocks"))
      (:file "categories"
-            :depends-on ("globals"
-                         "blocks"
-                         "glyphs"))
+      :depends-on ("globals"
+                   "blocks"
+                   "glyphs"))
      (:file "sonority"
-            :depends-on ("blocks"
-                         "glyphs"
-                         "categories"))
+      :depends-on ("blocks"
+                   "glyphs"
+                   "categories"))
      (:file "gen"
-            :depends-on ("globals"
-                         "blocks"
-                         "glyphs"
-                         "categories"))
+      :depends-on ("globals"
+                   "blocks"
+                   "glyphs"
+                   "categories"))
      (:file "markov"
-            :depends-on ("globals"
-                         "blocks"
-                         "glyphs"
-                         "categories"))
+      :depends-on ("globals"
+                   "blocks"
+                   "glyphs"
+                   "categories"))
      (:file "sound-change"
-            :depends-on ("globals"
-                         "blocks"
-                         "features"
-                         "glyphs"
-                         "categories"))
+      :depends-on ("globals"
+                   "blocks"
+                   "features"
+                   "glyphs"
+                   "categories"))
      (:file "word"
-            :depends-on ("globals"
-                         "blocks"
-                         "glyphs"
-                         "gen"
-                         "markov"))
+      :depends-on ("globals"
+                   "blocks"
+                   "glyphs"
+                   "gen"
+                   "markov"))
      (:file "read-mang"
-            :depends-on ("blocks"
-                         "features"
-                         "glyphs"
-                         "categories"
-                         "sonority"
-                         "gen"
-                         "markov"
-                         "word"))
+      :depends-on ("blocks"
+                   "features"
+                   "glyphs"
+                   "categories"
+                   "sonority"
+                   "gen"
+                   "markov"
+                   "word"))
      ))
    ))
