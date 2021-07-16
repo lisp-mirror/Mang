@@ -62,47 +62,40 @@
                          ,(@ new-language :dictionary))))
         (<$!> (binary-features valued-features privative-features)
             (parse-feature-section)
-          (print "parsing features")
           `(,languages ,language ,binary-features ,valued-features
                        ,privative-features ,glyphs ,categories
                        ,sonority-hierarchy ,generator ,markov-spec ,store
                        ,dictionary))
         (<$!> glyphs (parse-glyph-section binary-features valued-features
                                           privative-features)
-          (print "parsing glyphs")
           `(,languages ,language ,binary-features ,valued-features
                        ,privative-features ,glyphs ,categories
                        ,sonority-hierarchy ,generator ,markov-spec ,store
                        ,dictionary))
         (<$!> categories (parse-category-section glyphs)
-          (print "parsing categories")
           `(,languages ,language ,binary-features ,valued-features
                        ,privative-features ,glyphs ,categories
                        ,sonority-hierarchy ,generator ,markov-spec ,store
                        ,dictionary))
         (<$!> sonority-hierarchy (parse-sonority-hierarchy glyphs categories)
-          (print "parsing sonority hierarchy")
           `(,languages ,language ,binary-features ,valued-features
                        ,privative-features ,glyphs ,categories
                        ,sonority-hierarchy ,generator ,markov-spec ,store
                        ,dictionary))
         (<$!> generator (// (parse-wordgen-section glyphs categories)
                             (parse-clustergen-section glyphs categories))
-          (print "parsing generators")
           `(,languages ,language ,binary-features ,valued-features
                        ,privative-features ,glyphs ,categories
                        ,sonority-hierarchy ,generator ,markov-spec ,store
                        ,dictionary))
         (<$!> (markov-spec store)
             (parse-markov-section glyphs categories)
-          (print "parsing markov specs")
           `(,languages ,language ,binary-features ,valued-features
                        ,privative-features ,glyphs ,categories
                        ,sonority-hierarchy ,generator ,markov-spec ,store
                        ,dictionary))
         (<$!> (dictionary store)
             (parse-dictionary glyphs generator store markov-spec)
-          (print "parsing dictionary")
           `(,languages ,language ,binary-features ,valued-features
                        ,privative-features ,glyphs ,categories
                        ,sonority-hierarchy ,generator ,markov-spec ,store
