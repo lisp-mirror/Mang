@@ -20,7 +20,7 @@ die           verb        paqoň  {everything, verb, negative}
 DIST          determiner  wej    {everything, determiner}
 eat           verb        nin    {everything, verb, positive}
 female        noun        tila   {everything, noun, animate}
-fire           noun       ṛaẉ    {everything, noun, animate}
+fire          noun        ṛaẉ    {everything, noun, animate}
 GEN           preposition kun    {everything, pronoun}
 go            verb        tasi   {everything, verb}
 good          adjective   buri   {everything, adjective}
@@ -34,7 +34,7 @@ lion          noun        kaw    {everything, noun, animate, negative}
 look          verb        šiẉhin {everything, verb}
 male          noun        soj    {everything, noun, animate}
 many          determiner  ḷo     {everything, determiner}
-MASS          article     ṣiw    {everything, article, inanimate}
+MASS          article     šiw    {everything, article, inanimate}
 must          verb        peẉ    {everything, verb, negative}
 NEG           adverb      gu     {everything, adverb}
 night         noun        rišo   {everything, noun}
@@ -57,8 +57,8 @@ stone         noun        kem    {everything, noun, inanimate}
 sweetroot     noun        qubaň  {everything, noun, inanimate, positive}
 tongue        noun        sojňa  {everything, noun, animate}
 tree          noun        seqaw  {everything, noun, inanimate}
-thick_leaf    noun        hawgeň {everything, noun, animate}
-thin_leaf     noun        sahi   {everything, noun, animate}
+thick.leaf    noun        hawgeň {everything, noun, animate}
+thin.leaf     noun        sahi   {everything, noun, animate}
 use           verb        kir    {everything, verb, positive}
 want          verb        duṛše  {everything, verb}
 water         noun        felo   {everything, noun, animate, positive}
