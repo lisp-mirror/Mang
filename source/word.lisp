@@ -84,7 +84,7 @@
                 (succeed (empty-set)))))
     (bind ((word (generate-word dfsm store markov-spec categories
                                 negative-categories)))
-      (format t "Generated <~A> for gloss ~A.~%"
+      (format t "Generated <~A> for gloss \"~A\".~%"
               (string<-word glyphs word
                             :computer-readable? nil)
               gloss)
@@ -134,52 +134,49 @@
 (defun write-dictionary (stream glyphs dictionary
                          &key
                            (sort-by-gloss? t)
-                           (computer-readable? t))
-  (declare (type map dictionary))
+                           (computer-readable? t)
+                           (sorting-predicate (lambda (s1 s2)
+                                                (string< (string-downcase s1)
+                                                         (string-downcase s2)))))
+  (declare (type map glyphs dictionary)
+           (type boolean sort-by-gloss? computer-readable?)
+           (type (function (string string)
+                           boolean)
+                 sorting-predicate))
   (format stream "# dictionary")
   (terpri stream)
   (format stream "~{~A~^,~}"
           (convert 'list
                    (domain dictionary)))
-  (bind ((dict (sort (convert
-                      'list
-                      (reduce
-                       #'map-union
-                       (convert
-                        'set
-                        dictionary
-                        :pair-fn
-                        (lambda (pos map)
-                          (image (lambda (gloss def)
-                                   (bind (((word categories)
-                                           def))
-                                     (values gloss
-                                             (list pos
-                                                   (reduce
-                                                    (lambda (s1 s2)
-                                                      (concatenate
-                                                       'string
-                                                       s1
-                                                       (if computer-readable?
-                                                           "<"
-                                                           "")
-                                                       (arb (origin s2
-                                                                    glyphs))
-                                                       (if computer-readable?
-                                                           ">"
-                                                           "")))
-                                                    (butlast (rest word))
-                                                    :initial-value "")
-                                                   categories))))
-                                 map)))
-                       :initial-value (empty-map)))
-                     #'string<
-                     :key (if sort-by-gloss?
-                              #'first
-                              #'third))))
-    (loop :for (gloss pos word categories)
-       :in dict
-       :do
+  (bind ((dict
+          (sort (convert
+                 'list
+                 (reduce
+                  #'map-union
+                  (convert
+                   'set
+                   dictionary
+                   :pair-fn
+                   (lambda (pos map)
+                     (image (lambda (gloss def)
+                              (bind (((word categories)
+                                      def))
+                                (values gloss
+                                        (list pos
+                                              (string<-word glyphs word
+                                                            :computer-readable?
+                                                            computer-readable?)
+                                              categories))))
+                            map)))
+                  :initial-value (empty-map)))
+                sorting-predicate
+                :key (if sort-by-gloss?
+                         #'first
+                         #'third))))
+    (loop
+      :for (gloss pos word categories)
+        :in dict
+      :do
          (terpri stream)
          (if (empty? categories)
              (format stream "~A ~A ~A"
