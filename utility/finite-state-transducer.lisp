@@ -68,10 +68,12 @@
 (defun add-epsilon-transitions (fst &rest transitions &key &allow-other-keys)
   (declare (type fst fst))
   (bind ((fst fst))
-    (loop :for (source target)
-       :on transitions
-       :do (setf fst (add-epsilon-transition fst source target))
-       :finally (return fst))))
+    (loop
+      :for (source target)
+        :on transitions
+      :by #'cddr
+      :do (setf fst (add-epsilon-transition fst source target))
+      :finally (return fst))))
 
 (defun empty-fst (&optional (state (gensym "state")))
   (fst (empty-map (empty-map (empty-set)))
