@@ -41,7 +41,22 @@
                      :default (empty-map))
                 ,(learn store markov-spec word categories)))))
 
-(defun parse-generated-entry (dfsm store markov-spec parts-of-speech)
+(defun string<-word (glyphs word
+                   &key
+                     (computer-readable? t))
+  (reduce (lambda (string phoneme)
+            (concatenate 'string
+                         string (if computer-readable?
+                                    "<"
+                                    "")
+                         (arb (origin phoneme glyphs))
+                         (if computer-readable?
+                             ">"
+                             "")))
+          (butlast (rest word))
+          :initial-value ""))
+
+(defun parse-generated-entry (glyphs dfsm store markov-spec parts-of-speech)
   (declare (type map store markov-spec)
            (type dfsm dfsm)
            (type set parts-of-speech))
@@ -69,6 +84,10 @@
                 (succeed (empty-set)))))
     (bind ((word (generate-word dfsm store markov-spec categories
                                 negative-categories)))
+      (format t "Generated <~A> for gloss ~A.~%"
+              (string<-word glyphs word
+                            :computer-readable? nil)
+              gloss)
       (succeed `(,(map (part-of-speech (map (gloss `(,word ,categories))))
                        :default (empty-map))
                   ,(learn store markov-spec word categories))))))
@@ -78,7 +97,7 @@
            (type dfsm dfsm)
            (type set parts-of-speech))
   (// (parse-defined-entry glyphs store markov-spec parts-of-speech)
-      (parse-generated-entry dfsm store markov-spec parts-of-speech)))
+      (parse-generated-entry glyphs dfsm store markov-spec parts-of-speech)))
 
 (defun parse-entries (glyphs dfsm store markov-spec parts-of-speech)
   (declare (type map glyphs store markov-spec)
@@ -113,7 +132,9 @@
                    (succeed `(,dictionary ,store)))))
 
 (defun write-dictionary (stream glyphs dictionary
-                         &optional sort-by-gloss?)
+                         &key
+                           (sort-by-gloss? t)
+                           (computer-readable? t))
   (declare (type map dictionary))
   (format stream "# dictionary")
   (terpri stream)
@@ -138,9 +159,15 @@
                                                     (lambda (s1 s2)
                                                       (concatenate
                                                        'string
-                                                       s1 "<"
-                                                       (arb (origin s2 glyphs))
-                                                       ">"))
+                                                       s1
+                                                       (if computer-readable?
+                                                           "<"
+                                                           "")
+                                                       (arb (origin s2
+                                                                    glyphs))
+                                                       (if computer-readable?
+                                                           ">"
+                                                           "")))
                                                     (butlast (rest word))
                                                     :initial-value "")
                                                    categories))))
