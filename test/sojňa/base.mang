@@ -64,7 +64,7 @@ C
 # markovs
 everything :=
  end       = uniform {#},
- C-Zipf    = zipf {j,s,š,n,t,z,ž,d,l,ṛ,r,ḷ,w,f,m,p,v,b,ẉ,ň,k,g,ř,h,q} 0.95,
+ C-Zipf    = zipf {s,š,n,t,z,ž,d,l,ṛ,r,ḷ,w,j,f,m,p,v,b,ẉ,ň,k,g,ř,h,q} 0.95,
  C-long    = 4~C,
  C-mid     = 3~C,
  C-short   = 2~C,

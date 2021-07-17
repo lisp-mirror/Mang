@@ -63,3 +63,8 @@ thin.leaf     noun        sahi   {everything, noun, animate}
 use           verb        kir    {everything, verb, positive}
 want          verb        duṛše  {everything, verb}
 water         noun        felo   {everything, noun, animate, positive}
+
+DEF_ANIM article    # {everything, article, animate} {noun, verb, adjective, adverb, determiner, pronoun, preposition, inanimate}
+INDF     article    # {everything, article} {noun, verb, adjective, adverb, determiner, pronoun, preposition}
+MED      determiner # {everything, determiner} {noun, verb, adjective, adverb, article, pronoun, preposition}
+cloud    noun       # {everything, noun, animate} {}

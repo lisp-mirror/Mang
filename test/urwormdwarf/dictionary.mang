@@ -1,41 +1,34 @@
+## urwormdwarven
+
 # dictionary
 verb, noun, adjective, pronoun, adposition, conjunction, determiner, particle
 
-build     verb        gůhyx   {everything, verb, positive}
-breathe   verb        ẑůhuz   {everything, verb, positive}
-die       verb        gädyň   {everything, verb, negative}
-eat       verb        nymuṇ   {everything, verb, positive}
-drink     verb        luẑyṇ   {everything, verb, positive}
-have      verb        gyvan   {everything, verb}
+above     adposition  dẙẓ     {everything}
+ADJ       particle    ẑyx     {everything}
+all       determiner  ẑů      {everything}
+and       conjunction ňyn     {everything}
 answer    verb        xẙluzyn {everything, verb}
 arrive    verb        ňåmyn   {everything, verb}
 ask       verb        ẓara    {everything, verb}
+at        adposition  nÿẑ     {everything}
 avoid     verb        xåňavum {everything, verb, negative}
-be_hungry verb        hymaẑ   {everything, verb, negative}
-be_wrong  verb        dẓaxaẑ  {everything, verb, negative}
+bad      adjective # {everything, adjective, negative} {positive}
 beat      verb        bäguẑ   {everything, verb, negative, dangerous}
 become    verb        dẓåx    {everything, verb}
-
-person    noun        dåmy    {everything, noun, positive}
 beetle    noun        ẑymaẑ   {everything, noun, positive, dangerous}
-
-good      adjective   dÿla    {everything, adjective, positive}
-cold      adjective   ňyẑym   {everything, adjective, negative}
-dry       adjective   galam   {everything, adjective}
-
-FIRST_P   pronoun     må      {everything}
-SECOND_P  pronoun     gaṇ     {everything}
-THIRD_P   pronoun     luň     {everything}
-
-above     adposition  dẙẓ     {everything}
+be.hungry verb        hymaẑ   {everything, verb, negative}
 below     adposition  nüm     {everything, positive}
-at        adposition  nÿẑ     {everything}
-
-and       conjunction ňyn     {everything}
-
-all       determiner  ẑů      {everything}
-
-ADJ       particle    ẑyx     {everything}
-
-
-bad      adjective # {everything, adjective, negative} {positive}
+be.wrong  verb        dẓaxaẑ  {everything, verb, negative}
+breathe   verb        ẑůhuz   {everything, verb, positive}
+build     verb        gůhyx   {everything, verb, positive}
+cold      adjective   ňyẑym   {everything, adjective, negative}
+die       verb        gädyň   {everything, verb, negative}
+drink     verb        luẑyṇ   {everything, verb, positive}
+dry       adjective   galam   {everything, adjective}
+eat       verb        nymuṇ   {everything, verb, positive}
+good      adjective   dÿla    {everything, adjective, positive}
+have      verb        gyvan   {everything, verb}
+P1        pronoun     må      {everything}
+P2        pronoun     gaṇ     {everything}
+P3        pronoun     luň     {everything}
+person    noun        dåmy    {everything, noun, positive}
