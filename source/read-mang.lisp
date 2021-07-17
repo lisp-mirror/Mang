@@ -147,3 +147,32 @@
                                 (:dictionary (empty-map (empty-map)))))
                 r
                 nil))))
+
+(defmacro load-mang-files! ((file &rest files)
+                            binary-features valued-features privative-features
+                            &body languages)
+  (bind ((g!binary-features (gensym "binary-features"))
+         (g!valued-features (gensym "valued-features"))
+         (g!privative-features (gensym "privative-features"))
+         (g!languages (gensym "languages"))
+         (o!name (gensym "name"))
+         (g!language (gensym "language")))
+    `(bind (((:values ,g!binary-features ,g!valued-features
+                      ,g!privative-features ,g!languages)
+             (read-mang-files ,file ,@files)))
+       (setf ,binary-features ,g!binary-features
+             ,valued-features ,g!valued-features
+             ,privative-features ,g!privative-features)
+       ,@(loop
+           :for (name glyphs categories generator markov-spec store dictionary)
+             :in languages
+           :collect
+           `(bind ((,o!name ,name)
+                   (,g!language (@ ,g!languages ,o!name)))
+              (setf ,glyphs (@ ,g!language :glyphs)
+                    ,categories (@ ,g!language :categories)
+                    ,generator (@ ,g!language :generator)
+                    ,markov-spec (@ ,g!language :markov-spec)
+                    ,store (@ ,g!language :store)
+                    ,dictionary (@ ,g!language :dictionary))))
+       t)))
