@@ -550,18 +550,16 @@
   (declare (type set binary-features privative-features phoneme-registers
                  category-registers)
            (type map valued-features glyphs categories feature-registers))
-  (// (<$ (>> (parse-whitespace)
-              (parse-eof))
-          (empty-fst))
-      (>>!
+  (<? (>>!
+        _ (parse-whitespace-no-newline)
         first (parse-emitter binary-features valued-features privative-features
                              glyphs categories feature-registers
                              phoneme-registers category-registers)
-        _ (parse-whitespace-no-newline)
         rest (parse-after binary-features valued-features privative-features
                           glyphs categories feature-registers phoneme-registers
                           category-registers)
-        (succeed (fst-sequence first rest)))))
+        (succeed (fst-sequence first rest)))
+      (empty-fst)))
 
 (defun parse-sound-change (binary-features valued-features privative-features
                            glyphs categories)
@@ -584,7 +582,9 @@
                             (parse-constant "_")))
           _ (parse-whitespace-no-newline)
           post (parse-to (>> (parse-whitespace-no-newline)
-                             (parse-expression-end)))
+                             ;; this parser should not consume the newline after
+                             ;; the sound change expression
+                             (^< (parse-expression-end))))
           (succeed `(,pre ,post)))
         `("" ""))
     (pre-write/comp pre-emit feature-registers phoneme-registers
