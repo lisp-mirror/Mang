@@ -623,6 +623,17 @@
                                             (fst-elementary #'true #'list
                                                             :consume? t)))))))
 
+(defun parse-sound-change-section (binary-features valued-features
+                                   privative-features glyphs categories)
+  (parse-section "soundchanges"
+                 (parse-lines (parse-sound-change binary-features
+                                                  valued-features
+                                                  privative-features
+                                                  glyphs categories)
+                              (empty-fst)
+                              (lambda (sound-change sound-changes)
+                                (fst-sequence sound-changes sound-change)))))
+
 (defun apply-sound-change (word sound-change)
   (declare (type cons word)
            (type fst sound-change))
