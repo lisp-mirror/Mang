@@ -625,7 +625,7 @@
 
 (defun parse-sound-change-section (binary-features valued-features
                                    privative-features glyphs categories)
-  (parse-section "soundchanges"
+  (parse-section "sound changes"
                  (parse-lines (parse-sound-change binary-features
                                                   valued-features
                                                   privative-features
