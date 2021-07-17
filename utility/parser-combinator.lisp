@@ -352,7 +352,9 @@
         nil (constantly nil)))
 
 (defun parse-expression-end ()
-  (//!
+  (//!  ; this needs to be a macro call – if it was a function call, the
+        ; recursive case would always be evaluated, leading to an endless
+        ; recursion
     _ (// (parse-newline)
           (parse-eof))
     _ (>> (parse-unicode-property "Whitespace")
