@@ -188,9 +188,8 @@
            (type (function (string string)
                            boolean)
                  sorting-predicate))
-  (format stream "# dictionary")
-  (terpri stream)
-  (format stream "~{~A~^,~}"
+  (format stream "# dictionary~%")
+  (format stream "~{~A~^,~}~%"
           (convert 'list
                    (domain dictionary)))
   (bind ((dict
@@ -218,14 +217,14 @@
                 :key (if sort-by-gloss?
                          #'first
                          #'third))))
+    (terpri)
     (loop
       :for (gloss pos word categories)
         :in dict
       :do
-         (terpri stream)
          (if (empty? categories)
-             (format stream "~A ~A ~A"
+             (format stream "~A ~A ~A~%"
                      gloss pos word)
-             (format stream "~A ~A ~A {~{~A~^,~}}"
+             (format stream "~A ~A ~A {~{~A~^,~}}~%"
                      gloss pos word (convert 'list
                                              categories))))))
