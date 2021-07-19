@@ -6,7 +6,7 @@
       (parse-whitespace-no-newline)
       (parse-identifier)))
 
-(defun parse-mang (&optional
+(defun parse-mang (interactive? &optional
                      (languages (empty-map (map (:glyphs
                                                  (empty-map (empty-set)))
                                                 (:categories
@@ -95,7 +95,7 @@
                        ,sonority-hierarchy ,generator ,markov-spec ,store
                        ,dictionary))
         (<$!> (dictionary store)
-            (parse-dictionary glyphs generator store markov-spec)
+            (parse-dictionary glyphs generator store markov-spec interactive?)
           `(,languages ,language ,binary-features ,valued-features
                        ,privative-features ,glyphs ,categories
                        ,sonority-hierarchy ,generator ,markov-spec ,store
@@ -103,7 +103,8 @@
     (languages language binary-features valued-features privative-features
                glyphs categories sonority-hierarchy generator markov-spec store
                dictionary)
-    (<? (parse-mang languages language binary-features valued-features
+    (<? (parse-mang interactive?
+                    languages language binary-features valued-features
                     privative-features glyphs categories sonority-hierarchy
                     generator markov-spec store dictionary)
         `(,languages ,language ,binary-features ,valued-features
@@ -123,10 +124,10 @@
                ,glyphs ,categories ,sonority-hierarchy ,generator ,markov-spec
                ,store ,dictionary))))
 
-(defun read-mang-files (file &rest files)
+(defun read-mang-files (interactive? file &rest files)
   (bind (((:values r _ ?)
           (apply #'load-by-parser*
-                 (parse-mang)
+                 (parse-mang interactive?)
                  file files)))
     (if ?
         (bind (((languages _ binary-features valued-features privative-features
@@ -148,7 +149,7 @@
                 r
                 nil))))
 
-(defmacro load-mang-files! ((file &rest files)
+(defmacro load-mang-files! (interactive? (file &rest files)
                             binary-features valued-features privative-features
                             &body languages)
   (bind ((g!binary-features (gensym "binary-features"))
@@ -159,7 +160,7 @@
          (g!language (gensym "language")))
     `(bind (((:values ,g!binary-features ,g!valued-features
                       ,g!privative-features ,g!languages)
-             (read-mang-files ,file ,@files)))
+             (read-mang-files ,interactive? ,file ,@files)))
        (setf ,binary-features ,g!binary-features
              ,valued-features ,g!valued-features
              ,privative-features ,g!privative-features)

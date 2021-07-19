@@ -56,7 +56,8 @@
           (butlast (rest word))
           :initial-value ""))
 
-(defun parse-generated-entry (glyphs dfsm store markov-spec parts-of-speech)
+(defun parse-generated-entry (glyphs dfsm store markov-spec parts-of-speech
+                              &optional interactive?)
   (declare (type map store markov-spec)
            (type dfsm dfsm)
            (type set parts-of-speech))
@@ -82,40 +83,84 @@
                            "}")
             (>> (parse-constant "{}")
                 (succeed (empty-set)))))
-    (bind ((word (generate-word dfsm store markov-spec categories
-                                negative-categories)))
+    (bind ((word (if interactive?
+                     (if (integerp interactive?)
+                         (bind ((words (loop
+                                         :for n :below interactive?
+                                         :as word
+                                           := (generate-word dfsm store
+                                                             markov-spec
+                                                             categories
+                                                             negative-categories)
+                                         :do
+                                            (format t "~D. ~A~%"
+                                                    n (string<-word glyphs word
+                                                                    :computer-readable?
+                                                                    nil))
+                                         :collect word)))
+                           (format t "Choose one of the generated options for ~
+                              gloss \"~A\"? "
+                                   gloss)
+                           (loop
+                             :as choice
+                               := (parser-call (parse-number)
+                                               *standard-input*)
+                             :when (>= choice interactive?)
+                               :do
+                                  (format t "Not a valid index, please provide ~
+                              a number below ~D: "
+                                          interactive?)
+                             :until (< choice interactive?)
+                             :finally
+                                (return (nth choice words))))
+                         (loop
+                           :as word
+                             := (generate-word dfsm store markov-spec categories
+                                               negative-categories)
+                           :while
+                           (not (y-or-n-p "Use <~A> for gloss \"~A\"?"
+                                          (string<-word glyphs word
+                                                        :computer-readable? nil)
+                                          gloss))
+                           :finally
+                              (return word)))
+                     (generate-word dfsm store markov-spec categories
+                                    negative-categories))))
       (format t "Generated <~A> for gloss \"~A\".~%"
               (string<-word glyphs word
                             :computer-readable? nil)
               gloss)
       (succeed `(,(map (part-of-speech (map (gloss `(,word ,categories))))
                        :default (empty-map))
-                  ,(learn store markov-spec word categories))))))
+                 ,(learn store markov-spec word categories))))))
 
-(defun parse-entry (glyphs dfsm store markov-spec parts-of-speech)
+(defun parse-entry (glyphs dfsm store markov-spec parts-of-speech
+                    &optional interactive?)
   (declare (type map glyphs store markov-spec)
            (type dfsm dfsm)
            (type set parts-of-speech))
   (// (parse-defined-entry glyphs store markov-spec parts-of-speech)
-      (parse-generated-entry glyphs dfsm store markov-spec parts-of-speech)))
+      (parse-generated-entry glyphs dfsm store markov-spec parts-of-speech
+                             interactive?)))
 
-(defun parse-entries (glyphs dfsm store markov-spec parts-of-speech)
+(defun parse-entries (glyphs dfsm store markov-spec parts-of-speech
+                      &optional interactive?)
   (declare (type map glyphs store markov-spec)
            (type dfsm dfsm)
            (type set parts-of-speech))
   (>>!
     (front store)
-    (parse-entry glyphs dfsm store markov-spec parts-of-speech)
+    (parse-entry glyphs dfsm store markov-spec parts-of-speech interactive?)
     (back store)
     (<? (>> (parse-expression-end)
             (parse-whitespace)
-            (parse-entries glyphs dfsm store markov-spec parts-of-speech))
+            (parse-entries glyphs dfsm store markov-spec parts-of-speech interactive?))
         `(,(empty-map (empty-map))
            ,store))
     (succeed `(,(map-union back front #'map-union)
                 ,store))))
 
-(defun parse-dictionary (glyphs dfsm store markov-spec)
+(defun parse-dictionary (glyphs dfsm store markov-spec &optional interactive?)
   (declare (type map glyphs store markov-spec)
            (type dfsm dfsm))
   (parse-section "dictionary"
@@ -128,7 +173,7 @@
                    _ (parse-whitespace)
                    (dictionary store)
                    (parse-entries glyphs dfsm store markov-spec
-                                  parts-of-speech)
+                                  parts-of-speech interactive?)
                    (succeed `(,dictionary ,store)))))
 
 (defun write-dictionary (stream glyphs dictionary
