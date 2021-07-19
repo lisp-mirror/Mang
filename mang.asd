@@ -3,10 +3,8 @@
 (asdf:defsystem #:mang
   :description "Library for generating language families"
   :author "Thomas Bartscher <thomas-bartscher@weltraumschlangen.de>"
-  :depends-on (#:cells
-               #:fset
+  :depends-on (#:fset
                #:cl-adt
-               #:equal
                #:cl-unicode
                #:split-sequence
                #:metabang-bind
