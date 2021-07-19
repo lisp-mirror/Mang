@@ -16,12 +16,12 @@ COM           preposition ňeẉi   {everything, preposition}
 create        verb        marme  {everything, verb, positive}
 cry           verb        saḷ    {everything, verb, negative}
 dark          adjective   masaň  {everything, adjective}
-DEF_INAN      article     ẉa     {everything, article, inanimate}
+DEF           article     ẉa     {everything, article}
 die           verb        paqoň  {everything, verb, negative}
 DIST          determiner  wej    {everything, determiner}
 eat           verb        nin    {everything, verb, positive}
 female        noun        tila   {everything, noun, animate}
-fire          noun        ṛaẉ    {everything, noun, animate}
+fire          noun        ṛaẉ    {everything, noun, animate, mass}
 GEN           preposition kun    {everything, pronoun}
 go            verb        tasi   {everything, verb}
 good          adjective   buri   {everything, adjective}
@@ -29,6 +29,7 @@ grass         noun        towri  {everything, noun, animate}
 have          verb        še     {everything, verb, positive}
 hut           noun        hejda  {everything, noun, inanimate, positive}
 ILLAT         preposition taw    {everything, preposition}
+INDF          article     me     {everything, article}
 INESS         preposition jo     {everything, preposition}
 LAT           preposition qe     {everything, preposition}
 lion          noun        kaw    {everything, noun, animate, negative}
@@ -64,7 +65,5 @@ use           verb        kir    {everything, verb, positive}
 want          verb        duṛše  {everything, verb}
 water         noun        felo   {everything, noun, animate, positive}
 
-DEF_ANIM article    # {everything, article, animate} {noun, verb, adjective, adverb, determiner, pronoun, preposition, inanimate}
-INDF     article    # {everything, article} {noun, verb, adjective, adverb, determiner, pronoun, preposition}
 MED      determiner # {everything, determiner} {noun, verb, adjective, adverb, article, pronoun, preposition}
 cloud    noun       # {everything, noun, animate} {}
