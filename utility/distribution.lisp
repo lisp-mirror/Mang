@@ -51,9 +51,9 @@
 (defmatch expected-cost ([distribution])
     real
   ((<distribution> lw l w _ r rw)
-   (/ (+ (* (depth l)
+   (/ (+ (* (1+ (expected-cost l))
             lw)
-         (* (depth r)
+         (* (1+ (expected-cost r))
             rw))
       (+ lw rw w)))
   (<nodist> 0))
