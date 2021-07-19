@@ -177,3 +177,36 @@
                     ,store (@ ,g!language :store)
                     ,dictionary (@ ,g!language :dictionary))))
        t)))
+
+(defun run-mang (interactive? computer-readable? output file &rest files)
+  (bind ((languages (nth-value 3 (apply #'read-mang-files
+                                        interactive? file files))))
+    (with-open-file (stream output
+                            :direction :output
+                            :if-exists :supersede
+                            :if-does-not-exist :create)
+      (image (lambda (name language)
+               (format stream "## ~A~%"
+                       name)
+               (write-dictionary stream (@ language :glyphs)
+                                 (@ language :dictionary)
+                                 :computer-readable? computer-readable?))
+             languages))
+    t))
+
+(defun mang ()
+  (bind (((options files output)
+          (split-sequence "-" (rest (unix-opts:argv))
+                          :test #'string=)))
+    (apply #'run-mang
+           (or ([a]and (position "-c" options
+                                 :test #'string=)
+                       (parser-call (parse-number)
+                                    (nth (1+ it)
+                                         options)))
+               (not (not (find "-i" options
+                               :test #'string=))))
+           (not (not (find "-r" options
+                           :test #'string=)))
+           (first output)
+           files)))
