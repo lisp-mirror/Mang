@@ -133,3 +133,13 @@
   (map-union collection1 collection2
              (lambda (a b)
                (deep-union a b val-fn))))
+
+(defun reduce-nd (fn collection initial-value
+                   &key from-end)
+  (reduce (lambda (as b)
+            (expand (lambda (a)
+                      (funcall fn a b))
+                    as))
+          collection
+          :from-end from-end
+          :initial-value (set initial-value)))

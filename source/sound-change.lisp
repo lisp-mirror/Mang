@@ -3,7 +3,7 @@
 (defun fst-filter (predicate)
   (declare (type function predicate))
   (fst-elementary predicate '()
-                  :consume? nil))
+                  :consume? t))
 
 (defun fst-emit (generator)
   (declare (type function generator))
@@ -127,7 +127,7 @@
 
 (defun fst-write-category (category register)
   (declare (special *category-registry* *phoneme-registry*)
-           (type map category))
+           (type sequence category))
   (fst-filter (lambda (phoneme)
                 (declare (type map phoneme))
                 ([a]when (in-category? phoneme category)
@@ -188,8 +188,8 @@
 
 (defun parse-register-feature (binary-features valued-features
                                privative-features)
-  (declare (type set binary-features valued-features)
-           (type map privative-features))
+  (declare (type set binary-features privative-features)
+           (type map valued-features))
   (>>!
     feature (parse-from-set (union (union binary-features privative-features)
                                    (domain valued-features)))
@@ -308,8 +308,10 @@
                               glyphs categories feature-registers
                               phoneme-registers category-registers)
   (// (>>!
-        category (// (parse-category categories)
-                     (parse-constant "."))
+        (_ category)
+        (// (parse-category categories)
+            (<$ (parse-constant ".")
+                (list nil (convert 'list (range glyphs)))))
         _ (parse-whitespace-no-newline)
         (constant-features present-features absent-features
                            comp-feature-registers write-feature-registers
@@ -629,10 +631,7 @@
                  (parse-lines (parse-sound-change binary-features
                                                   valued-features
                                                   privative-features
-                                                  glyphs categories)
-                              (empty-fst)
-                              (lambda (sound-change sound-changes)
-                                (fst-sequence sound-changes sound-change)))))
+                                                  glyphs categories))))
 
 (defun apply-sound-change (word sound-change)
   (declare (type cons word)
@@ -642,3 +641,7 @@
     (declare (special *category-registry* *phoneme-registry*)
              (type hash-table *category-registry* *phoneme-registry*))
     (run-fst sound-change word)))
+
+(defun apply-sound-changes (word &rest sound-changes)
+  (reduce-nd #'apply-sound-change
+             sound-changes word))
