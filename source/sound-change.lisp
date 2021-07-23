@@ -615,7 +615,7 @@
     (if (and (empty-fst? pre-write/comp)
              (empty-fst? before-write/comp)
              (empty-fst? post-write/comp))
-        (fail `(:empty-pre-before-post ,after-emit))
+        (fail `(:empty-pre/before/post ,after-emit))
         (succeed (fst-repeat (fst-preferred (fst-sequence* pre-write/comp
                                                            before-write/comp
                                                            post-write/comp
