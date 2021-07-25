@@ -148,9 +148,9 @@
 
 (defmatch image (function [distribution])
     [distribution]
-  ((f <nodist>)
+  ((_ <nodist>)
    <nodist>)
-  ((f (<distribution> lw l w v r rw))
+  ((f (<distribution> _ l w v r _))
    (union (union (image f l)
                  (image f r))
           (distribution w (funcall f v)))))
