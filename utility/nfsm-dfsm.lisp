@@ -286,6 +286,13 @@
 ;;;; should be considered a bug.
 (defmethod advance-dfsm ((dfsm dfsm)
                          (state symbol)
+                         (word t))
+  (@ (@ (transitions<- dfsm)
+        state)
+     word))
+
+(defmethod advance-dfsm ((dfsm dfsm)
+                         (state symbol)
                          (word list))
   (if (and state word)
       (advance-dfsm dfsm (@ (@ (transitions<- dfsm)
