@@ -86,92 +86,105 @@ everything :=
  + C-Zipf + V-Zipf
 
 noun :=
- C-long  = 4~C,
- C-mid   = 3~C,
- C-short = 2~C,
- V-mid   = 3~V,
- V-short = 2~V
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+ C-long   = 4~C,
+ C-mid    = 3~C,
+ C-short  = 2~C,
+ V-mid    = 2~V,
+ V-short  = 1~V,
+ fallback = 0
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
 
 verb :=
- C-long  = 4~C,
- C-mid   = 3~C,
- C-short = 2~C,
- V-mid   = 3~V,
- V-short = 2~V
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+ C-long   = 4~C,
+ C-mid    = 3~C,
+ C-short  = 2~C,
+ V-mid    = 2~V,
+ V-short  = 1~V,
+ fallback = 0
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
 
 adjective :=
- C-long  = 4~C,
- C-mid   = 3~C,
- C-short = 2~C,
- V-mid   = 3~V,
- V-short = 2~V
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+ C-long   = 4~C,
+ C-mid    = 3~C,
+ C-short  = 2~C,
+ V-mid    = 2~V,
+ V-short  = 1~V,
+ fallback = 0
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
 
 adverb :=
- C-long  = 4~C,
- C-mid   = 3~C,
- C-short = 2~C,
- V-mid   = 3~V,
- V-short = 2~V
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+ C-long   = 4~C,
+ C-mid    = 3~C,
+ C-short  = 2~C,
+ V-mid    = 2~V,
+ V-short  = 1~V,
+ fallback = 0
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
 
 determiner :=
- C-long  = 4~C,
- C-mid   = 3~C,
- C-short = 2~C,
- V-mid   = 3~V,
- V-short = 2~V
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+ C-long   = 4~C,
+ C-mid    = 3~C,
+ C-short  = 2~C,
+ V-mid    = 2~V,
+ V-short  = 1~V,
+ fallback = 0
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
 
 pronoun :=
- C-long  = 4~C,
- C-mid   = 3~C,
- C-short = 2~C,
- V-mid   = 3~V,
- V-short = 2~V
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+ C-long   = 4~C,
+ C-mid    = 3~C,
+ C-short  = 2~C,
+ V-mid    = 2~V,
+ V-short  = 1~V,
+ fallback = 0
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
 
 preposition :=
- C-long  = 4~C,
- C-mid   = 3~C,
- C-short = 2~C,
- V-mid   = 3~V,
- V-short = 2~V
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+ C-long   = 4~C,
+ C-mid    = 3~C,
+ C-short  = 2~C,
+ V-mid    = 2~V,
+ V-short  = 1~V,
+ fallback = 0
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
 
 article :=
- C-long  = 4~C,
- C-mid   = 3~C,
- C-short = 2~C,
- V-mid   = 3~V,
- V-short = 2~V
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short
+ C-long   = 4~C,
+ C-mid    = 3~C,
+ C-short  = 2~C,
+ V-mid    = 2~V,
+ V-short  = 1~V,
+ fallback = 0
+ | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
 
 positive :=
- long  = 4,
- mid   = 3,
- short = 2
- | 3 long + 2 mid + short
+ long     = 4,
+ mid      = 3,
+ short    = 2,
+ fallback = 0
+ | 3 long + 2 mid + short + [10 fallback]
 
 negative :=
- long  = 4,
- mid   = 3,
- short = 2
- | 3 long + 2 mid + short
+ long     = 4,
+ mid      = 3,
+ short    = 2,
+ fallback = 0
+ | 3 long + 2 mid + short + [10 fallback]
 
 animate :=
- mid   = 3,
- short = 2
- | 3 mid + short
+ mid      = 3,
+ short    = 2,
+ fallback = 0
+ | 3 mid + short + [5 fallback]
 
 inanimate :=
- mid   = 3,
- short = 2
- | 3 mid + short
+ mid      = 3,
+ short    = 2,
+ fallback = 0
+ | 3 mid + short + [5 fallback]
 
 mass :=
- mid   = 3,
- short = 2
- | 3 mid + short
+ mid      = 3,
+ short    = 2,
+ fallback = 0
+ | 3 mid + short + [5 fallback]
