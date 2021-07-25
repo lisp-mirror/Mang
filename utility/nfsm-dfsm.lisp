@@ -286,7 +286,7 @@
 ;;;; should be considered a bug.
 (defmethod advance-dfsm ((dfsm dfsm)
                          (state symbol)
-                         (word cons))
+                         (word list))
   (if (and state word)
       (advance-dfsm dfsm (@ (@ (transitions<- dfsm)
                                state)
