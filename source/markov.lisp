@@ -321,7 +321,7 @@
   (declare (type dfsm dfsm)
            (type map store markov-spec)
            (type set categories negative-categories))
-  (bind ((transition-table (transition-table<- dfsm))
+  (bind ((transition-table (transitions<- dfsm))
          (transitions (domain (@ transition-table state))))
     (cond
       ((@ (accepting-states<- dfsm)

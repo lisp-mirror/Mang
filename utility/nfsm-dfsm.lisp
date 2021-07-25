@@ -240,10 +240,10 @@
                  transitions)))
 
 (defclass dfsm ()
-  ((%transition-table :type map
-                      :initarg :transition-table
-                      :initform (empty-map (empty-map (empty-set)))
-                      :reader transition-table<-)
+  ((%transitions :type map
+                 :initarg :transitions
+                 :initform (empty-map (empty-map (empty-set)))
+                 :reader transitions<-)
    (%start-state :initarg :start-state
                  :reader start-state<-)
    (%accepting-states :type set
@@ -257,7 +257,7 @@
          ((:values transitions in outs failure)
           (dfsm<-nfsm in transitions eps-transitions out)))
     (make-instance 'dfsm
-                   :transition-table
+                   :transitions
                    (collapse-states* (prune-failure-dfsm transitions failure))
                    :start-state in
                    :accepting-states outs)))
@@ -267,7 +267,7 @@
                      &optional negative)
   (declare (type (or map null)
                  negative))
-  (bind ((transition-map (transition-table<- generator))
+  (bind ((transition-map (transitions<- generator))
          (accepting (accepting-states<- generator)))
     (labels ((_rec (state acc)
                (bind ((transitions (domain (@ transition-map state))))
@@ -307,7 +307,7 @@
 ;;;; should be considered a bug.
 (defmethod run-dfsm ((dfsm dfsm)
                      (word cons))
-  (bind ((transition-table (transition-table<- dfsm)))
+  (bind ((transition-table (transitions<- dfsm)))
     (labels ((_rec (state word)
                (if word
                    (_rec (@ (@ transition-table state)
@@ -320,7 +320,7 @@
 
 (defmethod run-dfsm ((dfsm dfsm)
                      (word string))
-  (bind ((transition-table (transition-table<- dfsm))
+  (bind ((transition-table (transitions<- dfsm))
          (accepting-states (accepting-states<- dfsm)))
     (labels ((_rec (state word)
                (bind ((transitions (@ transition-table state))
