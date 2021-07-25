@@ -205,7 +205,7 @@
 (defun collapse-states (transition-table)
   (bind ((valuable-states (empty-map))
          (redirections (empty-map))
-         (new-transition-table (empty-map (empty-map (empty-set)))))
+         (new-transition-table (empty-map (empty-map nil))))
     (do-map (state transitions transition-table)
       (unless (@ valuable-states transitions)
         (setf valuable-states
@@ -216,9 +216,12 @@
         (setf new-transition-table
               (with new-transition-table new-state transitions))))
     (image (lambda (state transitions)
-             (values state (image (lambda (transition target)
-                                    (values transition (@ redirections target)))
-                                  transitions)))
+             (values state (map ($ (image (lambda (transition target)
+                                            (values transition
+                                                    (@ redirections
+                                                       target)))
+                                          transitions))
+                                :default nil)))
            new-transition-table)))
 
 (defun collapse-states* (transition-table)
@@ -255,48 +258,24 @@
   (bind (((:values in out transitions eps-transitions)
           (nfsm<- obj))
          ((:values transitions in outs failure)
-          (dfsm<-nfsm in transitions eps-transitions out)))
+          (dfsm<-nfsm in transitions eps-transitions out))
+         (transitions (filter (lambda (k v)
+                                (declare (ignore k))
+                                (not (empty? v)))
+                              (collapse-states* (prune-failure-dfsm transitions
+                                                                    failure)))))
     (make-instance 'dfsm
-                   :transitions
-                   (collapse-states* (prune-failure-dfsm transitions failure))
+                   :transitions transitions
                    :start-state in
-                   :accepting-states outs)))
-
-(defmethod generate ((generator dfsm)
-                     (markov map)
-                     &optional negative)
-  (declare (type (or map null)
-                 negative))
-  (bind ((transition-map (transitions<- generator))
-         (accepting (accepting-states<- generator)))
-    (labels ((_rec (state acc)
-               (bind ((transitions (domain (@ transition-map state))))
-                 (if (or (empty? transitions)
-                         ;; the following part of the check should be changed –
-                         ;; as it is now, the generator simply prefers shorter
-                         ;; words
-                         (and (@ accepting state)
-                              (= (random 6)
-                                 0)))
-                     acc
-                     (bind ((dist (keep transitions
-                                        (if negative
-                                            (diminish
-                                             (filtering-combine acc markov
-                                                                #'union #'mult
-                                                                <nodist>)
-                                             (filtering-combine acc negative
-                                                                #'union #'mult
-                                                                <nodist>))
-                                            (filtering-combine acc markov
-                                                               #'union #'mult
-                                                               <nodist>))))
-                            (transition (extract-random dist)))
-                       (_rec (@ (@ transition-map state)
-                                transition)
-                             (nconc acc (list transition))))))))
-      (_rec (start-state<- generator)
-            '()))))
+                   :accepting-states
+                   (filter (lambda (out)
+                             (@ (reduce (lambda (set map)
+                                          (union (range map)
+                                                 set))
+                                        (range transitions)
+                                        :initial-value (empty-set))
+                                out))
+                           outs))))
 
 ;;;; The following implementations for the matching via deterministic finite
 ;;;; state machine assume that there is a maximum length that the given DFSM can
@@ -305,6 +284,16 @@
 ;;;; expectation. The DFSM builders implemented here definitely should only
 ;;;; produce DFSMs matching only constructs under a given length. If not, that
 ;;;; should be considered a bug.
+(defmethod advance-dfsm ((dfsm dfsm)
+                         (state symbol)
+                         (word cons))
+  (if (and state word)
+      (advance-dfsm dfsm (@ (@ (transitions<- dfsm)
+                               state)
+                            (first word))
+                    (rest word))
+      state))
+
 (defmethod run-dfsm ((dfsm dfsm)
                      (word cons))
   (bind ((transition-table (transitions<- dfsm)))
