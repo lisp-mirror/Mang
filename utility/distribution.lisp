@@ -146,6 +146,15 @@
 (defmethod keep (predicate (collection [distribution]))
   (distribution-keep collection predicate))
 
+(defmatch image (function [distribution])
+    [distribution]
+  ((f <nodist>)
+   <nodist>)
+  ((f (<distribution> lw l w v r rw))
+   (union (union (image f l)
+                 (image f r))
+          (distribution w (funcall f v)))))
+
 (defmatch mult ([distribution] real)
     [distribution]
   ((<nodist> _)
