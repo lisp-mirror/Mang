@@ -1,8 +1,5 @@
 (in-package #:mang)
 
-;;;;; TODO: Update the next comment to represent the new syntax – see
-;;;;; PARSE-MARKOV-GEN-SPEC
-
 ;;;;; everything :=
 ;;;;;  long      = 4,
 ;;;;;  middle    = 3,
@@ -19,21 +16,27 @@
 ;;;;;  C-uniform = uniform {m,p,f,n,t,s,k,x,l,r} 2,
 ;;;;;  C-Zipf    = zipf    {m,p,f,n,t,s,k,x,l,r} 1.06 3,
 ;;;;;  V-uniform = uniform {i,a,u,e,o} 4,
-;;;;;  V-Zipf    = zipf    {i,a,u,e,o} 1.09 5
-;;;;;  | {3 C-long   + 2 [1000 long  ]}
-;;;;;  + {3 V-long   + 2 [1000 long  ]}
-;;;;;  + {2 C-middle +   [ 500 middle]}
-;;;;;  + {2 V-middle +   [ 500 middle]}
-;;;;;  + {  C-short  +   [ 200 short ]}
-;;;;;  + {2 V-short  +   [ 200 short ]}
-;;;;;  + {[1000 lsupport] + 2 [500 support ]}
-;;;;;  + {[ 750 fallback] +   [500 fallback]}
-;;;;;  + C-uniform + C-Zipf + V-uniform + C-Zipf
+;;;;;  V-Zipf    = zipf    {i,a,u,e,o} 1.09 5,
+;;;;;  end       = uniform {#}
+;;;;;  | {(3    C-long)   + (2 [1000 long   ])}
+;;;;;  + {(3    V-long)   + (2 [1000 long   ])}
+;;;;;  + {(2    C-middle) +    [ 500 middle ] }
+;;;;;  + {(2    V-middle) +    [ 500 middle ] }
+;;;;;  + {      C-short   +    [ 200 short  ] }
+;;;;;  + {(2    V-short)  +    [ 200 short  ] }
+;;;;;  + [1000 lsupport] + (2 [500 support])
+;;;;;  + [ 750 fallback] + [500 fallback]
+;;;;;  + [10 (4 end)] + [100 (3 end)] + [1000 (2 end)] + [10000 end]
+;;;;;  + C-uniform + (2 C-Zipf)
+;;;;;  + V-uniform + (2 V-Zipf) + end
 ;;;; The part before the `|` defines the available markov chains, the part after
 ;;;; defines the way they are used in the generator.
+;;;; The (n mc) construction multiplies the weight of the markov chain `mc` by a
+;;;; factor of `n`.
 ;;;; The [n mc] construction loads the markov chain `mc` only when the current
 ;;;; distribution under construction has a size lower than or equal to `n`.
-;;;; `()` locally constructs a distribution.
+;;;; `{}` locally constructs a distribution. This is only of relevance to katz
+;;;; backoff.
 ;;;; `+` adds distributions.
 
 ;;;; A markov spec returns a function taking one argument (which is an initial
@@ -59,7 +62,9 @@
                       (lambda (cat)
                         (convert 'set
                                  (second cat))))
-                 phonemes)
+                 (with (image #'list
+                              phonemes)
+                       (map (:begin t))))
       (bind ((match-length (+ intro outro)))
         (declare (type (integer 0)
                        match-length)
@@ -270,11 +275,13 @@
                            :initial-value (empty-map <nodist>))))
          (first (@ markov-spec category))))))))
 
-(defun dist-from-markov (word store markov-spec transitions categories
+(defun dist-from-markov (word store markov-spec dfsm state categories
                          &optional (negative-categories (empty-set)))
   (declare (type list word)
            (type map store markov-spec)
-           (type set transitions categories negative-categories))
+           (type dfsm dfsm)
+           (type symbol state)
+           (type set categories negative-categories))
   (labels ((_extract-dist (markovs gen-spec dist &optional (size 0))
              (if (consp gen-spec)
                  (bind (((type &rest args)
@@ -308,55 +315,18 @@
                  (reduce #'union
                          (convert 'set
                                   (@ markovs gen-spec)
-                                  :pair-fn (lambda (predicate dist)
-                                             (if (funcall predicate word)
-                                                 (keep transitions dist)
-                                                 <nodist>)))
-                         :initial-value <nodist>))
-             #+nil
-             (union (if (consp gen-spec)
-                        (bind (((type &rest args)
-                                gen-spec))
-                          (ecase type
-                            (:sequence
-                             (if args
-                                 (bind (((curr &rest rest)
-                                         args)
-                                        (dist
-                                         (_extract-dist markovs curr dist)))
-                                   (_extract-dist markovs
-                                                  `(:sequence ,@rest)
-                                                  dist))
-                                 <nodist>))
-                            (:mult
-                             (bind (((mult spec)
-                                     args))
-                               ;; BUG:
-                               ;;  this multiplies the local distribution
-                               ;;  *and* the distribution constructed so far,
-                               ;;  instead of only the local distribution
-                               (mult (_extract-dist markovs spec dist)
-                                     mult)))
-                            (:katz
-                             (bind (((cutoff spec)
-                                     args))
-                               (if (<= (size dist)
-                                       cutoff)
-                                   (_extract-dist markovs spec dist)
-                                   <nodist>)))
-                            (:descend
-                             (_extract-dist markovs (first args)
-                                            <nodist>))))
-                        (reduce #'union
-                                (convert 'set
-                                         (@ markovs gen-spec)
-                                         :pair-fn
-                                         (lambda (predicate dist)
-                                           (if (funcall predicate word)
-                                               (keep transitions dist)
-                                               <nodist>)))
-                                :initial-value <nodist>))
-                    dist))
+                                  :pair-fn
+                                  (lambda (predicate dist)
+                                    (if (funcall predicate word)
+                                        (keep #'second
+                                              (image (lambda (element)
+                                                       `(,element
+                                                         ,(advance-dfsm dfsm
+                                                                        state
+                                                                        element)))
+                                                     dist))
+                                        <nodist>)))
+                         :initial-value <nodist>)))
            (_get-dist (categories)
              (reduce (lambda (dist category)
                        (union (normalize (_extract-dist (@ store category)
@@ -383,13 +353,12 @@
       ((empty? transitions)
        (values nil nil))
       (t
-       (bind ((transition
-               (extract-random (dist-from-markov word store markov-spec
-                                                 transitions categories
+       (bind (((transition state)
+               (extract-random (dist-from-markov word store markov-spec dfsm
+                                                 state categories
                                                  negative-categories))))
          (values (ensure-list transition)
-                 (@ (@ transition-table state)
-                    transition)))))))
+                 state))))))
 
 (defun generate-word (dfsm store markov-spec categories
                       &optional (negative-categories (empty-set)))
