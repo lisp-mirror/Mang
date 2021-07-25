@@ -1,5 +1,8 @@
 (in-package #:mang)
 
+;;;;; TODO: Update the next comment to represent the new syntax – see
+;;;;; PARSE-MARKOV-GEN-SPEC
+
 ;;;;; everything :=
 ;;;;;  long      = 4,
 ;;;;;  middle    = 3,
@@ -17,14 +20,14 @@
 ;;;;;  C-Zipf    = zipf    {m,p,f,n,t,s,k,x,l,r} 1.06 3,
 ;;;;;  V-uniform = uniform {i,a,u,e,o} 4,
 ;;;;;  V-Zipf    = zipf    {i,a,u,e,o} 1.09 5
-;;;;;  | (3 C-long   + 2 [1000 long  ])
-;;;;;  + (3 V-long   + 2 [1000 long  ])
-;;;;;  + (2 C-middle +   [ 500 middle])
-;;;;;  + (2 V-middle +   [ 500 middle])
-;;;;;  + (  C-short  +   [ 200 short ])
-;;;;;  + (2 V-short  +   [ 200 short ])
-;;;;;  + ([1000 lsupport] + 2 [500 support ])
-;;;;;  + ([ 750 fallback] +   [500 fallback])
+;;;;;  | {3 C-long   + 2 [1000 long  ]}
+;;;;;  + {3 V-long   + 2 [1000 long  ]}
+;;;;;  + {2 C-middle +   [ 500 middle]}
+;;;;;  + {2 V-middle +   [ 500 middle]}
+;;;;;  + {  C-short  +   [ 200 short ]}
+;;;;;  + {2 V-short  +   [ 200 short ]}
+;;;;;  + {[1000 lsupport] + 2 [500 support ]}
+;;;;;  + {[ 750 fallback] +   [500 fallback]}
 ;;;;;  + C-uniform + C-Zipf + V-uniform + C-Zipf
 ;;;; The part before the `|` defines the available markov chains, the part after
 ;;;; defines the way they are used in the generator.
@@ -59,35 +62,40 @@
                  phonemes)
       (bind ((match-length (+ intro outro)))
         (declare (type (integer 0)
-                       intro outro match-length)
+                       match-length)
                  (type set filter))
         (assert (> outro 0))
-        (succeed `(,(set
-                     (lambda (word)
-                       (declare (type list word))
-                       (if (length>= word match-length)
-                           (bind ((rev-word (reverse word))
-                                  (rev-init (filter filter
-                                                    (subseq rev-word outro))))
-                             (declare (type list rev-word rev-init))
-                             (if (length>= rev-init intro)
-                                 (bind ((intro
-                                         (reverse (subseq rev-init 0 intro)))
-                                        (outro (reverse (subseq rev-word 0
-                                                                outro))))
-                                   (declare (type list intro outro))
-                                   (map ((memoized
-                                          (intro filter)
-                                          (lambda (word)
-                                            (declare (type list word))
-                                            (postfix? intro
-                                                      (filter filter
-                                                              word))))
-                                         (uniform-distribution (set outro)))
-                                        :default <nodist>))
-                                 (empty-map <nodist>)))
-                           (empty-map <nodist>))))
-                    ,(empty-map <nodist>)))))))
+        (locally
+            (declare (type (integer 0)
+                           intro)
+                     (type (integer 1)
+                           outro))
+          (succeed `(,(set
+                       (lambda (word)
+                         (declare (type list word))
+                         (if (length>= word match-length)
+                             (bind ((rev-word (reverse word))
+                                    (rev-init (filter filter
+                                                      (subseq rev-word outro))))
+                               (declare (type list rev-word rev-init))
+                               (if (length>= rev-init intro)
+                                   (bind ((intro
+                                           (reverse (subseq rev-init 0 intro)))
+                                          (outro (reverse (subseq rev-word 0
+                                                                  outro))))
+                                     (declare (type list intro outro))
+                                     (map ((memoized
+                                            (intro filter)
+                                            (lambda (word)
+                                              (declare (type list word))
+                                              (postfix? intro
+                                                        (filter filter
+                                                                word))))
+                                           (uniform-distribution (set outro)))
+                                          :default <nodist>))
+                                   (empty-map <nodist>)))
+                             (empty-map <nodist>))))
+                     ,(empty-map <nodist>))))))))
 
 (defun parse-uniform-spec (glyphs)
   (declare (type map glyphs))
@@ -174,11 +182,13 @@
   (<$> (parse-separated (//_
                             (<$> (parse-from-map markov-definitions)
                                  #'first)
-                          (>>!
-                            mult (parse-number)
-                            _ (parse-whitespace-no-newline)
-                            spec (parse-markov-gen-spec markov-definitions)
-                            (succeed `(:mult ,mult ,spec)))
+                          (parse-wrapped "(" (>>!
+                                               mult (parse-number)
+                                               _ (parse-whitespace-no-newline)
+                                               spec (parse-markov-gen-spec
+                                                     markov-definitions)
+                                               (succeed `(:mult ,mult ,spec)))
+                                         ")")
                           (parse-wrapped "[" (>>!
                                                cutoff (parse-number)
                                                _ (parse-whitespace)
@@ -186,9 +196,9 @@
                                                      markov-definitions)
                                                (succeed `(:katz ,cutoff ,spec)))
                                          "]")
-                          (<$> (parse-wrapped "(" (parse-markov-gen-spec
+                          (<$> (parse-wrapped "{" (parse-markov-gen-spec
                                                    markov-definitions)
-                                              ")")
+                                              "}")
                                (lambda (spec)
                                  `(:descend ,spec))))
                         "+")
@@ -265,7 +275,45 @@
   (declare (type list word)
            (type map store markov-spec)
            (type set transitions categories negative-categories))
-  (labels ((_extract-dist (markovs gen-spec dist)
+  (labels ((_extract-dist (markovs gen-spec dist &optional (size 0))
+             (if (consp gen-spec)
+                 (bind (((type &rest args)
+                         gen-spec))
+                   (ecase type
+                     (:sequence
+                      (if args
+                          (chop curr args
+                            (bind ((new-dist (_extract-dist markovs curr <nodist>
+                                                            size)))
+                              (_extract-dist markovs `(:sequence ,@args)
+                                             (union dist new-dist)
+                                             (+ size (size new-dist)))))
+                          dist))
+                     (:mult
+                      (bind (((factor gen-spec)
+                              args))
+                        (union (mult (_extract-dist markovs gen-spec <nodist>
+                                                    size)
+                                     factor)
+                               dist)))
+                     (:katz
+                      (bind (((cutoff gen-spec)
+                              args))
+                        (if (<= size cutoff)
+                            (_extract-dist markovs gen-spec dist size)
+                            <nodist>)))
+                     (:descend
+                      (_extract-dist markovs (first args)
+                                     dist 0))))
+                 (reduce #'union
+                         (convert 'set
+                                  (@ markovs gen-spec)
+                                  :pair-fn (lambda (predicate dist)
+                                             (if (funcall predicate word)
+                                                 (keep transitions dist)
+                                                 <nodist>)))
+                         :initial-value <nodist>))
+             #+nil
              (union (if (consp gen-spec)
                         (bind (((type &rest args)
                                 gen-spec))
@@ -314,7 +362,7 @@
                        (union (normalize (_extract-dist (@ store category)
                                                         (second (@ markov-spec
                                                                    category))
-                                                        <nodist>)
+                                                        <nodist>))
                               dist))
                      categories
                      :initial-value <nodist>)))

@@ -77,12 +77,12 @@ everything :=
  short     = 2,
  support   = 1,
  fallback  = 0
- | (3 C-long + 2 C-mid + C-short + [1000 C-support])
- + (                     V-short + [ 500 V-support])
- + (3   long + 2  mid  +   short + [1000   support] + [1000 fallback])
+ | {(3 C-long) + (2 C-mid) + C-short + [1000 C-support]}
+ + {                         V-short + [ 500 V-support]}
+ + {(3   long) + (2  mid)  +   short + [1000   support] + [1000 fallback]}
  + [1 end]
  + [5000 C-Zipf + V-Zipf + fallback]
- + [10 5 end] + [100 50 end] + [1000 500 end] + [10000 5000 end]
+ + [10 (4 end)] + [100 (3 end)] + [1000 (2 end)] + [10000 end]
  + C-Zipf + V-Zipf
 
 noun :=
@@ -92,7 +92,7 @@ noun :=
  V-mid    = 2~V,
  V-short  = 1~V,
  fallback = 0
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
+ | (3 C-long + V-mid) + (2 C-mid + V-short) + C-short + [100 fallback]
 
 verb :=
  C-long   = 4~C,
@@ -101,7 +101,7 @@ verb :=
  V-mid    = 2~V,
  V-short  = 1~V,
  fallback = 0
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
+ | (3 C-long + V-mid) + (2 C-mid + V-short) + C-short + [100 fallback]
 
 adjective :=
  C-long   = 4~C,
@@ -110,7 +110,7 @@ adjective :=
  V-mid    = 2~V,
  V-short  = 1~V,
  fallback = 0
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
+ | (3 C-long + V-mid) + (2 C-mid + V-short) + C-short + [100 fallback]
 
 adverb :=
  C-long   = 4~C,
@@ -119,7 +119,7 @@ adverb :=
  V-mid    = 2~V,
  V-short  = 1~V,
  fallback = 0
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
+ | (3 C-long + V-mid) + (2 C-mid + V-short) + C-short + [100 fallback]
 
 determiner :=
  C-long   = 4~C,
@@ -128,7 +128,7 @@ determiner :=
  V-mid    = 2~V,
  V-short  = 1~V,
  fallback = 0
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
+ | (3 C-long + V-mid) + (2 C-mid + V-short) + C-short + [100 fallback]
 
 pronoun :=
  C-long   = 4~C,
@@ -137,7 +137,7 @@ pronoun :=
  V-mid    = 2~V,
  V-short  = 1~V,
  fallback = 0
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
+ | (3 C-long + V-mid) + (2 C-mid + V-short) + C-short + [100 fallback]
 
 preposition :=
  C-long   = 4~C,
@@ -146,7 +146,7 @@ preposition :=
  V-mid    = 2~V,
  V-short  = 1~V,
  fallback = 0
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
+ | (3 C-long + V-mid) + (2 C-mid + V-short) + C-short + [100 fallback]
 
 article :=
  C-long   = 4~C,
@@ -155,36 +155,36 @@ article :=
  V-mid    = 2~V,
  V-short  = 1~V,
  fallback = 0
- | 3 (C-long + V-mid) + 2 (C-mid + V-short) + C-short + [100 fallback]
+ | (3 C-long + V-mid) + (2 C-mid + V-short) + C-short + [100 fallback]
 
 positive :=
  long     = 4,
  mid      = 3,
  short    = 2,
  fallback = 0
- | 3 long + 2 mid + short + [10 fallback]
+ | (3 long) + (2 mid) + short + [10 fallback]
 
 negative :=
  long     = 4,
  mid      = 3,
  short    = 2,
  fallback = 0
- | 3 long + 2 mid + short + [10 fallback]
+ | (3 long) + (2 mid) + short + [10 fallback]
 
 animate :=
  mid      = 3,
  short    = 2,
  fallback = 0
- | 3 mid + short + [5 fallback]
+ | (3 mid) + short + [5 fallback]
 
 inanimate :=
  mid      = 3,
  short    = 2,
  fallback = 0
- | 3 mid + short + [5 fallback]
+ | (3 mid) + short + [5 fallback]
 
 mass :=
  mid      = 3,
  short    = 2,
  fallback = 0
- | 3 mid + short + [5 fallback]
+ | (3 mid) + short + [5 fallback]
