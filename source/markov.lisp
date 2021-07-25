@@ -283,6 +283,10 @@
                             (:mult
                              (bind (((mult spec)
                                      args))
+                               ;; BUG:
+                               ;;  this multiplies the local distribution
+                               ;;  *and* the distribution constructed so far,
+                               ;;  instead of only the local distribution
                                (mult (_extract-dist markovs spec dist)
                                      mult)))
                             (:katz
@@ -307,9 +311,10 @@
                     dist))
            (_get-dist (categories)
              (reduce (lambda (dist category)
-                       (union (_extract-dist (@ store category)
-                                             (second (@ markov-spec category))
-                                             <nodist>)
+                       (union (normalize (_extract-dist (@ store category)
+                                                        (second (@ markov-spec
+                                                                   category))
+                                                        <nodist>)
                               dist))
                      categories
                      :initial-value <nodist>)))
