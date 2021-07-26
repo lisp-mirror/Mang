@@ -161,6 +161,7 @@ article :=
  fallback = 0
  | (3 C-long + V-mid) + (2 C-mid + V-short) + C-short + [100 fallback]
 
+
 positive :=
  long     = 4,
  mid      = 3,
@@ -174,6 +175,13 @@ negative :=
  short    = 2,
  fallback = 0
  | (3 long) + (2 mid) + short + [10 fallback]
+
+
+human :=
+ mid      = 3,
+ short    = 2,
+ fallback = 0
+ | (3 mid) + short + [5 fallback]
 
 animate :=
  mid      = 3,
@@ -192,3 +200,10 @@ mass :=
  short    = 2,
  fallback = 0
  | (3 mid) + short + [5 fallback]
+
+
+family :=
+ long  = 3:2,
+ mid   = 2:2,
+ short = 1:2
+ | (3 long) + (2 mid) + short

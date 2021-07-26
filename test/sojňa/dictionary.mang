@@ -40,20 +40,20 @@ MASS          article     šiw    {everything, article, inanimate}
 must          verb        peẉ    {everything, verb, negative}
 NEG           adverb      gu     {everything, adverb}
 night         noun        rišo   {everything, noun}
-offspring     noun        žasa   {everything, noun, animate, positive}
+offspring     noun        žasa   {everything, noun, animate, positive, family}
 P1            pronoun     žaj    {everything, pronoun}
 P2            pronoun     doẉ    {everything, pronoun}
 P3.ANIM       pronoun     siw    {everything, pronoun, animate}
 P3.INAN       pronoun     hu     {everything, pronoun, inanimate}
 pain          noun        qaẉ    {everything, noun, animate, negative}
 PER           preposition zo     {everything, preposition}
-person        noun        kuti   {everything, noun, animate, positive}
+person        noun        kuti   {everything, noun, animate, positive, human}
 PROX          determiner  sa     {everything, determiner}
 rabbit        noun        bolej  {everything, noun, animate}
 REFL          pronoun     lej    {everything, pronoun}
 see           verb        šiwhin {everything, verb}
 seed          noun        parňeḷ {everything, noun, inanimate, positive}
-sibling       noun        heřdi  {everything, noun, animate, positive}
+sibling       noun        heřdi  {everything, noun, animate, positive, family}
 stand         verb        tajbo  {everything, verb}
 stone         noun        kem    {everything, noun, inanimate}
 sweetroot     noun        qubaň  {everything, noun, inanimate, positive}
@@ -66,4 +66,6 @@ want          verb        duṛše  {everything, verb}
 water         noun        felo   {everything, noun, animate, positive}
 
 MED      determiner # {everything, determiner} {noun, verb, adjective, adverb, article, pronoun, preposition}
-cloud    noun       # {everything, noun, animate} {}
+cloud    noun       # {everything, noun, animate} {verb, adjective, adverb, determiner, pronoun, preposition, article}
+parent   noun       # {everything, noun, animate, positive, family} {verb, adjective, adverb, determiner, pronoun, preposition, article, negative, inanimate, mass}
+stranger noun       # {everything, noun, animate, human} {verb, adjective, adverb, determiner, pronoun, preposition, article, inanimate, mass, family}
