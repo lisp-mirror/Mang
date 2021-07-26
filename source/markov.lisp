@@ -308,7 +308,7 @@
                               args))
                         (if (<= size cutoff)
                             (_extract-dist markovs gen-spec dist size)
-                            <nodist>)))
+                            dist)))
                      (:descend
                       (_extract-dist markovs (first args)
                                      dist 0))))
