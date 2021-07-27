@@ -137,22 +137,18 @@
         (nfsm<- (or car cdr)))))
 
 
-;;;; DFSM
-
-(defun dfsm-simplify-state-names (dfsm start-state accepting-states)
-  (bind ((failure (gensym "failure"))
-         (start (gensym "start"))
+;;;; DFSM ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun dfsm-simplify-state-names (transition-map start-state accepting-states)
+  (bind ((start (gensym "start"))
          (accepting (convert 'map
                              (image (lambda (accepting-state)
                                       (cons accepting-state
                                             (gensym "accept")))
                                     accepting-states)))
          (registry (map (start-state start)
-                        ((empty-set)
-                         failure)
                         ($ accepting)))
-         (new-dfsm (empty-map (empty-map failure))))
-    (do-map (in transitions dfsm)
+         (new-dfsm (empty-map (empty-map nil))))
+    (do-map (in transitions transition-map)
       (bind ((in-simple (or (@ registry in)
                             (gensym "state"))))
         (setf registry (with registry in in-simple))
@@ -164,8 +160,7 @@
                   (with new-dfsm in-simple
                         (with (@ new-dfsm in-simple)
                               category target-simple)))))))
-    (values new-dfsm start (range accepting)
-            failure)))
+    (values new-dfsm start (range accepting))))
 
 (defun dfsm<-nfsm (start-state transition-map epsilon-transitions
                    accepting-state)
@@ -244,19 +239,10 @@
         collapsed
         (collapse-states* collapsed accepting-states))))
 
-(defun prune-failure-dfsm (transitions failure)
-  (image (lambda (state transitions)
-           (values state
-                   (filter (lambda (transition target)
-                             (declare (ignore transition))
-                             (not (equal? target failure)))
-                           transitions)))
-         (filter (lambda (state transitions)
-                   (declare (ignore transitions))
-                   (not (equal? state failure)))
-                 transitions)))
-
 (defun prune-dfsm (transition-map start accepting)
+  (declare (type map transition-map)
+           (type symbol start)
+           (type set accepting))
   (bind ((right-pruned (image (lambda (state transitions)
                                 (values state
                                         (filter (lambda (transition target)
@@ -266,16 +252,23 @@
                                                        (empty? (@ transition-map
                                                                   target)))))
                                                 transitions)))
-                              transition-map))
-         (pruned-targets (reduce (lambda (set map)
-                                   (union (range map)
-                                          set))
-                                 (range right-pruned)
-                                 :initial-value (empty-set))))
+                              transition-map)))
     (filter (lambda (k v)
               (declare (ignore v))
-              (or (eq k start)
-                  (@ pruned-targets k)))
+              (or (eq k start)  ; preserve start state
+                  ;; get rid of states that only lead back to themselves – we do
+                  ;; not need to watch out for accepting states here, since all
+                  ;; FSTs are required to not contain loops, so all loops can
+                  ;; only exist in failure states
+                  (and (not (empty? (less (range (@ right-pruned k))
+                                          k)))
+                       ;; get rid of states that are never reached
+                       (@ (reduce (lambda (set map)
+                                    (union (range map)
+                                           set))
+                                  (range (less right-pruned k))
+                                  :initial-value (empty-set))
+                          k))))
             right-pruned)))
 
 (defun prune-dfsm* (transition-map start accepting)
@@ -285,9 +278,9 @@
         (prune-dfsm* pruned start accepting))))
 
 (defun dfsm-normalize-transitions (transitions start-state accepting-states)
-  (bind (((:values transitions _ accepting failure)
+  (bind (((:values transitions start accepting)
           (dfsm-simplify-state-names transitions start-state accepting-states)))
-    (collapse-states* (prune-failure-dfsm transitions failure)
+    (collapse-states* (prune-dfsm* transitions start accepting)
                       accepting)))
 
 (defclass dfsm ()
@@ -305,13 +298,13 @@
 (defun dfsm<- (obj)
   (bind (((:values in out transitions eps-transitions)
           (nfsm<- obj))
-         ((:values transitions in outs failure)
+         ((:values transitions in outs)
           (dfsm<-nfsm in transitions eps-transitions out))
          (transitions (filter (lambda (k v)
                                 (declare (ignore k))
                                 (not (empty? v)))
-                              (collapse-states* (prune-failure-dfsm transitions
-                                                                    failure)
+                              (collapse-states* (prune-dfsm* transitions in
+                                                             outs)
                                                 outs))))
     (make-instance 'dfsm
                    :transitions transitions
@@ -387,7 +380,7 @@
                                                    (domain
                                                     new-transition-table))
                                            (accepting-states<- collection)))
-                 ((:values transitions start accepting _)
+                 ((:values transitions start accepting)
                   (dfsm-simplify-state-names new-transition-table
                                              (start-state<- collection)
                                              accepting-states)))
