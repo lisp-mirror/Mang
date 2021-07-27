@@ -281,10 +281,8 @@
         (prune-dfsm* pruned start accepting))))
 
 (defun dfsm-normalize-transitions (transitions start-state accepting-states)
-  (bind (((:values transitions start accepting)
-          (dfsm-simplify-state-names transitions start-state accepting-states)))
-    (collapse-states* (prune-dfsm* transitions start accepting)
-                      accepting)))
+  (prune-dfsm* (collapse-states* transitions accepting-states)
+               start-state accepting-states))
 
 (defclass dfsm ()
   ((%transitions :type map
@@ -348,9 +346,7 @@
          (start (start-state<- collection)))
     (make-instance 'dfsm
                    :transitions
-                   (prune-dfsm* (collapse-states* transition-table
-                                                  accepting)
-                                start accepting)
+                   (dfsm-normalize-transitions transition-table start accepting)
                    :start-state start
                    :accepting-states (filter (reduce (lambda (set map)
                                                        (union (range map)
@@ -368,9 +364,8 @@
          (transitions (filter (lambda (k v)
                                 (declare (ignore k))
                                 (not (empty? v)))
-                              (collapse-states* (prune-dfsm* transitions in
-                                                             outs)
-                                                outs))))
+                              (dfsm-normalize-transitions transitions in
+                                                          outs))))
     (make-instance 'dfsm
                    :transitions transitions
                    :start-state in
