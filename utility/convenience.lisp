@@ -9,4 +9,3 @@
      (declare (type list ,list-var)
               (ignorable ,list-var))
      ,@body))
-
