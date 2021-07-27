@@ -231,7 +231,10 @@
                                                        target)))
                                           transitions))
                                 :default nil)))
-           new-transition-table)))
+           (filter (lambda (k v)
+                     (declare (ignore k))
+                     v)
+                   new-transition-table))))
 
 (defun collapse-states* (transition-table accepting-states)
   (bind ((collapsed (collapse-states transition-table accepting-states)))
@@ -295,54 +298,6 @@
                       :initform (empty-set)
                       :reader accepting-states<-)))
 
-(defun dfsm<- (obj)
-  (bind (((:values in out transitions eps-transitions)
-          (nfsm<- obj))
-         ((:values transitions in outs)
-          (dfsm<-nfsm in transitions eps-transitions out))
-         (transitions (filter (lambda (k v)
-                                (declare (ignore k))
-                                (not (empty? v)))
-                              (collapse-states* (prune-dfsm* transitions in
-                                                             outs)
-                                                outs))))
-    (make-instance 'dfsm
-                   :transitions transitions
-                   :start-state in
-                   :accepting-states
-                   (filter (lambda (out)
-                             (@ (reduce (lambda (set map)
-                                          (union (range map)
-                                                 set))
-                                        (range transitions)
-                                        :initial-value (empty-set))
-                                out))
-                           outs))))
-
-;;;; The following implementations for the matching via deterministic finite
-;;;; state machine assume that there is a maximum length that the given DFSM can
-;;;; match. This forbids matching for anything containing the * modificator, but
-;;;; for matching reasonable words this is a perfectly reasonable
-;;;; expectation. The DFSM builders implemented here definitely should only
-;;;; produce DFSMs matching only constructs under a given length. If not, that
-;;;; should be considered a bug.
-(defmethod advance-dfsm ((dfsm dfsm)
-                         (state symbol)
-                         (word t))
-  (@ (@ (transitions<- dfsm)
-        state)
-     word))
-
-(defmethod advance-dfsm ((dfsm dfsm)
-                         (state symbol)
-                         (word list))
-  (if (and state word)
-      (advance-dfsm dfsm (@ (@ (transitions<- dfsm)
-                               state)
-                            (first word))
-                    (rest word))
-      state))
-
 (defun dfsm-remove-infix-at (transition-table state infix)
   (if infix
       (chop curr infix
@@ -393,7 +348,9 @@
          (start (start-state<- collection)))
     (make-instance 'dfsm
                    :transitions
-                   (prune-dfsm* transition-table start accepting)
+                   (prune-dfsm* (collapse-states* transition-table
+                                                  accepting)
+                                start accepting)
                    :start-state start
                    :accepting-states (filter (reduce (lambda (set map)
                                                        (union (range map)
@@ -402,6 +359,54 @@
                                                      :initial-value
                                                      (domain transition-table))
                                              accepting))))
+
+(defun dfsm<- (obj)
+  (bind (((:values in out transitions eps-transitions)
+          (nfsm<- obj))
+         ((:values transitions in outs)
+          (dfsm<-nfsm in transitions eps-transitions out))
+         (transitions (filter (lambda (k v)
+                                (declare (ignore k))
+                                (not (empty? v)))
+                              (collapse-states* (prune-dfsm* transitions in
+                                                             outs)
+                                                outs))))
+    (make-instance 'dfsm
+                   :transitions transitions
+                   :start-state in
+                   :accepting-states
+                   (filter (lambda (out)
+                             (@ (reduce (lambda (set map)
+                                          (union (range map)
+                                                 set))
+                                        (range transitions)
+                                        :initial-value (empty-set))
+                                out))
+                           outs))))
+
+;;;; The following implementations for the matching via deterministic finite
+;;;; state machine assume that there is a maximum length that the given DFSM can
+;;;; match. This forbids matching for anything containing the * modificator, but
+;;;; for matching reasonable words this is a perfectly reasonable
+;;;; expectation. The DFSM builders implemented here definitely should only
+;;;; produce DFSMs matching only constructs under a given length. If not, that
+;;;; should be considered a bug.
+(defmethod advance-dfsm ((dfsm dfsm)
+                         (state symbol)
+                         (word t))
+  (@ (@ (transitions<- dfsm)
+        state)
+     word))
+
+(defmethod advance-dfsm ((dfsm dfsm)
+                         (state symbol)
+                         (word list))
+  (if (and state word)
+      (advance-dfsm dfsm (@ (@ (transitions<- dfsm)
+                               state)
+                            (first word))
+                    (rest word))
+      state))
 
 (defmethod run-dfsm ((dfsm dfsm)
                      (word cons))
