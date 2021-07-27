@@ -343,57 +343,65 @@
                     (rest word))
       state))
 
+(defun dfsm-remove-infix-at (transition-table state infix)
+  (if infix
+      (chop curr infix
+        (bind ((transitions (@ transition-table state))
+               (next-state (@ transitions curr)))
+          (if next-state
+              (if infix
+                  (bind ((next-transitions (@ transition-table next-state))
+                         (reroute-state (gensym "state")))
+                    (dfsm-remove-infix-at
+                     (map ($ transition-table)
+                          (state (map ($ transitions)
+                                      (curr reroute-state)))
+                          (reroute-state next-transitions))
+                     reroute-state infix))
+                  (map ($ transition-table)
+                       (state (less transitions curr))))
+              transition-table)))
+      transition-table))
+
+(defun dfsm-remove-infix (transition-table infix)
+  (bind ((done (empty-set)))
+    (loop
+      :as state := (arb (set-difference (domain transition-table)
+                                        done))
+      :while state
+      :do
+         (setf transition-table
+               (dfsm-remove-infix-at transition-table state infix))
+         (setf done
+               (with done state))
+      :finally
+         (return transition-table))))
+
 (defmethod less ((collection dfsm)
                  (value1 list)
                  &optional value2)
   (declare (ignore value2))
-  (bind ((transition-table (transitions<- collection)))
-    (do* ((old-state (start-state<- collection)
-                     (@ (@ transition-table old-state)
-                        curr))
-          (curr (first value1)
-                (first word))
-          (word (rest value1)
-                (rest word))
-          (new-state old-state next-new-state)
-          (next-new-state (gensym "state")
-                          (when word (gensym "state")))
-          (new-transition-table (map ($ transition-table)
-                                     (old-state (less (@ transition-table
-                                                         old-state)
-                                                      curr))
-                                     (new-state (map ($ (@ transition-table
-                                                           old-state))
-                                                     (curr next-new-state)))
-                                     :default (empty-map nil))
-                                (map ($ new-transition-table)
-                                     (new-state (map ($ (@ transition-table
-                                                           old-state))
-                                                     (curr next-new-state)))
-                                     :default (empty-map nil))))
-         ((not next-new-state)
-          (bind ((accepting-states (filter (reduce (lambda (set map)
-                                                     (union (range map)
-                                                            set))
-                                                   (range new-transition-table)
-                                                   :initial-value
-                                                   (domain
-                                                    new-transition-table))
-                                           (accepting-states<- collection)))
-                 ((:values transitions start accepting)
-                  (dfsm-simplify-state-names new-transition-table
-                                             (start-state<- collection)
-                                             accepting-states)))
-            (make-instance 'dfsm
-                           :transitions
-                           (filter (lambda (k v)
-                                     (declare (ignore k))
-                                     (not (empty? v)))
-                                   (collapse-states*
-                                    (prune-dfsm* transitions start accepting)
-                                    accepting))
-                           :start-state start
-                           :accepting-states accepting))))))
+  (bind ((transition-table (dfsm-remove-infix (transitions<- collection)
+                                              value1))
+         (accepting (filter (reduce (lambda (set map)
+                                      (union (range map)
+                                             set))
+                                    (range transition-table)
+                                    :initial-value
+                                    (domain transition-table))
+                            (accepting-states<- collection)))
+         (start (start-state<- collection)))
+    (make-instance 'dfsm
+                   :transitions
+                   (prune-dfsm* transition-table start accepting)
+                   :start-state start
+                   :accepting-states (filter (reduce (lambda (set map)
+                                                       (union (range map)
+                                                              set))
+                                                     (range transition-table)
+                                                     :initial-value
+                                                     (domain transition-table))
+                                             accepting))))
 
 (defmethod run-dfsm ((dfsm dfsm)
                      (word cons))
