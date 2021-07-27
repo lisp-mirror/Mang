@@ -143,3 +143,10 @@
           collection
           :from-end from-end
           :initial-value (set initial-value)))
+
+(defmethod filter ((fn set)
+                   (collection map))
+  (filter (lambda (k v)
+            (declare (ignore v))
+            (@ fn k))
+          collection))
