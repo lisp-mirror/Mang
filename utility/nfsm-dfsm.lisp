@@ -136,6 +136,9 @@
                              #'union)))
         (nfsm<- (or car cdr)))))
 
+
+;;;; DFSM
+
 (defun dfsm-simplify-state-names (dfsm start-state accepting-states)
   (bind ((failure (gensym "failure"))
          (start (gensym "start"))
@@ -202,19 +205,30 @@
                                                                accepting-state))
                                                           (domain dfsm)))))))
 
-(defun collapse-states (transition-table)
-  (bind ((valuable-states (empty-map))
+(defun collapse-states (transition-table accepting-states)
+  (bind ((states (reduce (lambda (set map)
+                           (union (range map)
+                                  set))
+                         (range transition-table)
+                         :initial-value (domain transition-table)))
+         (valuable-states (empty-map))
          (redirections (empty-map))
          (new-transition-table (empty-map (empty-map nil))))
-    (do-map (state transitions transition-table)
-      (unless (@ valuable-states transitions)
-        (setf valuable-states
-              (with valuable-states transitions state)))
-      (bind ((new-state (@ valuable-states transitions)))
+    (do-set (state states)
+      (bind ((transitions (@ transition-table state))
+             (identity (cons transitions (@ accepting-states state)))
+             (found? (@ valuable-states identity))
+             (new-state (or found? state)))
+        (unless found?
+          (setf valuable-states
+                (with valuable-states
+                      identity state)))
         (setf redirections
-              (with redirections state new-state))
-        (setf new-transition-table
-              (with new-transition-table new-state transitions))))
+              (with redirections
+                    state new-state)
+              new-transition-table
+              (with new-transition-table
+                    new-state transitions))))
     (image (lambda (state transitions)
              (values state (map ($ (image (lambda (transition target)
                                             (values transition
@@ -224,11 +238,11 @@
                                 :default nil)))
            new-transition-table)))
 
-(defun collapse-states* (transition-table)
-  (bind ((collapsed (collapse-states transition-table)))
+(defun collapse-states* (transition-table accepting-states)
+  (bind ((collapsed (collapse-states transition-table accepting-states)))
     (if (equal? transition-table collapsed)
         collapsed
-        (collapse-states* collapsed))))
+        (collapse-states* collapsed accepting-states))))
 
 (defun prune-failure-dfsm (transitions failure)
   (image (lambda (state transitions)
@@ -242,6 +256,40 @@
                    (not (equal? state failure)))
                  transitions)))
 
+(defun prune-dfsm (transition-map start accepting)
+  (bind ((right-pruned (image (lambda (state transitions)
+                                (values state
+                                        (filter (lambda (transition target)
+                                                  (declare (ignore transition))
+                                                  (or (@ accepting target)
+                                                      (not
+                                                       (empty? (@ transition-map
+                                                                  target)))))
+                                                transitions)))
+                              transition-map))
+         (pruned-targets (reduce (lambda (set map)
+                                   (union (range map)
+                                          set))
+                                 (range right-pruned)
+                                 :initial-value (empty-set))))
+    (filter (lambda (k v)
+              (declare (ignore v))
+              (or (eq k start)
+                  (@ pruned-targets k)))
+            right-pruned)))
+
+(defun prune-dfsm* (transition-map start accepting)
+  (bind ((pruned (prune-dfsm transition-map start accepting)))
+    (if (equal? transition-map pruned)
+        pruned
+        (prune-dfsm* pruned start accepting))))
+
+(defun dfsm-normalize-transitions (transitions start-state accepting-states)
+  (bind (((:values transitions _ accepting failure)
+          (dfsm-simplify-state-names transitions start-state accepting-states)))
+    (collapse-states* (prune-failure-dfsm transitions failure)
+                      accepting)))
+
 (defclass dfsm ()
   ((%transitions :type map
                  :initarg :transitions
@@ -254,7 +302,7 @@
                       :initform (empty-set)
                       :reader accepting-states<-)))
 
-(defmethod dfsm<- (obj)
+(defun dfsm<- (obj)
   (bind (((:values in out transitions eps-transitions)
           (nfsm<- obj))
          ((:values transitions in outs failure)
@@ -263,7 +311,8 @@
                                 (declare (ignore k))
                                 (not (empty? v)))
                               (collapse-states* (prune-failure-dfsm transitions
-                                                                    failure)))))
+                                                                    failure)
+                                                outs))))
     (make-instance 'dfsm
                    :transitions transitions
                    :start-state in
@@ -300,6 +349,58 @@
                             (first word))
                     (rest word))
       state))
+
+(defmethod less ((collection dfsm)
+                 (value1 list)
+                 &optional value2)
+  (declare (ignore value2))
+  (bind ((transition-table (transitions<- collection)))
+    (do* ((old-state (start-state<- collection)
+                     (@ (@ transition-table old-state)
+                        curr))
+          (curr (first value1)
+                (first word))
+          (word (rest value1)
+                (rest word))
+          (new-state old-state next-new-state)
+          (next-new-state (gensym "state")
+                          (when word (gensym "state")))
+          (new-transition-table (map ($ transition-table)
+                                     (old-state (less (@ transition-table
+                                                         old-state)
+                                                      curr))
+                                     (new-state (map ($ (@ transition-table
+                                                           old-state))
+                                                     (curr next-new-state)))
+                                     :default (empty-map nil))
+                                (map ($ new-transition-table)
+                                     (new-state (map ($ (@ transition-table
+                                                           old-state))
+                                                     (curr next-new-state)))
+                                     :default (empty-map nil))))
+         ((not next-new-state)
+          (bind ((accepting-states (filter (reduce (lambda (set map)
+                                                     (union (range map)
+                                                            set))
+                                                   (range new-transition-table)
+                                                   :initial-value
+                                                   (domain
+                                                    new-transition-table))
+                                           (accepting-states<- collection)))
+                 ((:values transitions start accepting _)
+                  (dfsm-simplify-state-names new-transition-table
+                                             (start-state<- collection)
+                                             accepting-states)))
+            (make-instance 'dfsm
+                           :transitions
+                           (filter (lambda (k v)
+                                     (declare (ignore k))
+                                     (not (empty? v)))
+                                   (collapse-states*
+                                    (prune-dfsm* transitions start accepting)
+                                    accepting))
+                           :start-state start
+                           :accepting-states accepting))))))
 
 (defmethod run-dfsm ((dfsm dfsm)
                      (word cons))
