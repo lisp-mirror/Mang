@@ -396,6 +396,8 @@ EPSILON-TRANSITION-MAP"
       state))
 
 (defun run-dfsm (dfsm word)
-  (@ (accepting-states<- dfsm)
-     (advance-dfsm dfsm (start-state<- dfsm)
-                   word)))
+  (bind ((result-state (advance-dfsm dfsm (start-state<- dfsm)
+                                     word)))
+    (values (@ (accepting-states<- dfsm)
+               result-state)
+            result-state)))
