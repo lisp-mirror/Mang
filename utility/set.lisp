@@ -152,7 +152,8 @@
           collection))
 
 (defmacro map* (&rest args)
-  (bind ((resulting-args '()))
+  (bind ((resulting-args '())
+         (default nil))
     (do* ((args args (rest args))
           (default? nil (eq curr :default))
           (curr (first args)
@@ -162,18 +163,23 @@
                (consp curr))
           (bind (((mode &rest local-args)
                   curr))
-            (if (eq mode '&)
-                (bind (((key form)
-                        local-args))
-                  (setf resulting-args
-                        (bind ((g!map (gensym "map")))
-                          (list `($ (bind ((,g!map
-                                            (map ,@(nreverse resulting-args)))
-                                           (it (@ ,g!map ,key)))
-                                      (map ($ ,g!map)
-                                           (,key ,form))))))))
-                (push curr resulting-args)))
+            (bind ((g!map (gensym "map")))
+              (case mode
+                ('&
+                 (bind (((key form)
+                         local-args))
+                   (setf resulting-args
+                         `(,default
+                           :default
+                           ($ (bind ((,g!map
+                                      (map ,@(nreverse resulting-args)))
+                                     (it (@ ,g!map ,key)))
+                                (map ($ ,g!map)
+                                     (,key ,form))))))))
+                (t
+                 (push curr resulting-args)))))
           (push curr resulting-args))
       (when default?
-        (setf default? nil)))
+        (setf default? nil
+              default curr)))
     `(map ,@(nreverse resulting-args))))
