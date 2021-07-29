@@ -30,10 +30,11 @@ EPSILON-TRANSITION-MAP"
                                  input transition-map)))))
 
 (defun epsilon-transition-map-with (epsilon-transition-map source target)
-  (map ($ epsilon-transition-map)
-       (source (set ($ (@ epsilon-transition-map source))
-                    target))
-       :default (empty-set)))
+  (map* ($ epsilon-transition-map)
+        :default (empty-set)
+        (& source
+           (set ($ it)
+                target))))
 
 (defun transition-table-with (transition-map source input target)
   (with transition-map source
