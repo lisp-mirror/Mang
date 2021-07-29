@@ -395,47 +395,7 @@ EPSILON-TRANSITION-MAP"
                     (rest word))
       state))
 
-(defmethod run-dfsm ((dfsm dfsm)
-                     (word cons))
-  (bind ((transition-table (transitions<- dfsm)))
-    (labels ((_rec (state word)
-               (if word
-                   (_rec (@ (@ transition-table state)
-                            (first word))
-                         (rest word))
-                   (@ (accepting-states<- dfsm)
-                      state))))
-      (_rec (start-state<- dfsm)
-            word))))
-
-(defmethod run-dfsm ((dfsm dfsm)
-                     (word string))
-  (bind ((transition-table (transitions<- dfsm))
-         (accepting-states (accepting-states<- dfsm)))
-    (labels ((_rec (state word)
-               (bind ((transitions (@ transition-table state))
-                      (valid-transitions (filter (lambda (transition)
-                                                   (bind
-                                                       ((pos (search transition
-                                                                     word)))
-                                                     (and pos (= pos 0))))
-                                                 (domain transitions))))
-                 (cond
-                   ((and (string= word "")
-                         (@ accepting-states state))
-                    (set '()))
-                   ((empty? valid-transitions)
-                    (empty-set))
-                   (t
-                    (bind ((results (empty-set)))
-                      (do-set (transition valid-transitions results)
-                        (bind ((found
-                               (_rec (@ transitions transition)
-                                     (subseq word (length transition)))))
-                          (setf results
-                                (union results (image (lambda (found)
-                                                        (cons transition
-                                                              found))
-                                                      found)))))))))))
-      (_rec (start-state<- dfsm)
-            word))))
+(defun run-dfsm (dfsm word)
+  (@ (accepting-states<- dfsm)
+     (advance-dfsm dfsm (start-state<- dfsm)
+                   word)))
