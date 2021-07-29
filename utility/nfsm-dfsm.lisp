@@ -146,9 +146,10 @@ EPSILON-TRANSITION-MAP"
 
 ;;;; DFSM ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dfsm-simplify-state-names (transition-map start-state accepting-states)
-  (bind ((start (gensym "start"))
-         (accepting (map<-set (independently (gensym "accept"))
+  (bind ((accepting (map<-set (independently (gensym "accept"))
                               accepting-states))
+         (start (or (@ accepting start-state)
+                    (gensym "start")))
          (registry (map (start-state start)
                         ($ accepting)))
          (new-dfsm (empty-map (empty-map nil))))
@@ -366,11 +367,8 @@ EPSILON-TRANSITION-MAP"
                    :transitions transitions
                    :start-state in
                    :accepting-states
-                   (intersection (reduce (lambda (set map)
-                                           (union (range map)
-                                                  set))
-                                         (range transitions)
-                                         :initial-value (domain transitions))
+                   (intersection (with (states<-transition-table transitions)
+                                       in)
                                  outs))))
 
 ;;;; The following implementations for the matching via deterministic finite
