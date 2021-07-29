@@ -256,21 +256,20 @@
 (defun fst-applicable (transition-table state input word)
   (declare (type map transition-table)
            (type symbol state))
-  (if word
-      (reduce (if word
-                  (lambda (acc predicate targets)
-                    (union (if (funcall predicate input)
-                               targets
-                               (empty-set))
-                           acc))
-                  (lambda (acc predicate targets)
-                    (union (if (eq predicate #'true)
-                               (keep (complement #'third)
-                                     targets)
-                               (empty-set))
-                           acc)))
-              (@ transition-table state)
-              :initial-value (empty-set))))
+  (reduce (if word
+              (lambda (acc predicate targets)
+                (union (if (funcall predicate input)
+                           targets
+                           (empty-set))
+                       acc))
+              (lambda (acc predicate targets)
+                (union (if (eq predicate #'true)
+                           (keep (complement #'third)
+                                 targets)
+                           (empty-set))
+                       acc)))
+          (@ transition-table state)
+          :initial-value (empty-set)))
 
 (defun fst-solutions (fst state word)
   (declare (type fst fst)
