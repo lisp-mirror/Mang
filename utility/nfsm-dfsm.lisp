@@ -37,11 +37,14 @@ EPSILON-TRANSITION-MAP"
                 target))))
 
 (defun transition-table-with (transition-map source input target)
-  (with transition-map source
-        (let ((ts (@ transition-map source)))
-          (with ts input
-                (with (@ ts input)
-                      target)))))
+  (map* ($ transition-map)
+        :default (empty-map (empty-set))
+        (& (source transitions)
+           (map* ($ transitions)
+                 :default (empty-set)
+                 (& (input targets)
+                    (set ($ targets)
+                         target))))))
 
 ;;;; The functions for generating NFSMs all return multiple values. Defining an
 ;;;; own NFSM class seems like overkill (since NFSMs shouldn't be used anywhere
