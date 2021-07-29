@@ -292,8 +292,7 @@
                                   input))
                        transitions)
                 (reduce (lambda (acc transition)
-                          (union (fst-solutions fst
-                                                (second transition)
+                          (union (fst-solutions fst (second transition)
                                                 (if (third transition)
                                                     (rest word)
                                                     word))

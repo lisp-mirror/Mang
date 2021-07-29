@@ -3,12 +3,16 @@
 (defun fst-filter (predicate)
   (declare (type function predicate))
   (fst-elementary predicate '()
-                  :consume? t))
+                  :consume? t
+                  :in-state (gensym "fst-filter-in")
+                  :out-state (gensym "fst-filter-out")))
 
 (defun fst-emit (generator)
   (declare (type function generator))
   (fst-elementary #'true generator
-                  :consume? nil))
+                  :consume? nil
+                  :in-state (gensym "fst-emit-in")
+                  :out-state (gensym "fst-emit-out")))
 
 (defun fst-compare-phoneme (phoneme)
   (declare (type map phoneme))
@@ -163,7 +167,9 @@
           (bind (((_ phoneme)
                   glyph))
             (fst-sequence (fst-emit-phoneme phoneme)
-                          emitter)))))
+                          emitter
+                          :in-state (gensym "glyphs-emit-in")
+                          :out-state (gensym "glyphs-emit-out"))))))
 
 (defun parse-glyphs-comp-emit (glyphs)
   (declare (type map glyphs))
@@ -177,9 +183,14 @@
                  ((filter emitter)
                   filter/emitter))
             `(,(fst-sequence (fst-compare-phoneme phoneme)
-                             filter)
-               ,(fst-sequence (fst-emit-phoneme phoneme)
-                              emitter))))))
+                             filter
+                             :in-state (gensym "glyphs-comp-emit-emit-in")
+                             :out-state (gensym "glyphs-com-emit-emit-out"))
+              ,(fst-sequence (fst-emit-phoneme phoneme)
+                             emitter
+                             :in-state (gensym "glyphs-comp-emit-comp-in")
+                             :out-state
+                             (gensym "glyphs-comp-emit-comp-out")))))))
 
 (defun parse-register ()
   (// (parse-number)
@@ -337,14 +348,26 @@
              (cond
                ((and category (@ category-registers register))
                 (fst-sequence (fst-check-category category)
-                              (fst-compare-register register)))
+                              (fst-compare-register register)
+                              :in-state
+                              (gensym "parse-comp/write-emit-cc-cr-in")
+                              :out-state
+                              (gensym "parse-comp/write-emit-cc-cr-out")))
                ((and category (@ phoneme-registers register))
                 (fst-sequence (fst-compare-register register)
-                              (fst-write-category category register)))
+                              (fst-write-category category register)
+                              :in-state
+                              (gensym "parse-comp/write-emit-cr-wc-in")
+                              :out-state
+                              (gensym "parse-comp/write-emit-cr-wc-out")))
                (category
                 ([av]if (@ feature-registers register)
                     (fst-sequence (fst-compare-features it)
-                                  (fst-write-category category register))
+                                  (fst-write-category category register)
+                                  :in-state
+                                  (gensym "parse-comp/write-emit-cf-wc-in")
+                                  :out-state
+                                  (gensym "parse-comp-write-emit-cf-wc-out"))
                   (fst-write-category category register)))
                ((or (@ phoneme-registers register)
                     (@ category-registers register))
@@ -352,7 +375,11 @@
                (t
                 ([av]if (@ feature-registers register)
                     (fst-sequence (fst-compare-features it)
-                                  (fst-write-register register))
+                                  (fst-write-register register)
+                                  :in-state
+                                  (gensym "parse-comp/write-emit-cf-wr-in")
+                                  :out-state
+                                  (gensym "parse-comp/write-emit-cf-wr-out"))
                   (fst-write-register register)))))
             ,(fst-emit-register register)
             ,(less feature-registers register)
@@ -390,8 +417,15 @@
         (parse-pre/post binary-features valued-features privative-features
                         glyphs categories feature-registers phoneme-registers
                         category-registers)
-        (succeed `(,(fst-sequence comp/write comp/writes)
-                    ,(fst-sequence emit emits)
+        (succeed `(,(fst-sequence comp/write comp/writes
+                                  :in-state
+                                  (gensym "parse-pre/post-comp/write-in")
+                                  :out-state
+                                  (gensym "parse-pre/post-comp/write-out"))
+                    ,(fst-sequence emit emits
+                                   :in-state (gensym "parse-pre/post-emit-in")
+                                   :out-state
+                                   (gensym "parse-pre/post-emit-out"))
                     ,feature-registers ,phoneme-registers
                     ,category-registers)))))
 
@@ -428,14 +462,26 @@
                   (cond
                     ((and category register (@ category-registers register))
                      (fst-sequence (fst-check-category category)
-                                   (fst-compare-register register)))
+                                   (fst-compare-register register)
+                                   :in-state
+                                   (gensym "parse-comp/write-cc-cr-in")
+                                   :out-state
+                                   (gensym "parse-comp/write-cc-cr-out")))
                     ((and category register (@ phoneme-registers register))
                      (fst-sequence (fst-compare-register register)
-                                   (fst-write-category category register)))
+                                   (fst-write-category category register)
+                                   :in-state
+                                   (gensym "parse-comp/write-cr-wc-in")
+                                   :out-state
+                                   (gensym "parse-comp/write-cr-wc-out")))
                     ((and category register)
                      ([av]if (@ feature-registers register)
                          (fst-sequence (fst-compare-features it)
-                                       (fst-write-category category register))
+                                       (fst-write-category category register)
+                                       :in-state
+                                       (gensym "parse-comp/write-cf-wc-in")
+                                       :out-state
+                                       (gensym "parse-comp/write-cf-wc-out"))
                        (fst-write-category category register)))
                     (category
                      (fst-check-category category))
@@ -445,7 +491,11 @@
                     (register
                      ([av]if (@ feature-registers register)
                          (fst-sequence (fst-compare-features it)
-                                       (fst-write-register register))
+                                       (fst-write-register register)
+                                       :in-state
+                                       (gensym "parse-comp/write-cf-wr-in")
+                                       :out-state
+                                       (gensym "parse-comp/write-cf-wr-out"))
                        (fst-write-register register)))
                     (t (empty-fst))))
                  ,(if register
@@ -461,7 +511,10 @@
              (bind (((action feature-registers phoneme-registers
                              category-registers)
                      action))
-               `(,(fst-sequence action (fst-consume))
+               `(,(fst-sequence action (fst-consume)
+                                :in-state (gensym "parse-comp/write-result-in")
+                                :out-state
+                                (gensym "parse-comp/write-result-out"))
                   ,feature-registers ,phoneme-registers ,category-registers))))
       (<$> (parse-glyphs-comp glyphs)
            (lambda (action)
@@ -488,7 +541,9 @@
         (parse-before binary-features valued-features privative-features glyphs
                       categories feature-registers phoneme-registers
                       category-registers)
-        (succeed `(,(fst-sequence first rest)
+        (succeed `(,(fst-sequence first rest
+                                  :in-state (gensym "parse-before-in")
+                                  :out-state (gensym "parse-before-out"))
                     ,feature-registers ,phoneme-registers
                     ,category-registers)))))
 
@@ -560,7 +615,9 @@
         rest (parse-after binary-features valued-features privative-features
                           glyphs categories feature-registers phoneme-registers
                           category-registers)
-        (succeed (fst-sequence first rest)))
+        (succeed (fst-sequence first rest
+                               :in-state (gensym "parse-after-in")
+                               :out-state (gensym "parse-after-out"))))
       (empty-fst)))
 
 (defun parse-sound-change (binary-features valued-features privative-features
@@ -579,7 +636,8 @@
     (pre post)
     (<? (>>!
           _ (>> (parse-whitespace-no-newline)
-                (parse-constant "/"))
+                (parse-constant "/")
+                (parse-whitespace-no-newline))
           pre (parse-to (>> (parse-whitespace-no-newline)
                             (parse-constant "_")))
           _ (parse-whitespace-no-newline)
@@ -616,14 +674,16 @@
              (empty-fst? before-write/comp)
              (empty-fst? post-write/comp))
         (fail `(:empty-pre/before/post ,after-emit))
-        (succeed (fst-repeat (fst-preferred (fst-sequence* pre-write/comp
-                                                           before-write/comp
-                                                           post-write/comp
-                                                           pre-emit
-                                                           after-emit
-                                                           post-emit)
-                                            (fst-elementary #'true #'list
-                                                            :consume? t)))))))
+        (succeed (fst-repeat
+                  (fst-preferred
+                   (fst-sequence* pre-write/comp before-write/comp
+                                  post-write/comp pre-emit after-emit post-emit)
+                   (fst-elementary #'true #'list
+                                   :consume? t
+                                   :in-state
+                                   (gensym "parse-sound-change-in")
+                                   :out-state
+                                   (gensym "parse-sound-change-out"))))))))
 
 (defun parse-sound-change-section (binary-features valued-features
                                    privative-features glyphs categories)
