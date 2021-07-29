@@ -1,5 +1,15 @@
 (in-package #:mang)
 
+(defun car-or-x (x)
+  (if (consp x)
+      (car x)
+      x))
+
+(defun cdr-or-nil (x)
+  (if (consp x)
+      (cdr x)
+      nil))
+
 (defun ensure-list (obj)
   (if (listp obj)
       obj
