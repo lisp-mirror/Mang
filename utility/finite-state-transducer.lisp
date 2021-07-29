@@ -130,12 +130,9 @@
               :new-preferred (preferred<- fst2)))
 
 (defun fst-sequence* (&rest fsts)
-  (if fsts
-      (destructuring-bind (current &rest rest)
+  (reduce #'fst-sequence
           fsts
-        (fst-sequence current (apply #'fst-sequence*
-                                     rest)))
-      (empty-fst)))
+          :initial-value (empty-fst)))
 
 (defun fst-alternate (fst1 fst2 &key (in-state (gensym "alternate-in"))
                                   (out-state (gensym "alternate-out")))
@@ -161,6 +158,11 @@
                                 (empty-set)))
                    :default (empty-map (empty-set)))
               :new-preferred (preferred<- fst2)))
+
+(defun fst-alternate* (&rest fsts)
+  (reduce #'fst-alternate
+          fsts
+          :initial-value (empty-fst)))
 
 (defun fst-preferred (preferred fallback &key (in-state (gensym "preferred-in"))
                                            (out-state (gensym "preferred-out")))
@@ -224,31 +226,32 @@
                          (out-state (gensym "repeat-out")))
   (bind ((repeat-before (gensym "repeat-before"))
          (repeat-after (gensym "repeat-after")))
-    (modify-fst fst
-                :start-state in-state
-                :accepting-states (set out-state)
-                :new-transitions
-                (map (in-state (map (#'true (set (list (constantly nil)
-                                                       repeat-before nil)))
-                                    :default (empty-set)))
-                     (repeat-before (map (#'true (set (list (constantly nil)
-                                                            (start-state<- fst)
-                                                            nil)))
+    (fst-maybe
+     (modify-fst fst
+                 :start-state in-state
+                 :accepting-states (set out-state)
+                 :new-transitions
+                 (map (in-state (map (#'true (set (list (constantly nil)
+                                                        repeat-before nil)))
+                                     :default (empty-set)))
+                      (repeat-before (map (#'true (set (list (constantly nil)
+                                                             (start-state<- fst)
+                                                             nil)))
+                                          :default (empty-set)))
+                      ($ (map<-set (constantly (map (#'true
+                                                     (set (list (constantly nil)
+                                                                repeat-after
+                                                                nil)))
+                                                    :default (empty-set)))
+                                   (accepting-states<- fst)
+                                   (empty-set)))
+                      (repeat-after (map (#'true (set (list (constantly nil)
+                                                            repeat-before
+                                                            nil)
+                                                      (list (constantly nil)
+                                                            out-state nil)))
                                          :default (empty-set)))
-                     ($ (map<-set (constantly (map (#'true
-                                                    (set (list (constantly nil)
-                                                               repeat-after
-                                                               nil)))
-                                                   :default (empty-set)))
-                                  (accepting-states<- fst)
-                                  (empty-set)))
-                     (repeat-after (map (#'true (set (list (constantly nil)
-                                                           repeat-before
-                                                           nil)
-                                                     (list (constantly nil)
-                                                           out-state nil)))
-                                        :default (empty-set)))
-                     :default (empty-map (empty-set))))))
+                      :default (empty-map (empty-set)))))))
 
 (defun fst-preferred-transitions (fst state glyph not-end?)
   (declare (type fst fst)
