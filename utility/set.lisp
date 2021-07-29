@@ -86,12 +86,11 @@
 (defmethod map<-set ((f function)
                      (set set)
                      &optional default)
-  (map ($ (convert 'map
-                   set
-                   :from-type 'set
-                   :key-fn #'identity
-                   :value-fn f))
-       :default default))
+  (with-default
+      (gmap :map (lambda (value)
+                   (values value (funcall f value)))
+            (:set set))
+    default))
 
 (defmethod cross-product ((f function)
                           (set1 set)
