@@ -140,11 +140,10 @@
 ;;;; DFSM ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dfsm-simplify-state-names (transition-map start-state accepting-states)
   (bind ((start (gensym "start"))
-         (accepting (convert 'map
-                             (image (lambda (accepting-state)
-                                      (cons accepting-state
-                                            (gensym "accept")))
-                                    accepting-states)))
+         (accepting (map<-set (lambda (accepting-state)
+                                (declare (ignore accepting-state))
+                                (gensym "accept"))
+                              accepting-states))
          (registry (map (start-state start)
                         ($ accepting)))
          (new-dfsm (empty-map (empty-map nil))))
