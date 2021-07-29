@@ -173,8 +173,7 @@
 
 (defun parse-glyphs-comp-emit (glyphs)
   (declare (type map glyphs))
-  (some (>> (parse-whitespace-no-newline)
-            (parse-glyph glyphs))
+  (some (parse-glyph glyphs)
         `(,(empty-fst)
            ,(empty-fst))
         (lambda (glyph filter/emitter)
