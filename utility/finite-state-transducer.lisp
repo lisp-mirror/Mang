@@ -159,10 +159,10 @@
                    :default (empty-map (empty-set)))
               :new-preferred (preferred<- fst2)))
 
-(defun fst-alternate* (&rest fsts)
+(defun fst-alternate* (fst &rest fsts)
   (reduce #'fst-alternate
           fsts
-          :initial-value (empty-fst)))
+          :initial-value fst))
 
 (defun fst-preferred (preferred fallback &key (in-state (gensym "preferred-in"))
                                            (out-state (gensym "preferred-out")))
