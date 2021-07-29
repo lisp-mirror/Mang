@@ -6,37 +6,40 @@
 ;;;;; file, anything relating to NFSMs should be a method definition for the
 ;;;;; generic function NFSM<-.
 
-(defun transition-closure (states transitions)
+(defun transition-closure (states epsilon-transition-map)
+  "Compute the epsilon closure going out from STATES accoring to
+EPSILON-TRANSITION-MAP"
   (labels ((_rec (states acc)
              (if (empty? states)
                  acc
                  (bind ((state (arb states))
-                        (next (set-difference (@ transitions state)
+                        (next (set-difference (@ epsilon-transition-map state)
                                               acc)))
                    (_rec (union (less states state)
                                 next)
                          (with acc state))))))
     (_rec states (empty-set))))
 
-(defun reachable-states (states transition transitions)
+(defun reachable-states (states input transition-map)
   (if (empty? states)
       (empty-set)
       (bind ((state (arb states)))
-        (union (@ (@ transitions state)
-                  transition)
+        (union (@ (@ transition-map state)
+                  input)
                (reachable-states (less states state)
-                                 transition transitions)))))
+                                 input transition-map)))))
 
-(defun eps-with (eps-transitions source target)
-  (with eps-transitions source
-        (with (@ eps-transitions source)
-              target)))
+(defun epsilon-transition-map-with (epsilon-transition-map source target)
+  (map ($ epsilon-transition-map)
+       (source (set ($ (@ epsilon-transition-map source))
+                    target))
+       :default (empty-set)))
 
-(defun transitions-with (transitions source transition target)
-  (with transitions source
-        (let ((ts (@ transitions source)))
-          (with ts transition
-                (with (@ ts transition)
+(defun transitions-with (transition-map source input target)
+  (with transition-map source
+        (let ((ts (@ transition-map source)))
+          (with ts input
+                (with (@ ts input)
                       target)))))
 
 ;;;; The functions for generating NFSMs all return multiple values. Defining an
@@ -75,11 +78,11 @@
                          (lambda (x y)
                            (map-union x y #'union)))
               eps-transitions
-              (eps-with (eps-with (map-union eps-transitions
-                                             inner-eps-transitions
-                                             #'union)
-                                  in inner-in)
-                        inner-out out))))
+              (epsilon-transition-map-with
+               (epsilon-transition-map-with
+                (map-union eps-transitions inner-eps-transitions #'union)
+                in inner-in)
+               inner-out out))))
     (values in out transitions eps-transitions)))
 
 (defmethod nfsm<- ((nothing null))
