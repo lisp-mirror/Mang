@@ -35,7 +35,7 @@ EPSILON-TRANSITION-MAP"
                     target))
        :default (empty-set)))
 
-(defun transitions-with (transition-map source input target)
+(defun transition-table-with (transition-map source input target)
   (with transition-map source
         (let ((ts (@ transition-map source)))
           (with ts input
