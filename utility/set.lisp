@@ -173,9 +173,12 @@
                            :default
                            ($ (bind ((,g!map
                                       (map ,@(nreverse resulting-args)))
-                                     (it (@ ,g!map ,key)))
+                                     (,(or (first (cdr-or-nil key))
+                                           'it)
+                                      (@ ,g!map ,(car-or-x key))))
                                 (map ($ ,g!map)
-                                     (,key ,form))))))))
+                                     (,(car-or-x key)
+                                      ,form))))))))
                 (t
                  (push curr resulting-args)))))
           (push curr resulting-args))
