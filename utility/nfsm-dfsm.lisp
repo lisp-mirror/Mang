@@ -147,9 +147,7 @@ EPSILON-TRANSITION-MAP"
 ;;;; DFSM ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun dfsm-simplify-state-names (transition-map start-state accepting-states)
   (bind ((start (gensym "start"))
-         (accepting (map<-set (lambda (accepting-state)
-                                (declare (ignore accepting-state))
-                                (gensym "accept"))
+         (accepting (map<-set (independently (gensym "accept"))
                               accepting-states))
          (registry (map (start-state start)
                         ($ accepting)))
@@ -182,15 +180,12 @@ EPSILON-TRANSITION-MAP"
                  (if (@ current done)
                      (_rec (less todo current)
                            done acc)
-                     (let ((new (convert 'map
-                                         (image (lambda (input)
-                                                  (cons input
-                                                        (transition-closure
-                                                         (reachable-states
-                                                          current input
-                                                          transition-map)
-                                                         epsilon-transitions)))
-                                                inputs))))
+                     (let ((new (map<-set (lambda (input)
+                                            (transition-closure
+                                             (reachable-states current input
+                                                               transition-map)
+                                             epsilon-transitions))
+                                          inputs)))
                        (_rec (less (union todo (set-difference (range new)
                                                                done))
                                    current)
@@ -201,17 +196,20 @@ EPSILON-TRANSITION-MAP"
              (dfsm (_rec (set start-state)
                          (empty-set)
                          (empty-map (empty-map (empty-set))))))
-        (dfsm-simplify-state-names dfsm start-state (keep (lambda (state)
-                                                            (@ state
-                                                               accepting-state))
-                                                          (domain dfsm)))))))
+        (dfsm-simplify-state-names dfsm start-state
+                                   (keep (lambda (state)
+                                           (@ state accepting-state))
+                                         (domain dfsm)))))))
+
+(defun states<-transition-table (transition-table)
+  (reduce (lambda (set map)
+            (union (range map)
+                   set))
+          (range transition-table)
+          :initial-value (domain transition-table)))
 
 (defun collapse-states (transition-table accepting-states)
-  (bind ((states (reduce (lambda (set map)
-                           (union (range map)
-                                  set))
-                         (range transition-table)
-                         :initial-value (domain transition-table)))
+  (bind ((states (states<-transition-table transition-table))
          (valuable-states (empty-map))
          (redirections (empty-map))
          (new-transition-table (empty-map (empty-map nil))))
@@ -231,12 +229,12 @@ EPSILON-TRANSITION-MAP"
               (with new-transition-table
                     new-state transitions))))
     (image (lambda (state transitions)
-             (values state (map ($ (image (lambda (transition target)
-                                            (values transition
-                                                    (@ redirections
-                                                       target)))
-                                          transitions))
-                                :default nil)))
+             (values state
+                     (map ($ (image (lambda (transition target)
+                                      (values transition
+                                              (@ redirections target)))
+                                    transitions))
+                          :default nil)))
            (filter (lambda (k v)
                      (declare (ignore k))
                      v)
@@ -342,25 +340,17 @@ EPSILON-TRANSITION-MAP"
   (declare (ignore value2))
   (bind ((transition-table (dfsm-remove-infix (transitions<- collection)
                                               value1))
-         (accepting (filter (reduce (lambda (set map)
-                                      (union (range map)
-                                             set))
-                                    (range transition-table)
-                                    :initial-value
-                                    (domain transition-table))
-                            (accepting-states<- collection)))
-         (start (start-state<- collection)))
+         (accepting (intersection (states<-transition-table transition-table)
+                                  (accepting-states<- collection)))
+         (start (start-state<- collection))
+         (transition-table (dfsm-normalize-transitions transition-table
+                                                       start accepting)))
     (make-instance 'dfsm
-                   :transitions
-                   (dfsm-normalize-transitions transition-table start accepting)
+                   :transitions transition-table
                    :start-state start
-                   :accepting-states (filter (reduce (lambda (set map)
-                                                       (union (range map)
-                                                              set))
-                                                     (range transition-table)
-                                                     :initial-value
-                                                     (domain transition-table))
-                                             accepting))))
+                   :accepting-states
+                   (intersection (states<-transition-table transition-table)
+                                 accepting))))
 
 (defun dfsm<- (obj)
   (bind (((:values in out transitions eps-transitions)
@@ -376,14 +366,12 @@ EPSILON-TRANSITION-MAP"
                    :transitions transitions
                    :start-state in
                    :accepting-states
-                   (filter (lambda (out)
-                             (@ (reduce (lambda (set map)
-                                          (union (range map)
-                                                 set))
-                                        (range transitions)
-                                        :initial-value (empty-set))
-                                out))
-                           outs))))
+                   (intersection (reduce (lambda (set map)
+                                           (union (range map)
+                                                  set))
+                                         (range transitions)
+                                         :initial-value (domain transitions))
+                                 outs))))
 
 ;;;; The following implementations for the matching via deterministic finite
 ;;;; state machine assume that there is a maximum length that the given DFSM can
