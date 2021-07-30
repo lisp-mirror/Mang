@@ -302,6 +302,9 @@ EPSILON-TRANSITION-MAP"
                       :reader accepting-states<-)))
 
 (defun dfsm-remove-infix-at (transition-table state infix)
+  ;; BUG:
+  ;;  If a state on the path of the infix is accepting, the newly created
+  ;;  equivalent state is not going to be accepting. They should be, though.
   (if infix
       (chop curr infix
         (bind ((transitions (@ transition-table state))
@@ -401,3 +404,22 @@ EPSILON-TRANSITION-MAP"
     (values (@ (accepting-states<- dfsm)
                result-state)
             result-state)))
+
+
+;;;; writing dot files for debugging purposes
+(defmethod write-dot (stream (graph dfsm))
+  (format stream "digraph {~%")
+  (bind ((accepting (accepting-states<- graph))
+         (start (start-state<- graph)))
+    (format stream (if (@ accepting start)
+                       "  ~A [ shape=Mdiamond ]~%"
+                       "  ~A [ shape=invtriangle ]~%")
+            (start-state<- graph))
+    (format stream "~{  ~A [ shape=diamond ]~%~}"
+            (convert 'list
+                     (less accepting start))))
+  (do-map (source transitions (transitions<- graph))
+    (do-map (transition target transitions)
+      (format stream "  ~A -> ~A [ label = \"~A\" ]~%"
+              source target transition)))
+  (format stream "}~%"))
