@@ -407,19 +407,23 @@ EPSILON-TRANSITION-MAP"
 
 
 ;;;; writing dot files for debugging purposes
-(defmethod write-dot (stream (graph dfsm))
+(defmethod write-dot (stream (graph dfsm)
+                      &key (node-label-key #'identity)
+                        (edge-label-key #'identity))
   (format stream "digraph {~%")
   (bind ((accepting (accepting-states<- graph))
          (start (start-state<- graph)))
     (format stream (if (@ accepting start)
                        "  ~A [ shape=Mdiamond ]~%"
                        "  ~A [ shape=invtriangle ]~%")
-            (start-state<- graph))
+            (funcall node-label-key (start-state<- graph)))
     (format stream "~{  ~A [ shape=diamond ]~%~}"
             (convert 'list
-                     (less accepting start))))
+                     (image node-label-key (less accepting start)))))
   (do-map (source transitions (transitions<- graph))
     (do-map (transition target transitions)
       (format stream "  ~A -> ~A [ label = \"~A\" ]~%"
-              source target transition)))
+              (funcall node-label-key source)
+              (funcall node-label-key target)
+              (funcall edge-label-key transition))))
   (format stream "}~%"))
