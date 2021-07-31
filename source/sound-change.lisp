@@ -313,7 +313,7 @@
                               glyphs categories feature-registers
                               phoneme-registers category-registers)
   (// (>>!
-        (_ category)
+        (category? category)
         (// (parse-category categories)
             (<$ (parse-constant ".")
                 (list nil (convert 'list (range glyphs)))))
@@ -340,14 +340,14 @@
              (fst-compare-register comp-feature-registers)
              (fst-write-features write-feature-registers)
              (cond
-               ((and category (@ category-registers register))
+               ((and category? (@ category-registers register))
                 (fst-sequence (fst-check-category category)
                               (fst-compare-register register)
                               :in-state
                               (gensym "parse-comp/write-emit-cc-cr-in")
                               :out-state
                               (gensym "parse-comp/write-emit-cc-cr-out")))
-               ((and category (@ phoneme-registers register))
+               ((and category? (@ phoneme-registers register))
                 (fst-sequence (fst-compare-register register)
                               (fst-write-category category register)
                               :in-state
@@ -431,8 +431,10 @@
                  category-registers)
            (type map valued-features glyphs categories feature-registers))
   (// (<$> (>>!
-             category (// (parse-category categories)
-                          (parse-constant "."))
+             (category? category)
+             (// (parse-category categories)
+                 (<$ (parse-constant ".")
+                     (list nil nil)))
              _ (parse-whitespace-no-newline)
              (constant-features present-features absent-features
                                 comp-feature-registers write-feature-registers
@@ -455,21 +457,21 @@
                   (fst-compare-register comp-feature-registers)
                   (fst-write-features write-feature-registers)
                   (cond
-                    ((and category register (@ category-registers register))
+                    ((and category? register (@ category-registers register))
                      (fst-sequence (fst-check-category category)
                                    (fst-compare-register register)
                                    :in-state
                                    (gensym "parse-comp/write-cc-cr-in")
                                    :out-state
                                    (gensym "parse-comp/write-cc-cr-out")))
-                    ((and category register (@ phoneme-registers register))
+                    ((and category? register (@ phoneme-registers register))
                      (fst-sequence (fst-compare-register register)
                                    (fst-write-category category register)
                                    :in-state
                                    (gensym "parse-comp/write-cr-wc-in")
                                    :out-state
                                    (gensym "parse-comp/write-cr-wc-out")))
-                    ((and category register)
+                    ((and category? register)
                      ([av]if (@ feature-registers register)
                          (fst-sequence (fst-compare-features it)
                                        (fst-write-category category register)
@@ -478,7 +480,7 @@
                                        :out-state
                                        (gensym "parse-comp/write-cf-wc-out"))
                        (fst-write-category category register)))
-                    (category
+                    (category?
                      (fst-check-category category))
                     ((and register (or (@ phoneme-registers register)
                                        (@ category-registers register)))
@@ -493,7 +495,7 @@
                                        (gensym "parse-comp/write-cf-wr-out"))
                        (fst-write-register register)))
                     (t (empty-fst)))
-                  (fst-consume))
+                  #+nil(fst-consume))
                  ,(if register
                       (less feature-registers register)
                       feature-registers)
