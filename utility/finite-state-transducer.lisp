@@ -346,9 +346,7 @@
   (do-map (source transitions (transitions<- graph))
     (do-map (condition targets transitions)
       (do-set (target targets)
-        (format stream (if (third target)
-                           "  ~A -> ~A [ label=\"~A~%~A\" ]~%"
-                           "  ~A -> ~A [ label=\"~A~%~A\", style=dashed ]~%")
+        (format stream "  ~A -> ~A [ label=\"~A~%~A\", style=~A ]~%"
                 (sanitize-for-dot (funcall node-label-key source))
                 (sanitize-for-dot (funcall node-label-key (second target)))
                 (sanitize-for-label (cond
@@ -363,18 +361,19 @@
                                         ((eq out #'empty)
                                          "—")
                                         (t
-                                         (funcall edge-label-key out)))))))))
+                                         (funcall edge-label-key out)))))
+                (if (third target)
+                    "solid"
+                    "dashed")))))
   (do-map (source transitions (preferred<- graph))
     (do-map (condition targets transitions)
       (do-set (target targets)
-        (format stream (if (third target)
-                           "  ~A -> ~A [ label=\"~A~%~A\", color=blue ]~%"
-                           "  ~A -> ~A [ label=\"~A~%~A\", style=dashed, color=blue ]~%")
+        (format stream "  ~A -> ~A [ label=\"~A~%~A\", style=~A, color=blue ]~%"
                 (sanitize-for-dot (funcall node-label-key source))
                 (sanitize-for-dot (funcall node-label-key (second target)))
                 (sanitize-for-label (cond
                                       ((eq condition #'true)
-                                       ".")
+                                       "—")
                                       (t
                                        (funcall edge-label-key condition))))
                 (sanitize-for-label (bind ((out (first target)))
@@ -382,7 +381,10 @@
                                         ((eq out #'list)
                                          "id")
                                         ((eq out #'empty)
-                                         ".")
+                                         "—")
                                         (t
-                                         (funcall edge-label-key out)))))))))
+                                         (funcall edge-label-key out)))))
+                (if (third target)
+                    "solid"
+                    "dashed")))))
   (format stream "}~%"))
