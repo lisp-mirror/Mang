@@ -311,6 +311,121 @@
   (fst-solutions fst (start-state<- fst)
                  word))
 
+;;;; Simplify
+(defun fst-tt-right-hand-states (transition-table)
+  (reduce (lambda (acc state transitions)
+            (declare (ignore state))
+            (union (expand (lambda (condition targets)
+                             (declare (ignore condition))
+                             (image #'second
+                                    targets))
+                           transitions)
+                   acc))
+          transition-table
+          :initial-value (empty-set)))
+
+(defun fst-right-hand-states (fst)
+  (union (fst-tt-right-hand-states (transitions<- fst))
+         (fst-tt-right-hand-states (preferred<- fst))))
+
+(defun fst-states (fst)
+  (union (union (domain (transitions<- fst))
+                (domain (preferred<- fst)))
+         (fst-right-hand-states fst)))
+
+(defun fst-clean (fst)
+  (bind ((start (start-state<- fst))
+         (r-states (with (fst-right-hand-states fst)
+                         start))
+         (new-transition-table (keep r-states (transitions<- fst)))
+         (new-preferred (keep r-states (preferred<- fst)))
+         (new-fst (modify-fst fst
+                              :transitions new-transition-table
+                              :preferred new-preferred)))
+    (modify-fst new-fst
+                :accepting-states
+                (intersection (with (fst-right-hand-states new-fst)
+                                    start)
+                              (accepting-states<- new-fst)))))
+
+(defun fst-clean* (fst)
+  (bind ((cleaned (fst-clean fst)))
+    (if (equal? (union (domain (transitions<- fst))
+                       (domain (preferred<- fst)))
+                (union (domain (transitions<- cleaned))
+                       (domain (preferred<- cleaned))))
+        cleaned
+        (fst-clean* cleaned))))
+
+(defun fst-tt-epsilon-reachable-states (transition-table state)
+  (image #'second
+         (keep (lambda (target)
+                 (bind (((out _ consume?)
+                         target))
+                   (and (not consume?)
+                        (eq out #'empty))))
+               (@ (@ transition-table state)
+                  #'true))))
+
+(defun fst-tt-epsilon-closure (transition-table state)
+  (with (expand (lambda (state)
+                  (fst-tt-epsilon-closure transition-table state))
+                (fst-tt-epsilon-reachable-states transition-table state))
+        state))
+
+(defun fst-tt-transitions-from (transition-table states)
+  (reduce (lambda (transitions state)
+            (deep-union
+             (image (lambda (predicate targets)
+                      (values predicate
+                              (keep (lambda (target)
+                                      (or (not (@ states (second target)))
+                                          (third target)))
+                                    targets)))
+                    (@ transition-table state))
+             transitions))
+          states
+          :initial-value (empty-map (empty-map (empty-set)))))
+
+(defun fst-epsilon-closure-transitions (fst state)
+  (bind ((states (fst-tt-epsilon-closure (transitions<- fst)
+                                         state)))
+    (values (fst-tt-transitions-from (transitions<- fst)
+                                     states)
+            (fst-tt-transitions-from (preferred<- fst)
+                                     states))))
+
+(defun fst-simplify-state (fst state)
+  (bind ((new-state-includes (fst-epsilon-closure fst state))
+         ((:values transitions preferred)
+          (fst-epsilon-closure-transitions fst state)))
+    (fst-clean* (modify-fst fst
+                            :transitions
+                            (map ($ (transitions<- fst))
+                                 (state transitions)
+                                 :default (empty-map (empty-set)))
+                            :preferred
+                            (map ($ (preferred<- fst))
+                                 (state preferred)
+                                 :default (empty-map (empty-set)))
+                            :new-accepting-states
+                            (if (empty? (intersection (accepting-states<- fst)
+                                                      new-state-includes))
+                                (empty-set)
+                                (set state))))))
+
+(defun fst-simplify (fst)
+  (bind ((done (empty-set))
+         (new-fst fst))
+    (loop
+      :as state := (arb (set-difference (fst-states new-fst)
+                                        done))
+      :while state
+      :do
+         (setf done (with done state)
+               new-fst (fst-simplify-state new-fst state))
+      :finally (return new-fst))))
+
 ;;;; writing dot files for debugging purposes
 (defun sanitize-for-dot (obj)
   (reduce (lambda (string char)
@@ -340,9 +455,14 @@
                       &key (node-label-key #'identity)
                         (edge-label-key #'identity))
   (format stream "digraph {~%")
-  (format stream "  ~A [ shape=invtriangle ]~%"
-          (sanitize-for-dot (funcall node-label-key (start-state<- graph))))
-  (do-set (accepting (accepting-states<- graph))
+  (format stream "  ~A [ shape=~A ]~%"
+          (sanitize-for-dot (funcall node-label-key (start-state<- graph)))
+          (if (@ (accepting-states<- graph)
+                 (start-state<- graph))
+              "Mdiamond"
+              "invtriangle"))
+  (do-set (accepting (less (accepting-states<- graph)
+                           (start-state<- graph)))
     (format stream "  ~A [ shape=diamond ]~%"
             (sanitize-for-dot (funcall node-label-key accepting))))
   (do-map (source transitions (transitions<- graph))
