@@ -666,16 +666,14 @@
              (empty-fst? before-write/comp)
              (empty-fst? post-write/comp))
         (fail `(:empty-pre/before/post ,after-emit))
-        (succeed (fst-repeat
-                  (fst-preferred
-                   (fst-sequence* pre-write/comp before-write/comp
-                                  post-write/comp pre-emit after-emit post-emit)
-                   (fst-elementary #'true #'list
-                                   :consume? t
-                                   :in-state
-                                   (gensym "parse-sound-change-in")
-                                   :out-state
-                                   (gensym "parse-sound-change-out"))))))))
+        (succeed
+         (fst-simplify
+          (fst-repeat (fst-preferred (fst-sequence* pre-write/comp
+                                                    before-write/comp
+                                                    post-write/comp pre-emit
+                                                    after-emit post-emit)
+                                     (fst-elementary #'true #'list
+                                                     :consume? t))))))))
 
 (defun parse-sound-change-section (binary-features valued-features
                                    privative-features glyphs categories)
