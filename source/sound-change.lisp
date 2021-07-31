@@ -316,7 +316,10 @@
         (category? category)
         (// (parse-category categories)
             (<$ (parse-constant ".")
-                (list nil (convert 'list (range glyphs)))))
+                (list nil (convert 'list (range glyphs))))
+            (<$ (parse-constant "#")
+                (list nil (convert 'list (list (map (:begin t))
+                                               (map (:end t)))))))
         _ (parse-whitespace-no-newline)
         (constant-features present-features absent-features
                            comp-feature-registers write-feature-registers
