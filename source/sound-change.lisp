@@ -695,3 +695,9 @@
 (defun apply-sound-changes (word &rest sound-changes)
   (reduce-nd #'apply-sound-change
              sound-changes word))
+
+(defun apply-sound-changes* (words &rest sound-changes)
+  (image (lambda (word)
+           (apply #'apply-sound-changes
+                  word sound-changes))
+         words))
