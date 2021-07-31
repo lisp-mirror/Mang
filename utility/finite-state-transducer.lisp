@@ -308,3 +308,63 @@
 (defun run-fst (fst word)
   (fst-solutions fst (start-state<- fst)
                  word))
+
+;;;; writing dot files for debugging purposes
+(defun sanitize-for-dot (obj)
+  (reduce (lambda (string char)
+            (cond
+              ((has-property char "Alphabetic")
+               (vector-push-extend char string))
+              ((has-property char "Number")
+               (vector-push-extend char string))
+              (t
+               (vector-push-extend #\_ string)))
+            string)
+          (format nil "~A"
+                  obj)
+          :initial-value (make-array 0
+                                     :fill-pointer 0
+                                     :adjustable t
+                                     :initial-contents ""
+                                     :element-type (array-element-type ""))))
+
+(defmethod write-dot (stream (graph fst)
+                      &key (node-label-key #'identity)
+                        (edge-label-key #'identity))
+  (format stream "digraph {~%")
+  (format stream "  ~A [ shape=invtriangle ]~%"
+          (sanitize-for-dot (funcall node-label-key (start-state<- graph))))
+  (do-set (accepting (accepting-states<- graph))
+    (format stream "  ~A [ shape=diamond ]~%"
+            (sanitize-for-dot (funcall node-label-key accepting))))
+  (do-map (source transitions (transitions<- graph))
+    (do-map (condition targets transitions)
+      (do-set (target targets)
+        (if (eq condition #'true)
+            (format stream (if (third target)
+                               "  ~A -> ~A~%"
+                               "  ~A -> ~A [ style=dashed ]~%")
+                    (sanitize-for-dot (funcall node-label-key source))
+                    (sanitize-for-dot (funcall node-label-key (second target))))
+            (format stream (if (third target)
+                               "  ~A -> ~A [ label=~A ]~%"
+                               "  ~A -> ~A [ label=~A, style=dashed ]~%")
+                    (sanitize-for-dot (funcall node-label-key source))
+                    (sanitize-for-dot (funcall node-label-key (second target)))
+                    (sanitize-for-dot (funcall edge-label-key condition)))))))
+  (do-map (source transitions (preferred<- graph))
+    (do-map (condition targets transitions)
+      (do-set (target targets)
+        (if (eq condition #'true)
+            (format stream (if (third target)
+                               "  ~A -> ~A~% [ color=blue ]"
+                               "  ~A -> ~A [ style=dashed, color=blue ]~%")
+                    (sanitize-for-dot (funcall node-label-key source))
+                    (sanitize-for-dot (funcall node-label-key (second target))))
+            (format stream (if (third target)
+                               "  ~A -> ~A [ label=~A, color=blue ]~%"
+                               "  ~A -> ~A [ label=~A, style=dashed, color=blue ]~%")
+                    (sanitize-for-dot (funcall node-label-key source))
+                    (sanitize-for-dot (funcall node-label-key (second target)))
+                    (sanitize-for-dot (funcall edge-label-key condition)))))))
+  (format stream "}~%"))
