@@ -2,7 +2,7 @@
 
 (defun fst-filter (predicate)
   (declare (type function predicate))
-  (fst-elementary predicate '()
+  (fst-elementary predicate #'empty
                   :consume? t
                   :in-state (gensym "fst-filter-in")
                   :out-state (gensym "fst-filter-out")))

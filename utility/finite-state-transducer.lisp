@@ -97,7 +97,7 @@
          :accepting-states (set out-state))))
 
 (defun fst-consume ()
-  (fst-elementary #'true '()
+  (fst-elementary #'true #'empty
                   :consume? t))
 
 (defun fst-sequence (fst1 fst2 &key (in-state (gensym "sequence-in"))
@@ -109,20 +109,20 @@
               (map ($ (transitions<- fst2))
                    ($
                     (map<-set (constantly (map (#'true
-                                                (set (list (constantly nil)
+                                                (set (list #'empty
                                                            (start-state<- fst2)
                                                            nil)))
                                                :default (empty-set)))
                               (accepting-states<- fst1)
                               (empty-set)))
                    ($ (map<-set (constantly (map (#'true
-                                                  (set (list (constantly nil)
+                                                  (set (list #'empty
                                                              out-state
                                                              nil)))
                                                  :default (empty-set)))
                                 (accepting-states<- fst2)
                                 (empty-set)))
-                   (in-state (map (#'true (set (list (constantly nil)
+                   (in-state (map (#'true (set (list #'empty
                                                      (start-state<- fst1)
                                                      nil)))
                                   :default (empty-set)))
@@ -141,15 +141,15 @@
               :accepting-states (set out-state)
               :new-transitions
               (map ($ (transitions<- fst2))
-                   (in-state (map (#'true (set (list (constantly nil)
+                   (in-state (map (#'true (set (list #'empty
                                                      (start-state<- fst1)
                                                      nil)
-                                               (list (constantly nil)
+                                               (list #'empty
                                                      (start-state<- fst2)
                                                      nil)))
                                   :default (empty-set)))
                    ($ (map<-set (constantly (map (#'true
-                                                  (set (list (constantly nil)
+                                                  (set (list #'empty
                                                              out-state
                                                              nil)))
                                                  :default (empty-set)))
@@ -171,12 +171,12 @@
               :accepting-states (set out-state)
               :new-transitions
               (map ($ (transitions<- fallback))
-                   (in-state (map (#'true (set (list (constantly nil)
+                   (in-state (map (#'true (set (list #'empty
                                                      (start-state<- fallback)
                                                      nil)))
                                   :default (empty-set)))
                    ($ (map<-set (constantly (map (#'true
-                                                  (set (list (constantly nil)
+                                                  (set (list #'empty
                                                              out-state
                                                              nil)))
                                                  :default (empty-set)))
@@ -186,7 +186,7 @@
                    :default (empty-map (empty-set)))
               :new-preferred
               (map ($ (preferred<- fallback))
-                   (in-state (map (#'true (set (list (constantly nil)
+                   (in-state (map (#'true (set (list #'empty
                                                      (start-state<- preferred)
                                                      nil)))
                                   :default (empty-set)))
@@ -200,24 +200,24 @@
                 :start-state in-state
                 :accepting-states (set out-state)
                 :new-transitions
-                (map (in-state (map (#'true (set (list (constantly nil)
+                (map (in-state (map (#'true (set (list #'empty
                                                        maybe-before nil)))
                                     :default (empty-set)))
-                     (maybe-before (map (#'true (set (list (constantly nil)
+                     (maybe-before (map (#'true (set (list #'empty
                                                            (start-state<- fst)
                                                            nil)
-                                                     (list (constantly nil)
+                                                     (list #'empty
                                                            maybe-after
                                                            nil)))
                                         :default (empty-set)))
                      ($ (map<-set (constantly (map (#'true
-                                                    (set (list (constantly nil)
+                                                    (set (list #'empty
                                                                maybe-after
                                                                nil)))
                                                    :default (empty-set)))
                                   (accepting-states<- fst)
                                   (empty-set)))
-                     (maybe-after (map (#'true (set (list (constantly nil)
+                     (maybe-after (map (#'true (set (list #'empty
                                                           out-state nil)))
                                        :default (empty-set)))
                      :default (empty-map (empty-set))))))
@@ -231,24 +231,24 @@
                  :start-state in-state
                  :accepting-states (set out-state)
                  :new-transitions
-                 (map (in-state (map (#'true (set (list (constantly nil)
+                 (map (in-state (map (#'true (set (list #'empty
                                                         repeat-before nil)))
                                      :default (empty-set)))
-                      (repeat-before (map (#'true (set (list (constantly nil)
+                      (repeat-before (map (#'true (set (list #'empty
                                                              (start-state<- fst)
                                                              nil)))
                                           :default (empty-set)))
                       ($ (map<-set (constantly (map (#'true
-                                                     (set (list (constantly nil)
+                                                     (set (list #'empty
                                                                 repeat-after
                                                                 nil)))
                                                     :default (empty-set)))
                                    (accepting-states<- fst)
                                    (empty-set)))
-                      (repeat-after (map (#'true (set (list (constantly nil)
+                      (repeat-after (map (#'true (set (list #'empty
                                                             repeat-before
                                                             nil)
-                                                      (list (constantly nil)
+                                                      (list #'empty
                                                             out-state nil)))
                                          :default (empty-set)))
                       :default (empty-map (empty-set)))))))
@@ -313,11 +313,12 @@
 (defun sanitize-for-dot (obj)
   (reduce (lambda (string char)
             (cond
-              ((has-property char "Alphabetic")
+              ((or (has-property char "Alphabetic")
+                   (has-property char "Number"))
                (vector-push-extend char string))
-              ((has-property char "Number")
-               (vector-push-extend char string))
-              (t
+              ((or (zerop (length string))
+                   (char/= (elt string (1- (length string)))
+                           #\_))
                (vector-push-extend #\_ string)))
             string)
           (format nil "~A"
@@ -327,6 +328,11 @@
                                      :adjustable t
                                      :initial-contents ""
                                      :element-type (array-element-type ""))))
+
+(defun sanitize-for-label (obj)
+  (remove #\" (format nil "~A"
+                      obj)
+          :test #'char=))
 
 (defmethod write-dot (stream (graph fst)
                       &key (node-label-key #'identity)
@@ -340,31 +346,43 @@
   (do-map (source transitions (transitions<- graph))
     (do-map (condition targets transitions)
       (do-set (target targets)
-        (if (eq condition #'true)
-            (format stream (if (third target)
-                               "  ~A -> ~A~%"
-                               "  ~A -> ~A [ style=dashed ]~%")
-                    (sanitize-for-dot (funcall node-label-key source))
-                    (sanitize-for-dot (funcall node-label-key (second target))))
-            (format stream (if (third target)
-                               "  ~A -> ~A [ label=~A ]~%"
-                               "  ~A -> ~A [ label=~A, style=dashed ]~%")
-                    (sanitize-for-dot (funcall node-label-key source))
-                    (sanitize-for-dot (funcall node-label-key (second target)))
-                    (sanitize-for-dot (funcall edge-label-key condition)))))))
+        (format stream (if (third target)
+                           "  ~A -> ~A [ label=\"~A~%~A\" ]~%"
+                           "  ~A -> ~A [ label=\"~A~%~A\", style=dashed ]~%")
+                (sanitize-for-dot (funcall node-label-key source))
+                (sanitize-for-dot (funcall node-label-key (second target)))
+                (sanitize-for-label (cond
+                                      ((eq condition #'true)
+                                       "—")
+                                      (t
+                                       (funcall edge-label-key condition))))
+                (sanitize-for-label (bind ((out (first target)))
+                                      (cond
+                                        ((eq out #'list)
+                                         "id")
+                                        ((eq out #'empty)
+                                         "—")
+                                        (t
+                                         (funcall edge-label-key out)))))))))
   (do-map (source transitions (preferred<- graph))
     (do-map (condition targets transitions)
       (do-set (target targets)
-        (if (eq condition #'true)
-            (format stream (if (third target)
-                               "  ~A -> ~A~% [ color=blue ]"
-                               "  ~A -> ~A [ style=dashed, color=blue ]~%")
-                    (sanitize-for-dot (funcall node-label-key source))
-                    (sanitize-for-dot (funcall node-label-key (second target))))
-            (format stream (if (third target)
-                               "  ~A -> ~A [ label=~A, color=blue ]~%"
-                               "  ~A -> ~A [ label=~A, style=dashed, color=blue ]~%")
-                    (sanitize-for-dot (funcall node-label-key source))
-                    (sanitize-for-dot (funcall node-label-key (second target)))
-                    (sanitize-for-dot (funcall edge-label-key condition)))))))
+        (format stream (if (third target)
+                           "  ~A -> ~A [ label=\"~A~%~A\", color=blue ]~%"
+                           "  ~A -> ~A [ label=\"~A~%~A\", style=dashed, color=blue ]~%")
+                (sanitize-for-dot (funcall node-label-key source))
+                (sanitize-for-dot (funcall node-label-key (second target)))
+                (sanitize-for-label (cond
+                                      ((eq condition #'true)
+                                       ".")
+                                      (t
+                                       (funcall edge-label-key condition))))
+                (sanitize-for-label (bind ((out (first target)))
+                                      (cond
+                                        ((eq out #'list)
+                                         "id")
+                                        ((eq out #'empty)
+                                         ".")
+                                        (t
+                                         (funcall edge-label-key out)))))))))
   (format stream "}~%"))
