@@ -3,7 +3,7 @@
 (defun fst-filter (predicate)
   (declare (type function predicate))
   (fst-elementary predicate #'empty
-                  :consume? t
+                  :consume? nil
                   :in-state (gensym "fst-filter-in")
                   :out-state (gensym "fst-filter-out")))
 
@@ -155,8 +155,9 @@
         (lambda (glyph filter)
           (bind (((_ phoneme)
                   glyph))
-            (fst-sequence (fst-compare-phoneme phoneme)
-                          filter)))))
+            (fst-sequence* (fst-compare-phoneme phoneme)
+                           (fst-consume)
+                           filter)))))
 
 (defun parse-glyphs-emit (glyphs)
   (declare (type map glyphs))
@@ -166,30 +167,24 @@
         (lambda (glyph emitter)
           (bind (((_ phoneme)
                   glyph))
-            (fst-sequence (fst-emit-phoneme phoneme)
-                          emitter
-                          :in-state (gensym "glyphs-emit-in")
-                          :out-state (gensym "glyphs-emit-out"))))))
+            (fst-sequence* (fst-emit-phoneme phoneme)
+                           emitter)))))
 
 (defun parse-glyphs-comp-emit (glyphs)
   (declare (type map glyphs))
   (some (parse-glyph glyphs)
-        `(,(empty-fst)
+        `(,(fst-consume)
            ,(empty-fst))
         (lambda (glyph filter/emitter)
           (bind (((_ phoneme)
                   glyph)
                  ((filter emitter)
                   filter/emitter))
-            `(,(fst-sequence (fst-compare-phoneme phoneme)
-                             filter
-                             :in-state (gensym "glyphs-comp-emit-emit-in")
-                             :out-state (gensym "glyphs-com-emit-emit-out"))
-              ,(fst-sequence (fst-emit-phoneme phoneme)
-                             emitter
-                             :in-state (gensym "glyphs-comp-emit-comp-in")
-                             :out-state
-                             (gensym "glyphs-comp-emit-comp-out")))))))
+            `(,(fst-sequence* (fst-compare-phoneme phoneme)
+                              (fst-consume)
+                              filter)
+              ,(fst-sequence* (fst-emit-phoneme phoneme)
+                              emitter))))))
 
 (defun parse-register ()
   (// (parse-number)
@@ -379,7 +374,8 @@
                                   (gensym "parse-comp/write-emit-cf-wr-in")
                                   :out-state
                                   (gensym "parse-comp/write-emit-cf-wr-out"))
-                  (fst-write-register register)))))
+                  (fst-write-register register))))
+             (fst-consume))
             ,(fst-emit-register register)
             ,(less feature-registers register)
             ,(if category
@@ -496,7 +492,8 @@
                                        :out-state
                                        (gensym "parse-comp/write-cf-wr-out"))
                        (fst-write-register register)))
-                    (t (empty-fst))))
+                    (t (empty-fst)))
+                  (fst-consume))
                  ,(if register
                       (less feature-registers register)
                       feature-registers)
