@@ -98,7 +98,9 @@
 
 (defun fst-consume ()
   (fst-elementary #'true #'empty
-                  :consume? t))
+                  :consume? t
+                  :in-state (gensym "consume-in")
+                  :out-state (gensym "consume-out")))
 
 (defun fst-sequence (fst1 fst2 &key (in-state (gensym "sequence-in"))
                                  (out-state (gensym "sequence-out")))
@@ -346,7 +348,8 @@
   (do-map (source transitions (transitions<- graph))
     (do-map (condition targets transitions)
       (do-set (target targets)
-        (format stream "  ~A -> ~A [ label=\"~A~%~A\", style=~A ]~%"
+        (format stream
+                "  ~A -> ~A [ label=\"~A~%~A\", color=~A, style=dashed ]~%"
                 (sanitize-for-dot (funcall node-label-key source))
                 (sanitize-for-dot (funcall node-label-key (second target)))
                 (sanitize-for-label (cond
@@ -363,12 +366,13 @@
                                         (t
                                          (funcall edge-label-key out)))))
                 (if (third target)
-                    "solid"
-                    "dashed")))))
+                    "red"
+                    "black")))))
   (do-map (source transitions (preferred<- graph))
     (do-map (condition targets transitions)
       (do-set (target targets)
-        (format stream "  ~A -> ~A [ label=\"~A~%~A\", style=~A, color=blue ]~%"
+        (format stream
+                "  ~A -> ~A [ label=\"~A~%~A\", color=~A ]~%"
                 (sanitize-for-dot (funcall node-label-key source))
                 (sanitize-for-dot (funcall node-label-key (second target)))
                 (sanitize-for-label (cond
@@ -385,6 +389,6 @@
                                         (t
                                          (funcall edge-label-key out)))))
                 (if (third target)
-                    "solid"
-                    "dashed")))))
+                    "red"
+                    "black")))))
   (format stream "}~%"))
