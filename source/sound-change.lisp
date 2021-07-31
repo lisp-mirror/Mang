@@ -430,90 +430,81 @@
   (declare (type set binary-features privative-features phoneme-registers
                  category-registers)
            (type map valued-features glyphs categories feature-registers))
-  (// (<$> (>>!
-             (category? category)
-             (// (parse-category categories)
-                 (<$ (parse-constant ".")
-                     (list nil nil)))
-             _ (parse-whitespace-no-newline)
-             (constant-features present-features absent-features
-                                comp-feature-registers write-feature-registers
-                                feature-registers)
-             (<? (parse-features binary-features valued-features
-                                 privative-features feature-registers
-                                 phoneme-registers category-registers)
-                 `(,(empty-map)
-                    ,(empty-set)
-                    ,(empty-set)
-                    ,(empty-map)
-                    ,(empty-map)
-                    ,(empty-map (empty-set))))
-             _ (parse-whitespace-no-newline)
-             register (<? (parse-register))
-             (succeed
-              `(,(fst-sequence*
-                  (fst-compare-features constant-features present-features
-                                        absent-features)
-                  (fst-compare-register comp-feature-registers)
-                  (fst-write-features write-feature-registers)
-                  (cond
-                    ((and category? register (@ category-registers register))
-                     (fst-sequence (fst-check-category category)
-                                   (fst-compare-register register)
-                                   :in-state
-                                   (gensym "parse-comp/write-cc-cr-in")
-                                   :out-state
-                                   (gensym "parse-comp/write-cc-cr-out")))
-                    ((and category? register (@ phoneme-registers register))
-                     (fst-sequence (fst-compare-register register)
-                                   (fst-write-category category register)
-                                   :in-state
-                                   (gensym "parse-comp/write-cr-wc-in")
-                                   :out-state
-                                   (gensym "parse-comp/write-cr-wc-out")))
-                    ((and category? register)
-                     ([av]if (@ feature-registers register)
-                         (fst-sequence (fst-compare-features it)
-                                       (fst-write-category category register)
-                                       :in-state
-                                       (gensym "parse-comp/write-cf-wc-in")
-                                       :out-state
-                                       (gensym "parse-comp/write-cf-wc-out"))
-                       (fst-write-category category register)))
-                    (category?
-                     (fst-check-category category))
-                    ((and register (or (@ phoneme-registers register)
-                                       (@ category-registers register)))
-                     (fst-compare-register register))
-                    (register
-                     ([av]if (@ feature-registers register)
-                         (fst-sequence (fst-compare-features it)
-                                       (fst-write-register register)
-                                       :in-state
-                                       (gensym "parse-comp/write-cf-wr-in")
-                                       :out-state
-                                       (gensym "parse-comp/write-cf-wr-out"))
-                       (fst-write-register register)))
-                    (t (empty-fst)))
-                  #+nil(fst-consume))
-                 ,(if register
-                      (less feature-registers register)
-                      feature-registers)
-                 ,(if (or category (not register))
-                      (less phoneme-registers register)
-                      (with phoneme-registers register))
-                 ,(if (and category register)
-                      (with category-registers register)
-                      category-registers))))
-           (lambda (action)
-             (bind (((action feature-registers phoneme-registers
-                             category-registers)
-                     action))
-               `(,(fst-sequence action (fst-consume)
-                                :in-state (gensym "parse-comp/write-result-in")
-                                :out-state
-                                (gensym "parse-comp/write-result-out"))
-                  ,feature-registers ,phoneme-registers ,category-registers))))
+  (// (>>!
+        (category? category)
+        (// (parse-category categories)
+            (<$ (parse-constant ".")
+                (list nil nil)))
+        _ (parse-whitespace-no-newline)
+        (constant-features present-features absent-features
+                           comp-feature-registers write-feature-registers
+                           feature-registers)
+        (<? (parse-features binary-features valued-features
+                            privative-features feature-registers
+                            phoneme-registers category-registers)
+            `(,(empty-map)
+              ,(empty-set)
+              ,(empty-set)
+              ,(empty-map)
+              ,(empty-map)
+              ,(empty-map (empty-set))))
+        _ (parse-whitespace-no-newline)
+        register (<? (parse-register))
+        (succeed
+         `(,(fst-sequence*
+             (fst-compare-features constant-features present-features
+                                   absent-features)
+             (fst-compare-register comp-feature-registers)
+             (fst-write-features write-feature-registers)
+             (cond
+               ((and category? register (@ category-registers register))
+                (fst-sequence (fst-check-category category)
+                              (fst-compare-register register)
+                              :in-state
+                              (gensym "parse-comp/write-cc-cr-in")
+                              :out-state
+                              (gensym "parse-comp/write-cc-cr-out")))
+               ((and category? register (@ phoneme-registers register))
+                (fst-sequence (fst-compare-register register)
+                              (fst-write-category category register)
+                              :in-state
+                              (gensym "parse-comp/write-cr-wc-in")
+                              :out-state
+                              (gensym "parse-comp/write-cr-wc-out")))
+               ((and category? register)
+                ([av]if (@ feature-registers register)
+                    (fst-sequence (fst-compare-features it)
+                                  (fst-write-category category register)
+                                  :in-state
+                                  (gensym "parse-comp/write-cf-wc-in")
+                                  :out-state
+                                  (gensym "parse-comp/write-cf-wc-out"))
+                  (fst-write-category category register)))
+               (category?
+                (fst-check-category category))
+               ((and register (or (@ phoneme-registers register)
+                                  (@ category-registers register)))
+                (fst-compare-register register))
+               (register
+                ([av]if (@ feature-registers register)
+                    (fst-sequence (fst-compare-features it)
+                                  (fst-write-register register)
+                                  :in-state
+                                  (gensym "parse-comp/write-cf-wr-in")
+                                  :out-state
+                                  (gensym "parse-comp/write-cf-wr-out"))
+                  (fst-write-register register)))
+               (t (empty-fst)))
+             (fst-consume))
+           ,(if register
+                (less feature-registers register)
+                feature-registers)
+           ,(if (or category (not register))
+                (less phoneme-registers register)
+                (with phoneme-registers register))
+           ,(if (and category register)
+                (with category-registers register)
+                category-registers))))
       (<$> (parse-glyphs-comp glyphs)
            (lambda (action)
              `(,action ,feature-registers ,phoneme-registers
