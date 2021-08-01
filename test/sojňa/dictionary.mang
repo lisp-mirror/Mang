@@ -2,70 +2,69 @@
 # dictionary
 noun, verb, adjective, adverb, determiner, pronoun, article, preposition
 
-ABE           preposition šel    {everything, preposition}
-ABL           preposition řiň    {everything, preposition}
-ADV           preposition žum    {everything, preposition}
-afraid        adjective   ňeř    {everything, adjective, negative}
-animate       noun        šuẉ    {everything, noun, animate}
-ANTE          preposition vo     {everything, preposition}
-ask           verb        gaw    {everything, verb}
-BEN           preposition pe     {everything, preposition}
-body          noun        gero   {everything, noun, animate}
-cause         preposition matiň  {everything, preposition}
-COM           preposition ňeẉi   {everything, preposition}
-create        verb        marme  {everything, verb, positive}
-cry           verb        saḷ    {everything, verb, negative}
-dark          adjective   masaň  {everything, adjective}
-DEF           article     ẉa     {everything, article}
-die           verb        paqoň  {everything, verb, negative}
-DIST          determiner  wej    {everything, determiner}
-eat           verb        nin    {everything, verb, positive}
-female        noun        tila   {everything, noun, animate}
-fire          noun        ṛaẉ    {everything, noun, animate, mass}
-GEN           preposition kun    {everything, pronoun}
-go            verb        tasi   {everything, verb}
-good          adjective   buri   {everything, adjective}
-grass         noun        towri  {everything, noun, animate}
-have          verb        še     {everything, verb, positive}
-hut           noun        hejda  {everything, noun, inanimate, positive}
-ILLAT         preposition taw    {everything, preposition}
-INDF          article     me     {everything, article}
-INESS         preposition jo     {everything, preposition}
-LAT           preposition qe     {everything, preposition}
-lion          noun        kaw    {everything, noun, animate, negative}
-look          verb        šiẉhin {everything, verb}
-male          noun        soj    {everything, noun, animate}
-many          determiner  ḷo     {everything, determiner}
-MASS          article     šiw    {everything, article, inanimate}
-must          verb        peẉ    {everything, verb, negative}
-NEG           adverb      gu     {everything, adverb}
-night         noun        rišo   {everything, noun}
-offspring     noun        žasa   {everything, noun, animate, positive, family}
-P1            pronoun     žaj    {everything, pronoun}
-P2            pronoun     doẉ    {everything, pronoun}
-P3.ANIM       pronoun     siw    {everything, pronoun, animate}
-P3.INAN       pronoun     hu     {everything, pronoun, inanimate}
-pain          noun        qaẉ    {everything, noun, animate, negative}
-PER           preposition zo     {everything, preposition}
-person        noun        kuti   {everything, noun, animate, positive, human}
-PROX          determiner  sa     {everything, determiner}
-rabbit        noun        bolej  {everything, noun, animate}
-REFL          pronoun     lej    {everything, pronoun}
-see           verb        šiwhin {everything, verb}
-seed          noun        parňeḷ {everything, noun, inanimate, positive}
-sibling       noun        heřdi  {everything, noun, animate, positive, family}
-stand         verb        tajbo  {everything, verb}
-stone         noun        kem    {everything, noun, inanimate}
-sweetroot     noun        qubaň  {everything, noun, inanimate, positive}
-tongue        noun        sojňa  {everything, noun, animate}
-tree          noun        seqaw  {everything, noun, inanimate}
-thick.leaf    noun        hawgeň {everything, noun, animate}
-thin.leaf     noun        sahi   {everything, noun, animate}
-use           verb        kir    {everything, verb, positive}
-want          verb        duṛše  {everything, verb}
-water         noun        felo   {everything, noun, animate, positive}
+ABE           preposition šel    n {everything, preposition}
+ABL           preposition řiň    n {everything, preposition}
+ADV           preposition žum    n {everything, preposition}
+afraid        adjective   ňeř    y {everything, adjective, negative}
+animate       noun        šuẉ    y {everything, noun, animate}
+ANTE          preposition vo     n {everything, preposition}
+ask           verb        gaw    y {everything, verb}
+BEN           preposition pe     n {everything, preposition}
+body          noun        gero   y {everything, noun, animate}
+cause         preposition matiň  n {everything, preposition}
+COM           preposition ňeẉi   n {everything, preposition}
+create        verb        marme  y {everything, verb, positive}
+cry           verb        saḷ    y {everything, verb, negative}
+dark          adjective   masaň  y {everything, adjective}
+DEF           article     ẉa     n {everything, article}
+die           verb        paqoň  n {everything, verb, negative}
+DIST          determiner  wej    n {everything, determiner}
+eat           verb        nin    n {everything, verb, positive}
+female        noun        tila   y {everything, noun, animate}
+fire          noun        ṛaẉ    n {everything, noun, animate, mass}
+GEN           preposition kun    n {everything, pronoun}
+go            verb        tasi   y {everything, verb}
+good          adjective   buri   n {everything, adjective}
+grass         noun        towri  y {everything, noun, animate}
+have          verb        še     n {everything, verb, positive}
+hut           noun        hejda  y {everything, noun, inanimate, positive}
+ILLAT         preposition taw    n {everything, preposition}
+INDF          article     me     n {everything, article}
+INESS         preposition jo     n {everything, preposition}
+LAT           preposition qe     n {everything, preposition}
+lion          noun        kaw    n {everything, noun, animate, negative}
+look          verb        šiẉhin y {everything, verb}
+male          noun        soj    y {everything, noun, animate}
+many          determiner  ḷo     y {everything, determiner}
+MASS          article     šiw    n {everything, article, inanimate}
+must          verb        peẉ    y {everything, verb, negative}
+NEG           adverb      gu     n {everything, adverb}
+night         noun        rišo   y {everything, noun}
+offspring     noun        žasa   y {everything, noun, animate, positive, family}
+P1            pronoun     žaj    n {everything, pronoun}
+P2            pronoun     doẉ    n {everything, pronoun}
+P3.ANIM       pronoun     siw    n {everything, pronoun, animate}
+P3.INAN       pronoun     hu     n {everything, pronoun, inanimate}
+pain          noun        qaẉ    n {everything, noun, animate, negative}
+PER           preposition zo     n {everything, preposition}
+person        noun        kuti   n {everything, noun, animate, positive, human}
+PROX          determiner  sa     n {everything, determiner}
+rabbit        noun        bolej  y {everything, noun, animate}
+REFL          pronoun     lej    n {everything, pronoun}
+seed          noun        parňeḷ y {everything, noun, inanimate, positive}
+sibling       noun        heřdi  y {everything, noun, animate, positive, family}
+stand         verb        tajbo  y {everything, verb}
+stone         noun        kem    y {everything, noun, inanimate}
+sweetroot     noun        qubaň  y {everything, noun, inanimate, positive}
+tongue        noun        sojňa  y {everything, noun, animate}
+tree          noun        seqaw  y {everything, noun, inanimate}
+thick.leaf    noun        hawgeň y {everything, noun, animate}
+thin.leaf     noun        sahi   y {everything, noun, animate}
+use           verb        kir    y {everything, verb, positive}
+want          verb        duṛše  y {everything, verb}
+water         noun        felo   y {everything, noun, animate, positive}
 
-MED      determiner # {everything, determiner} {noun, verb, adjective, adverb, article, pronoun, preposition}
-cloud    noun       # {everything, noun, animate} {verb, adjective, adverb, determiner, pronoun, preposition, article}
-parent   noun       # {everything, noun, animate, positive, family} {verb, adjective, adverb, determiner, pronoun, preposition, article, negative, inanimate, mass}
-stranger noun       # {everything, noun, animate, human} {verb, adjective, adverb, determiner, pronoun, preposition, article, inanimate, mass, family}
+MED      determiner {everything, determiner} {noun, verb, adjective, adverb, article, pronoun, preposition}
+cloud    noun       {everything, noun, animate} {verb, adjective, adverb, determiner, pronoun, preposition, article}
+parent   noun       {everything, noun, animate, positive, family} {verb, adjective, adverb, determiner, pronoun, preposition, article, negative, inanimate, mass}
+stranger noun       {everything, noun, animate, human} {verb, adjective, adverb, determiner, pronoun, preposition, article, inanimate, mass, family}

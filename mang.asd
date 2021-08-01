@@ -80,16 +80,13 @@
                    "gen"
                    "markov"))
      (:file "language"
-      :depends-on ("word"))
-     (:file "read-mang"
-      :depends-on ("blocks"
-                   "features"
-                   "glyphs"
-                   "categories"
-                   "sonority"
-                   "gen"
-                   "markov"
-                   "word"
+      :depends-on ("markov"))
+     (:file "dictionary"
+      :depends-on ("word"
                    "language"))
+     (:file "read-mang"
+      :depends-on ("features"
+                   "language"
+                   "dictionary"))
      ))
    ))
