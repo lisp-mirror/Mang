@@ -58,9 +58,9 @@ everything :=
  | (12 long) + (24 mid) + (4 short) + direct
  + [1000 {fallback + [10 fallback] + [100 fallback]}] + [1000 end]
  + C-Zipf + V-Zipf + (5 C) + (20 V)
- + [10 (5 C-Zipf + V-Zipf)]
- + [100 (10 C-Zipf + V-Zipf)]
- + [1000 (20 C-Zipf + V-Zipf)]
+ + [10 (10 C-Zipf + V-Zipf)]
+ + [100 (100 C-Zipf + V-Zipf)]
+ + [1000 (1000 C-Zipf + V-Zipf)]
 
 determiner :=
  end      = uniform {#},
