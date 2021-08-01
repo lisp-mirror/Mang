@@ -1,11 +1,5 @@
 (in-package #:mang)
 
-(defun parse-language ()
-  (>> (parse-whitespace)
-      (parse-constant "##")
-      (parse-whitespace-no-newline)
-      (parse-identifier)))
-
 (defun parse-mang (interactive? &optional
                      (languages (empty-map (map (:glyphs
                                                  (empty-map (empty-set)))
@@ -38,7 +32,7 @@
     (languages language binary-features valued-features privative-features
                glyphs categories sonority-hierarchy generator markov-spec store
                dictionary)
-    (// (<$!> name (parse-language)
+    (// (<$!> name (parse-language-header)
           (bind ((languages (if language
                                 (with languages language
                                       (map (:glyphs glyphs)

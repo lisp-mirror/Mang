@@ -71,6 +71,33 @@
                        ,(map-union valued nvalued)
                        ,(union privative nprivative)))))))
 
+(defun parse-feature-file ()
+  (>>!
+    features (parse-feature-section)
+    _ (>> (parse-whitespace)
+          (parse-eof))
+    (succeed features)))
+
+(defun load-feature-file (file)
+  (with-open-file (stream file)
+    (apply #'values
+           (parser-call (parse-feature-file)
+                        stream))))
+
+(defmacro def-features-from-file!
+    (binary-features valued-features privative-features file)
+  (bind ((g!binary (gensym "binary"))
+         (g!valued (gensym "valued"))
+         (g!privative (gensym "privative")))
+    `(bind (((:values ,g!binary ,g!valued ,g!privative)
+             (load-feature-file ,file)))
+       (defparameter ,binary-features
+         ,g!binary)
+       (defparameter ,valued-features
+         ,g!valued)
+       (defparameter ,privative-features
+         ,g!privative))))
+
 (defun parse-binary-feature-spec (binary-features)
   (declare (type set binary-features))
   (>>!

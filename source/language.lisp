@@ -1,7 +1,10 @@
 (in-package #:mang)
 
 (defclass language ()
-  ((%glyphs :type map
+  ((%name :type string
+          :initarg :name
+          :reader name<-)
+   (%glyphs :type map
             :initarg :glyphs
             :reader glyphs<-)
    (%categories :type map
@@ -26,7 +29,8 @@
                 :initarg :dictionary
                 :reader dictionary<-)))
 
-(defun language (&key
+(defun language (name
+                 &key
                    (glyphs (empty-map))
                    (categories (empty-map))
                    (sonority-hierarchy '())
@@ -36,6 +40,7 @@
                                                  '())))
                    (store (empty-map (empty-map (empty-map <nodist>)))))
   (make-instance 'language
+                 :name name
                  :glyphs glyphs
                  :categories categories
                  :sonority-hierarchy sonority-hierarchy
@@ -77,6 +82,7 @@
                       generator)
                   (rest word))
         (make-instance 'language
+                       :name (name<- storage)
                        :glyphs (glyphs<- storage)
                        :categories (categories<- storage)
                        :sonority-hierarchy (sonority-hierarchy<- storage)
@@ -113,7 +119,7 @@
   (bind ((generator (if allow-homophones?
                         (matcher<- language)
                         (generator<- language))))
-    (add-word *language* word-categories part-of-speech gloss
+    (add-word language word-categories part-of-speech gloss
               (loop
                 :as word
                   := (generate-word generator (store<- language)
@@ -130,6 +136,32 @@
                 :finally
                    (return word))
               allow-homophones?)))
+
+(defun parse-language-header ()
+  (>> (parse-whitespace)
+      (parse-constant "##")
+      (parse-whitespace-no-newline)
+      (parse-identifier)))
+
+(defun parse-language-file (binary-features valued-features privative-features)
+  (>>!
+    name (parse-language-header)
+    glyphs (parse-glyph-section binary-features valued-features
+                                privative-features)
+    categories (parse-category-section glyphs)
+    sonority-hierarchy (<? (parse-sonority-hierarchy glyphs categories))
+    generator (// (parse-wordgen-section glyphs categories)
+                  (parse-clustergen-section glyphs categories))
+    (markov-spec store) (parse-markov-section glyphs categories)
+    _ (>> (parse-whitespace)
+          (parse-eof))
+    (succeed (language name
+                       :glyphs glyphs
+                       :categories categories
+                       :sonority-hierarchy sonority-hierarchy
+                       :matcher generator
+                       :markov-spec markov-spec
+                       :store store))))
 
 ;;;; Debugging
 (defmethod write-dot ((stream cons)
