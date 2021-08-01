@@ -177,6 +177,18 @@
                    (return word))
               allow-homophones?)))
 
+(defun prompt-gen-known-gloss (language part-of-speech gloss
+                               &key
+                                 allow-homophones?)
+  ([a]if (@ (@ (unknown-dictionary<- language)
+               part-of-speech)
+            gloss)
+      (values (prompt-gen-word language part-of-speech gloss (car it)
+                               :negative-word-categories (cdr it)
+                               :allow-homophones? allow-homophones?)
+              t)
+    (values language nil)))
+
 (defun parse-language-header ()
   (>> (parse-whitespace)
       (parse-constant "##")
