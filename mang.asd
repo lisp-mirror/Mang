@@ -78,6 +78,8 @@
                    "glyphs"
                    "gen"
                    "markov"))
+     (:file "language"
+      :depends-on ("word"))
      (:file "read-mang"
       :depends-on ("blocks"
                    "features"
