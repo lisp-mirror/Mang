@@ -21,7 +21,8 @@
      (:file "anaphora")
      (:file "memoization"
       :depends-on ("anaphora"))
-     (:file "set")
+     (:file "set"
+      :depends-on ("list"))
      (:file "distribution")
      (:file "nfsm-dfsm"
       :depends-on ("set" "distribution"))
@@ -88,6 +89,7 @@
                    "sonority"
                    "gen"
                    "markov"
-                   "word"))
+                   "word"
+                   "language"))
      ))
    ))
