@@ -396,7 +396,10 @@
                                      states))))
 
 (defun fst-simplify-state (fst state)
-  (bind ((new-state-includes (fst-epsilon-closure fst state))
+  (bind ((new-state-includes
+          (fst-tt-epsilon-closure (deep-union (transitions<- fst)
+                                              (preferred<- fst))
+                                  state))
          ((:values transitions preferred)
           (fst-epsilon-closure-transitions fst state)))
     (fst-clean* (modify-fst fst
