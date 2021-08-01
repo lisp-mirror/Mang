@@ -150,19 +150,6 @@
             (@ fn k))
           collection))
 
-(defmethod reduce ((fn function)
-                   (collection map)
-                   &key (key nil key?)
-                     initial-value)
-  (bind ((result initial-value))
-    (if key?
-        (do-map (k v collection result)
-          (setf result
-                (funcall fn result k (funcall key v))))
-        (do-map (k v collection result)
-          (setf result
-                (funcall fn result k v))))))
-
 (defmacro map* (&rest args)
   (bind ((resulting-args '())
          (default nil))
