@@ -1,0 +1,13 @@
+## empty
+# dictionary
+noun, verb, determiner
+
+animal noun       {everything, noun}       {determiner, verb}
+DIST   determiner {everything, determiner} {noun, verb}
+go     verb       {everything, verb}       {determiner, noun}
+hold   verb       {everything, verb}       {determiner, noun}
+love   verb       {everything, verb}       {determiner, noun}
+person noun       {everything, noun}       {determiner, verb}
+plant  noun       {everything, noun}       {determiner, verb}
+PROX   determiner {everything, determiner} {noun, verb}
+use    verb       {everything, verb}       {determiner, noun}
