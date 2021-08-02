@@ -356,6 +356,39 @@ EPSILON-TRANSITION-MAP"
                    (intersection (states<-transition-table transition-table)
                                  accepting))))
 
+(defun dfsm-add-postfix-at (transition-table state postfix)
+  (if postfix
+      (chop curr postfix
+        ([a]if (@ (@ transition-table state)
+                  curr)
+            (dfsm-add-postfix-at transition-table it postfix)
+          (bind ((new-state (gensym "state")))
+            (dfsm-add-postfix-at (map* ($ transition-table)
+                                       :default (empty-map)
+                                       (& (state transitions)
+                                          (with transitions curr new-state)))
+                                 new-state postfix))))
+      (values transition-table state)))
+
+(defmethod with ((collection dfsm)
+                 (value1 list)
+                 &optional value2)
+  (declare (ignore value2))
+  (bind ((start (start-state<- collection))
+         ((:values transition-table new-accepting)
+          (dfsm-add-postfix-at (transitions<- collection)
+                               start value1))
+         (accepting (with (accepting-states<- collection)
+                          new-accepting))
+         (transition-table (dfsm-normalize-transitions transition-table start
+                                                       accepting)))
+    (make-instance 'dfsm
+                   :transitions transition-table
+                   :start-state start
+                   :accepting-states
+                   (intersection (states<-transition-table transition-table)
+                                 accepting))))
+
 (defun dfsm<- (obj)
   (bind (((:values in out transitions eps-transitions)
           (nfsm<- obj))
