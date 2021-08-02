@@ -39,10 +39,10 @@
             (@ predicate obj))
           collection))
 
-(defun origin (obj map)
+(defun origin (obj map &key (key #'identity))
   (domain (filter (lambda (k v)
                     (declare (ignore k))
-                    (equal? obj v))
+                    (equal? obj (funcall key v)))
                   map)))
 
 (defun map-value-order (obj map)
