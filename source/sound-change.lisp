@@ -546,8 +546,10 @@
                  category-registers)
            (type map valued-features glyphs categories feature-registers))
   (// (>>!
-        category (// (parse-category categories)
-                     (parse-constant "."))
+        (category? category)
+        (// (parse-category categories)
+            (<$ (parse-constant ".")
+                (list nil nil)))
         _ (parse-whitespace-no-newline)
         (constant-features present-features absent-features register-features)
         (<? (parse-features-emit binary-features valued-features
@@ -565,15 +567,15 @@
            (fail `(:register-not-written ,register
                                          ,(union phoneme-registers
                                                  category-registers))))
-          ((and category (not register))
+          ((and category? (not register))
            (fail `(:emit-category-no-register ,category)))
-          ((and category (not (@ category-registers register)))
+          ((and category? (not (@ category-registers register)))
            (fail `(:emit-category-unwritten ,category ,register)))
           ((and (not register)
                 (empty? constant-features)
                 (empty? register-features))
            (fail `(:empty-emitter)))
-          (category
+          (category?
            (succeed (fst-emit-category category register
                                        :constant-supplement constant-features
                                        :present-supplement present-features
