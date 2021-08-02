@@ -260,23 +260,22 @@ EPSILON-TRANSITION-MAP"
                                                        (empty? (@ transition-map
                                                                   target)))))
                                                 transitions)))
-                              transition-map)))
+                              transition-map))
+         (reachable-states (reduce (lambda (set map)
+                                    (union (range map)
+                                           set))
+                                  (range right-pruned)
+                                  :initial-value (empty-set))))
     (filter (lambda (k v)
-              (declare (ignore v))
               (or (eq k start)  ; preserve start state
                   ;; get rid of states that only lead back to themselves – we do
                   ;; not need to watch out for accepting states here, since all
                   ;; FSTs are required to not contain loops, so all loops can
                   ;; only exist in failure states
-                  (and (not (empty? (less (range (@ right-pruned k))
+                  (and (not (empty? (less (range v)
                                           k)))
                        ;; get rid of states that are never reached
-                       (@ (reduce (lambda (set map)
-                                    (union (range map)
-                                           set))
-                                  (range (less right-pruned k))
-                                  :initial-value (empty-set))
-                          k))))
+                       (@ reachable-states k))))
             right-pruned)))
 
 (defun prune-dfsm* (transition-map start accepting)
