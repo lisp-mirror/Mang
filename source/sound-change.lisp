@@ -595,9 +595,9 @@
                                       register-features)))))
       (parse-glyphs-emit glyphs)))
 
-(defun parse-after (binary-features valued-features privative-features glyphs
-                    categories feature-registers phoneme-registers
-                    category-registers)
+(defun parse-after (binary-features valued-features privative-features
+                    glyphs categories feature-registers
+                    phoneme-registers category-registers)
   (declare (type set binary-features privative-features phoneme-registers
                  category-registers)
            (type map valued-features glyphs categories feature-registers))
@@ -615,75 +615,82 @@
       (empty-fst)))
 
 (defun parse-sound-change (binary-features valued-features privative-features
-                           glyphs categories)
+                           source-language target-language)
   (declare (type set binary-features privative-features)
-           (type map valued-features glyphs categories))
-  (>>!
-    before (parse-to (>> (parse-whitespace-no-newline)
-                         (// (parse-constant "->")
-                             (parse-constant "→"))))
-    _ (parse-whitespace-no-newline)
-    after (parse-to (>> (parse-whitespace-no-newline)
-                        (^< (// (parse-constant "/")
-                                (parse-expression-end)))))
-    _ (parse-whitespace-no-newline)
-    (pre post)
-    (<? (>>!
-          _ (>> (parse-whitespace-no-newline)
-                (parse-constant "/")
-                (parse-whitespace-no-newline))
-          pre (parse-to (>> (parse-whitespace-no-newline)
-                            (parse-constant "_")))
-          _ (parse-whitespace-no-newline)
-          post (parse-to (>> (parse-whitespace-no-newline)
-                             ;; this parser should not consume the newline after
-                             ;; the sound change expression
-                             (^< (parse-expression-end))))
-          (succeed `(,pre ,post)))
-        `("" ""))
-    (pre-write/comp pre-emit feature-registers phoneme-registers
-                    category-registers)
-    (^$ (parse-pre/post binary-features valued-features privative-features
-                        glyphs categories (empty-map (empty-set))
-                        (empty-set)
-                        (empty-set))
-        pre)
-    (before-write/comp feature-registers phoneme-registers category-registers)
-    (^$ (parse-before binary-features valued-features privative-features glyphs
-                      categories feature-registers phoneme-registers
+           (type map valued-features)
+           (type language source-language target-language))
+  (bind ((source-glyphs (glyphs<- source-language))
+         (source-categories (categories<- source-language))
+         (target-glyphs (glyphs<- target-language))
+         (target-categories (categories<- target-language)))
+    (>>!
+      before (parse-to (>> (parse-whitespace-no-newline)
+                           (// (parse-constant "->")
+                               (parse-constant "→"))))
+      _ (parse-whitespace-no-newline)
+      after (parse-to (>> (parse-whitespace-no-newline)
+                          (^< (// (parse-constant "/")
+                                  (parse-expression-end)))))
+      _ (parse-whitespace-no-newline)
+      (pre post)
+      (<? (>>!
+            _ (>> (parse-whitespace-no-newline)
+                  (parse-constant "/")
+                  (parse-whitespace-no-newline))
+            pre (parse-to (>> (parse-whitespace-no-newline)
+                              (parse-constant "_")))
+            _ (parse-whitespace-no-newline)
+            post (parse-to (>> (parse-whitespace-no-newline)
+                               ;; this parser should not consume the newline after
+                               ;; the sound change expression
+                               (^< (parse-expression-end))))
+            (succeed `(,pre ,post)))
+          `("" ""))
+      (pre-write/comp pre-emit feature-registers phoneme-registers
                       category-registers)
-        before)
-    (post-write/comp post-emit feature-registers phoneme-registers
-                     category-registers)
-    (^$ (parse-pre/post binary-features valued-features privative-features
-                        glyphs categories feature-registers phoneme-registers
-                        category-registers)
-        post)
-    after-emit
-    (^$ (parse-after binary-features valued-features privative-features glyphs
-                     categories feature-registers phoneme-registers
-                     category-registers)
-        after)
-    (if (and (empty-fst? pre-write/comp)
-             (empty-fst? before-write/comp)
-             (empty-fst? post-write/comp))
-        (fail `(:empty-pre/before/post ,after-emit))
-        (succeed
-         (fst-simplify
-          (fst-repeat (fst-preferred (fst-sequence* pre-write/comp
-                                                    before-write/comp
-                                                    post-write/comp pre-emit
-                                                    after-emit post-emit)
-                                     (fst-elementary #'true #'list
-                                                     :consume? t))))))))
+      (^$ (parse-pre/post binary-features valued-features privative-features
+                          source-glyphs source-categories (empty-map (empty-set))
+                          (empty-set)
+                          (empty-set))
+          pre)
+      (before-write/comp feature-registers phoneme-registers category-registers)
+      (^$ (parse-before binary-features valued-features privative-features
+                        source-glyphs source-categories feature-registers
+                        phoneme-registers category-registers)
+          before)
+      (post-write/comp post-emit feature-registers phoneme-registers
+                       category-registers)
+      (^$ (parse-pre/post binary-features valued-features privative-features
+                          source-glyphs source-categories feature-registers
+                          phoneme-registers category-registers)
+          post)
+      after-emit
+      (^$ (parse-after binary-features valued-features privative-features
+                       target-glyphs target-categories feature-registers
+                       phoneme-registers category-registers)
+          after)
+      (if (and (empty-fst? pre-write/comp)
+               (empty-fst? before-write/comp)
+               (empty-fst? post-write/comp))
+          (fail `(:empty-pre/before/post ,after-emit))
+          (succeed
+           (fst-simplify
+            (fst-repeat (fst-preferred (fst-sequence* pre-write/comp
+                                                      before-write/comp
+                                                      post-write/comp pre-emit
+                                                      after-emit post-emit)
+                                       (fst-elementary #'true #'list
+                                                       :consume? t)))))))))
 
 (defun parse-sound-change-section (binary-features valued-features
-                                   privative-features glyphs categories)
+                                   privative-features source-language
+                                   target-language)
   (parse-section "sound changes"
                  (parse-lines (parse-sound-change binary-features
                                                   valued-features
                                                   privative-features
-                                                  glyphs categories))))
+                                                  source-language
+                                                  target-language))))
 
 (defun apply-sound-change (word sound-change)
   (declare (type cons word)

@@ -67,12 +67,6 @@
                    "blocks"
                    "glyphs"
                    "categories"))
-     (:file "sound-change"
-      :depends-on ("globals"
-                   "blocks"
-                   "features"
-                   "glyphs"
-                   "categories"))
      (:file "word"
       :depends-on ("globals"
                    "blocks"
@@ -83,6 +77,13 @@
       :depends-on ("markov"))
      (:file "dictionary"
       :depends-on ("word"
+                   "language"))
+     (:file "sound-change"
+      :depends-on ("globals"
+                   "blocks"
+                   "features"
+                   "glyphs"
+                   "categories"
                    "language"))
      (:file "read-mang"
       :depends-on ("features"
