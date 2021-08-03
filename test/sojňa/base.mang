@@ -39,7 +39,7 @@ V := i,u,e,o,a
 E := p,t,k,q,b,d,g,m,n,ň,ṛ,r,ř,f,s,š,v,z,ž,ḷ,l,j,ẉ,w
 voiced        := b,d,g,m,n,ň,r,ř,v,z,ž,l,j,w
 unvoiced      := p,t,k,q,ṛ,f,s,š,h,ḷ,ẉ
-voiced-coda   := m,n,ň,r,ř,l,j,w
+voiced-coda   := r,ř,l,j,w
 unvoiced-coda := ṛ,ḷ,ẉ
 
 
