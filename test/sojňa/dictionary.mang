@@ -33,7 +33,6 @@ INDF          article     me     n {everything, article}
 INESS         preposition jo     n {everything, preposition}
 LAT           preposition qe     n {everything, preposition}
 lion          noun        kaw    n {everything, noun, animate, negative}
-look          verb        šiẉhin y {everything, verb}
 male          noun        soj    y {everything, noun, animate}
 many          determiner  ḷo     y {everything, determiner}
 MASS          article     šiw    n {everything, article, inanimate}
@@ -51,6 +50,7 @@ person        noun        kuti   n {everything, noun, animate, positive, human}
 PROX          determiner  sa     n {everything, determiner}
 rabbit        noun        bolej  y {everything, noun, animate}
 REFL          pronoun     lej    n {everything, pronoun}
+see           verb        šiẉhin y {everything, verb}
 seed          noun        parňeḷ y {everything, noun, inanimate, positive}
 sibling       noun        heřdi  y {everything, noun, animate, positive, family}
 stand         verb        tajbo  y {everything, verb}
