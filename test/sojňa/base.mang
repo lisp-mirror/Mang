@@ -36,7 +36,7 @@ a := [~round, height=low , frontness=front]
 # categories
 C := p,t,k,q,b,d,g,m,n,ň,ṛ,r,ř,f,s,š,h,v,z,ž,ḷ,l,j,ẉ,w
 V := i,u,e,o,a
-E := p,t,k,q,b,d,g,m,n,ň,ṛ,r,ř,f,s,š,v,z,ž,ḷ,l,j,ẉ,w
+E := m,n,ň,ṛ,r,ř,ḷ,l,j,ẉ,w
 voiced        := b,d,g,m,n,ň,r,ř,v,z,ž,l,j,w
 unvoiced      := p,t,k,q,ṛ,f,s,š,h,ḷ,ẉ
 voiced-coda   := r,ř,l,j,w
