@@ -2,7 +2,7 @@
 
 (asdf:defsystem #:mang
   :description "Library for generating language families"
-  :author "Thomas Bartscher <thomas-bartscher@weltraumschlangen.de>"
+  :author "Thomas Bartscher <thomas.bartscher@weltraumschlangen.de>"
   :depends-on (#:fset
                #:cl-adt
                #:cl-unicode
