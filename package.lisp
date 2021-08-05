@@ -21,4 +21,6 @@
    #:cl-unicode
    #:has-property)
   (:export
+   #:load-feature-file #:load-language-file #:load-dictionary-file
+   #:language-gen-word #:add-word #:add-gloss
    ))
