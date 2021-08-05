@@ -59,7 +59,9 @@
   (<nodist> 0))
 
 (defmatch distribution-with ([distribution] real t)
-    [distribution]
+          [distribution]
+  ((d 0 _)
+   d)
   ((<nodist> w v)
    (<distribution> 0 <nodist> w v <nodist> 0))
   (((<distribution> lw l w v r rw)
@@ -224,6 +226,24 @@
                                 (_rec (<distribution> 0 <nodist> w1 v1 r1 rw1)
                                       r2))))))))
        (_rec d1 d2)))))
+
+(defmatch distribution-frequency ([distribution] t)
+          real
+  ((<nodist> _)
+   0)
+  (((<distribution> _ l w x r _)
+    item)
+   (+ (distribution-frequency l item)
+      (distribution-frequency r item)
+      (if (equal? x item)
+          w
+          0))))
+
+(defun distribution-minus (distribution frequency item)
+  (bind ((absolute-frequency (distribution-frequency distribution item)))
+    (with (less distribution item)
+          (- absolute-frequency frequency)
+          item)))
 
 (defun distribution (&rest args)
   (bind ((dist <nodist>))
