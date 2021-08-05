@@ -263,6 +263,13 @@
                        :markov-spec markov-spec
                        :store store))))
 
+(defun load-language-file (binary-features valued-features privative-features
+                           file)
+  (with-open-file (stream file)
+    (parser-call (parse-language-file binary-features valued-features
+                                      privative-features)
+                 stream)))
+
 ;;;; Debugging
 (defmethod write-dot ((stream cons)
                       (graph language)
