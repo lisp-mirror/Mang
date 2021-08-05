@@ -239,11 +239,20 @@
           w
           0))))
 
-(defun distribution-minus (distribution frequency item)
+(defun distribution-minus-item (distribution frequency item)
   (bind ((absolute-frequency (distribution-frequency distribution item)))
     (with (less distribution item)
-          (- absolute-frequency frequency)
-          item)))
+          item
+          (- absolute-frequency frequency))))
+
+(defmatch distribution-minus ([distribution] [distribution])
+          [distribution]
+  ((d <nodist>)
+   d)
+  ((d (<distribution> _ l w i r _))
+   (distribution-minus (distribution-minus (distribution-minus-item d w i)
+                                           l)
+                       r)))
 
 (defun distribution (&rest args)
   (bind ((dist <nodist>))
@@ -350,13 +359,15 @@
 
 (defmethod print-object ((object [distribution])
                          stream)
-  (format stream "~:@<(DISTRIBUTION~;~{ ~S~}~;)~:@>"
-          (apply #'append
-                 (sort (loop :for (w v)
-                          :on (list<-distribution object)
-                          :by #'cddr
-                          :collect `(,w ,v))
-                       #'> :key #'first))))
+  (if (equal? object <nodist>)
+      (format stream "<NODIST>")
+      (format stream "~:@<(DISTRIBUTION~;~{ ~S~}~;)~:@>"
+              (apply #'append
+                     (sort (loop :for (w v)
+                                   :on (list<-distribution object)
+                                 :by #'cddr
+                                 :collect `(,w ,v))
+                           #'> :key #'first)))))
 
 (defmatch extract ([distribution] real)
     t
