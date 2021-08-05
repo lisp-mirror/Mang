@@ -208,32 +208,34 @@
                   value2))
          (delete? (empty? (glosses-of collection word)))
          (matcher (matcher<- collection))
-         (generator (generator<- collection)))
-    (make-instance 'language
-                   :name (name<- collection)
-                   :glyphs (glyphs<- collection)
-                   :categories (categories<- collection)
-                   :sonority-hierarchy (sonority-hierarchy<- collection)
-                   :matcher (if delete?
-                                (with matcher (rest word))
-                                matcher)
-                   :generator (if delete?
-                                  (with generator (rest word))
-                                  generator)
-                   :markov-spec (markov-spec<- collection)
-                   ;; BUG:
-                   ;;  this keeps the information learned from the removed word
-                   ;;  in the markov store
-                   :store (store<- collection)
-                   :dictionary (map* ($ dictionary)
-                                     :default (empty-map)
-                                     (& (value1 words)
-                                        (less words value2)))
-                   :unknown-dictionary (map* ($ (unknown-dictionary<-
-                                                 collection))
-                                             :default (empty-map)
-                                             (& (value1 words)
-                                                (less words value2))))))
+         (generator (generator<- collection))
+         (markov-spec (markov-spec<- collection)))
+    (if word
+        (make-instance 'language
+                       :name (name<- collection)
+                       :glyphs (glyphs<- collection)
+                       :categories (categories<- collection)
+                       :sonority-hierarchy (sonority-hierarchy<- collection)
+                       :matcher (if delete?
+                                    (with matcher (rest word))
+                                    matcher)
+                       :generator (if delete?
+                                      (with generator (rest word))
+                                      generator)
+                       :markov-spec markov-spec
+                       :store (unlearn (store<- collection)
+                                       markov-spec (first word)
+                                       (second word))
+                       :dictionary (map* ($ dictionary)
+                                         :default (empty-map)
+                                         (& (value1 words)
+                                            (less words value2)))
+                       :unknown-dictionary (map* ($ (unknown-dictionary<-
+                                                     collection))
+                                                 :default (empty-map)
+                                                 (& (value1 words)
+                                                    (less words value2))))
+        collection)))
 
 (defun parse-language-header ()
   (>> (parse-whitespace)
