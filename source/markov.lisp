@@ -244,36 +244,60 @@
                                   `(,(deep-union markovs markov)
                                      ,(deep-union stores store)))))))
 
+(defun empty-store ()
+  ;; category part       predicate distribution
+  (empty-map (empty-map (empty-map <nodist>))))
+
+(defun store-from-word (word markov-spec categories)
+  (declare (type list word)
+           (type map markov-spec)
+           (type set categories))
+  (bind ((markov-spec (keep categories markov-spec))
+         (intros (intros word)))
+    (image (lambda (category parts)
+             (values
+              category
+              (image (lambda (part functions)
+                       (values part
+                               (reduce (lambda (acc function)
+                                         (reduce (lambda (acc intro)
+                                                   (deep-union (funcall function
+                                                                        intro)
+                                                               acc))
+                                                 intros
+                                                 :initial-value acc))
+                                       functions
+                                       :initial-value (empty-map <nodist>))))
+                     (first parts))))
+           (with-default markov-spec
+             (empty-map (empty-map <nodist>))))))
+
 (defun learn (store markov-spec word categories)
   (declare (type map store markov-spec)
-           (type cons word)
+           (type list word)
            (type set categories))
-  (deep-union
-   store
-   (bind ((intros (intros word)))
-     (convert
-      'map categories
-      :key-fn #'identity
-      :value-fn
-      (lambda (category)
-        (image
-         (lambda (subcat spec)
-           (values subcat
-                   (reduce #'deep-union
-                           (image (lambda (f)
-                                    (declare (type function f))
-                                    (bind ((result (empty-map <nodist>)))
-                                      (loop :for intro
-                                         :in intros
-                                         :do
-                                           (setf result
-                                                 (deep-union result
-                                                             (funcall f intro)))
-                                         :finally
-                                           (return result))))
-                                  spec)
-                           :initial-value (empty-map <nodist>))))
-         (first (@ markov-spec category))))))))
+  (deep-union store (store-from-word word markov-spec categories)))
+
+(defun unlearn (store markov-spec word categories)
+  (declare (type map store markov-spec)
+           (type list word)
+           (type set categories))
+  (bind ((word-store (store-from-word word markov-spec categories)))
+    (image (lambda (category parts)
+             (values category
+                     (image (lambda (part functions)
+                              (values part
+                                      (image (lambda (function distribution)
+                                               (values function
+                                                       (distribution-minus
+                                                        distribution
+                                                        (@ (@ (@ word-store
+                                                                 category)
+                                                              part)
+                                                           function))))
+                                             functions)))
+                            parts)))
+           store)))
 
 (defun dist-from-markov (word store markov-spec dfsm state categories
                          &optional (negative-categories (empty-set)))
