@@ -105,6 +105,11 @@
             (succeed language))
           (fail `(:wrong-language ,name ,expected-name))))))
 
+(defun load-dictionary-file (language file)
+  (with-open-file (stream file)
+    (parser-call (parse-dictionary-file language)
+                 stream)))
+
 (defun write-dictionary (stream language
                          &key
                            (sort-by-gloss? t)
