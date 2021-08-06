@@ -682,16 +682,6 @@
                                        (fst-elementary #'true #'list
                                                        :consume? t)))))))))
 
-(defun parse-sound-change-section (binary-features valued-features
-                                   privative-features source-language
-                                   target-language)
-  (parse-section "sound changes"
-                 (parse-lines (parse-sound-change binary-features
-                                                  valued-features
-                                                  privative-features
-                                                  source-language
-                                                  target-language))))
-
 (defun apply-sound-change (word sound-change)
   (declare (type cons word)
            (type fst sound-change))
@@ -700,13 +690,3 @@
     (declare (special *category-registry* *phoneme-registry*)
              (type hash-table *category-registry* *phoneme-registry*))
     (run-fst sound-change word)))
-
-(defun apply-sound-changes (word &rest sound-changes)
-  (reduce-nd #'apply-sound-change
-             sound-changes word))
-
-(defun apply-sound-changes* (words &rest sound-changes)
-  (image (lambda (word)
-           (apply #'apply-sound-changes
-                  word sound-changes))
-         words))
