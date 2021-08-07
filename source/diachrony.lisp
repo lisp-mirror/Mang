@@ -29,6 +29,7 @@
           (parse-constant "=>")
           (parse-whitespace-no-newline))
     target (parse-semantic-shift-target)
+    _ (parse-whitespace-no-newline)
     word-categories
     (<? (parse-w/s "{" (parse-from-set (domain (markov-spec<- target-language)))
                    "," "}" (empty-set)
