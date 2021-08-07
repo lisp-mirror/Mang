@@ -8,7 +8,6 @@
                #:cl-unicode
                #:split-sequence
                #:metabang-bind
-               #:unix-opts
                )
   :components
   ((:file "package")
@@ -85,6 +84,10 @@
                    "glyphs"
                    "categories"
                    "language"))
+     (:file "diachrony"
+      :depends-on ("language"
+                   "dictionary"
+                   "sound-change"))
      (:file "read-mang"
       :depends-on ("features"
                    "language"
