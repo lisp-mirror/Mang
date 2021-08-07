@@ -5,10 +5,13 @@
       (parse-whitespace)
       (parse-constant ":")
       (parse-whitespace)
-      (parse-separated (parse-identifier *mang-reserved-symbols*)
-                       "," (empty-set)
-                       (lambda (feature features)
-                         (with features feature)))))
+      (parse-sequence (parse-identifier *mang-reserved-symbols*)
+                      (>> (parse-whitespace)
+                          (parse-constant ",")
+                          (parse-whitespace))
+                      (empty-set)
+                      (lambda (feature features)
+                        (with features feature)))))
 
 (defun parse-valued-feature-definition ()
   (>>!
@@ -20,10 +23,13 @@
     _ (>> (parse-whitespace)
           (parse-constant ":=")
           (parse-whitespace))
-    values (parse-separated (parse-identifier *mang-reserved-symbols*)
-                            "," (empty-set)
-                            (lambda (value values)
-                              (with values value)))
+    values (parse-sequence (parse-identifier *mang-reserved-symbols*)
+                           (>> (parse-whitespace)
+                               (parse-constant ",")
+                               (parse-whitespace))
+                           (empty-set)
+                           (lambda (value values)
+                             (with values value)))
     (succeed `(,name ,values))))
 
 (defun parse-privative-feature-definition ()
@@ -31,10 +37,13 @@
       (parse-whitespace)
       (parse-constant ":")
       (parse-whitespace)
-      (parse-separated (parse-identifier *mang-reserved-symbols*)
-                       "," (empty-set)
-                       (lambda (feature features)
-                         (with features feature)))))
+      (parse-sequence (parse-identifier *mang-reserved-symbols*)
+                      (>> (parse-whitespace)
+                          (parse-constant ",")
+                          (parse-whitespace))
+                      (empty-set)
+                      (lambda (feature features)
+                        (with features feature)))))
 
 (defun parse-feature-definition ()
   (// (<$> (parse-binary-feature-definition)
@@ -157,45 +166,51 @@
                                       privative-features)
   (declare (type set binary-features privative-features)
            (type map valued-features))
-  (parse-wrapped "["
-                 (parse-separated
-                  (parse-feature-spec binary-features valued-features
-                                      (union (union binary-features
-                                                    (domain valued-features))
-                                             privative-features))
-                  "," `(,(empty-map)
-                         ,(empty-set)
-                         ,(empty-set))
-                  (lambda (feature features)
-                    (bind (((constant present absent)
-                            features)
-                           ((nconstant npresent nabsent)
-                            feature))
-                      `(,(map-union constant nconstant)
-                         ,(union present npresent)
-                         ,(union absent nabsent)))))
-                 "]"))
+  (parse-w/s (>> (parse-constant "[")
+                 (parse-whitespace))
+             (parse-feature-spec binary-features valued-features
+                                 (union (union binary-features
+                                               (domain valued-features))
+                                        privative-features))
+             (>> (parse-whitespace)
+                 (parse-constant ",")
+                 (parse-whitespace))
+             (>> (parse-whitespace)
+                 (parse-constant "]"))
+             `(,(empty-map)
+               ,(empty-set)
+               ,(empty-set))
+             (lambda (feature features)
+               (bind (((constant present absent)
+                       feature)
+                      ((constants presents absents)
+                       features))
+                 `(,(map-union constants constant)
+                   ,(union presents present)
+                   ,(union absents absent))))))
 
 (defun parse-feature-set (binary-features valued-features privative-features)
   (declare (type set binary-features privative-features)
            (type map valued-features))
-  (parse-wrapped "["
-                 (parse-separated (parse-feature-spec binary-features
-                                                      valued-features
-                                                      privative-features)
-                                  "," (empty-map)
-                                  (lambda (feature features)
-                                    (bind (((constant present _)
-                                            feature))
-                                      (map-union
-                                       (map-union constant
-                                                  (convert 'map
-                                                           present
-                                                           :key-fn #'identity
-                                                           :value-fn
-                                                           (constantly t)))
-                                       features))))
-                 "]"))
+  (parse-w/s (>> (parse-constant "[")
+                 (parse-whitespace))
+             (parse-feature-spec binary-features valued-features
+                                 privative-features)
+             (>> (parse-whitespace)
+                 (parse-constant ",")
+                 (parse-whitespace))
+             (>> (parse-whitespace)
+                 (parse-constant "]"))
+             (empty-map)
+             (lambda (feature features)
+               (bind (((constant present _)
+                       feature))
+                 (map-union (map-union constant
+                                       (convert 'map
+                                                present
+                                                :key-fn #'identity
+                                                :value-fn (constantly t)))
+                            features)))))
 
 (defun has-features? (phoneme features present absent)
   (declare (type map phoneme features))

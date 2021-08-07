@@ -13,15 +13,12 @@
   (>> (parse-section-header name)
       parser))
 
-(defun parse-wrapped (before parser after)
-  (declare (type string before after)
-           (type function parser))
+(defun parse-wrapped (before inner after)
+  (declare (type function before inner after))
   (>>!
-    _ (>> (parse-constant before)
-          (parse-whitespace))
-    result parser
-    _ (>> (parse-whitespace)
-          (parse-constant after))
+    _ before
+    result inner
+    _ after
     (succeed result)))
 
 (defun parse-lines (parser &optional (d '())
@@ -33,35 +30,24 @@
           (succeed result))
         d f))
 
-(defun parse-separated (parser separator &optional (d '())
-                                           (f #'cons))
-  (declare (type function parser f))
+(defun parse-sequence (item separator
+                       &optional
+                         (d '())
+                         (f #'cons))
+  (declare (type function item separator f))
   (>>!
-    first parser
-    rest (many (>> (parse-whitespace)
-                   (parse-constant separator)
-                   (parse-whitespace)
-                   parser)
+    first item
+    rest (many (>> separator item)
                d f)
     (succeed (funcall f first rest))))
 
-(defun parse-w/s (before parser separator after
-                  &optional (d '())
+(defun parse-w/s (before item separator after
+                  &optional
+                    (d '())
                     (f #'cons))
-  (parse-wrapped before (parse-separated parser separator d f)
+  (declare (type function before item separator after f))
+  (parse-wrapped before (parse-sequence item separator d f)
                  after))
-
-(defun parse-separated-no-newline (parser separator &optional (d '())
-                                                      (f #'cons))
-  (declare (type function parser f))
-  (>>!
-    first parser
-    rest (many (>> (parse-whitespace-no-newline)
-                   (parse-constant separator)
-                   (parse-whitespace-no-newline)
-                   parser)
-               d f)
-    (succeed (funcall f first rest))))
 
 (defun load-by-parser (parser file)
   (with-open-file (stream file)

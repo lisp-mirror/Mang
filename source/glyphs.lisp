@@ -35,8 +35,9 @@
   (// (<~ (parse-from-map glyphs)
           `(:no-glyph-found))
       (>>!
-        candidate (parse-wrapped "<" (parse-identifier *mang-reserved-symbols*)
-                                 ">")
+        candidate (parse-wrapped (parse-constant "<")
+                                 (parse-identifier *mang-reserved-symbols*)
+                                 (parse-constant ">"))
         ([av]if (@ glyphs candidate)
             (succeed `(,candidate ,it))
           (fail `(:unknown-glyph ,candidate))))))
