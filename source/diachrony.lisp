@@ -1,19 +1,38 @@
 (in-package #:mang)
 
-(defun parse-semantic-shift (source-language target-language)
+(defun parse-part-of-speech ()
   (>>!
-    source-glosses (parse-separated (parse-gloss)
+    pos (parse-wrapped "[" (parse-identifier *mang-reserved-symbols*)
+                       "]")
+    register (<? (parse-number)
+                 nil)
+    (succeed (if register
+                 `(:register ,register (:part-of-speech ,pos))
+                 `(:part-of-speech ,pos)))))
+
+(defun parse-semantic-shift-target ()
+  (some (// (<$> (parse-wrapped "[" (parse-number)
+                                "]")
+                 (lambda (register)
+                   `(:register ,register)))
+            (parse-identifier (set "-" "[" "]")))
+        '() #'cons))
+
+(defun parse-semantic-shift (target-language)
+  (>>!
+    source-glosses (parse-separated (// (<$> (parse-gloss)
+                                             (lambda (gloss)
+                                               `(:gloss ,gloss)))
+                                        (parse-part-of-speech))
                                     "+")
     _ (>> (parse-whitespace-no-newline)
           (parse-constant "=>")
           (parse-whitespace-no-newline))
-    target-gloss (parse-gloss)
+    target (parse-semantic-shift-target)
     word-categories
-    (<? (parse-wrapped "{"
-                       (parse-separated (parse-from-map markov-spec)
-                                        "," (empty-set)
-                                        (lambda (cat cats)
-                                          (with cats (first cat))))
-                       "}")
+    (<? (parse-w/s "{" (parse-from-set (domain (markov-spec<- target-language)))
+                   "," "}" (empty-set)
+                   (lambda (cat cats)
+                     (with cats cat)))
         (empty-set))
-    (succeed `(,source-glosses ,target-gloss ,word-categories))))
+    (succeed `(,source-glosses ,target ,word-categories))))
