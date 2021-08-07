@@ -45,6 +45,12 @@
                d f)
     (succeed (funcall f first rest))))
 
+(defun parse-w/s (before parser separator after
+                  &optional (d '())
+                    (f #'cons))
+  (parse-wrapped before (parse-separated parser separator d f)
+                 after))
+
 (defun parse-separated-no-newline (parser separator &optional (d '())
                                                       (f #'cons))
   (declare (type function parser f))
