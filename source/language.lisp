@@ -203,9 +203,9 @@
                             defs)))
           (dictionary<- language)))
 
-(defmethod less-gloss! ((language language)
-                        (part-of-speech string)
-                        (gloss string))
+(defmethod less-known-gloss! ((language language)
+                              (part-of-speech string)
+                              (gloss string))
   (setf (unknown-dictionary<- language)
         (map* ($ (unknown-dictionary<- language))
               :default (empty-map)
