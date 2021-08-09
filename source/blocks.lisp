@@ -56,7 +56,7 @@
 
 (defun load-by-parser (parser file)
   (with-open-file (stream file)
-    (parser-call (parse-file)
+    (parser-call (parse-file parser)
                  stream)))
 
 (defun on-files (f file &rest files)

@@ -113,16 +113,7 @@
 
 (defun parse-dictionary-file (language)
   (declare (type language language))
-  (bind ((expected-name (name<- language)))
-    (>>!
-      name (parse-language-header)
-      (if (string= expected-name name)
-          (>>!
-            language (parse-dictionary language)
-            _ (>> (parse-whitespace)
-                  (parse-eof))
-            (succeed language))
-          (fail `(:wrong-language ,name ,expected-name))))))
+  (parse-file (parse-dictionary language)))
 
 (defun load-dictionary-file (language file)
   (with-open-file (stream file)

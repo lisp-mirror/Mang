@@ -1,10 +1,7 @@
 (in-package #:mang)
 
 (defclass language ()
-  ((%name :type string
-          :initarg :name
-          :reader name<-)
-   (%glyphs :type map
+  ((%glyphs :type map
             :initarg :glyphs
             :reader glyphs<-)
    (%categories :type map
@@ -32,18 +29,16 @@
                         :initarg :unknown-dictionary
                         :reader unknown-dictionary<-)))
 
-(defun language (name
-                 &key
-                   (glyphs (empty-map))
-                   (categories (empty-map))
-                   (sonority-hierarchy '())
-                   (matcher (dfsm<- ()))
-                   (generator matcher)
-                   (markov-spec (empty-map (list (empty-map (empty-set))
-                                                 '())))
-                   (store (empty-map (empty-map (empty-map <nodist>)))))
+(defun language (&key
+                 (glyphs (empty-map))
+                 (categories (empty-map))
+                 (sonority-hierarchy '())
+                 (matcher (dfsm<- ()))
+                 (generator matcher)
+                 (markov-spec (empty-map (list (empty-map (empty-set))
+                                               '())))
+                 (store (empty-map (empty-map (empty-map <nodist>)))))
   (make-instance 'language
-                 :name name
                  :glyphs glyphs
                  :categories categories
                  :sonority-hierarchy sonority-hierarchy
@@ -77,7 +72,6 @@
                       (part-of-speech string)
                       (gloss string))
   (make-instance 'language
-                 :name (name<- storage)
                  :glyphs (glyphs<- storage)
                  :categories (categories<- storage)
                  :sonority-hierarchy (sonority-hierarchy<- storage)
@@ -114,7 +108,6 @@
                            generator)
                        (rest word)))
         (values (make-instance 'language
-                               :name (name<- storage)
                                :glyphs (glyphs<- storage)
                                :categories (categories<- storage)
                                :sonority-hierarchy
@@ -212,7 +205,6 @@
          (markov-spec (markov-spec<- collection)))
     (if word
         (make-instance 'language
-                       :name (name<- collection)
                        :glyphs (glyphs<- collection)
                        :categories (categories<- collection)
                        :sonority-hierarchy (sonority-hierarchy<- collection)
@@ -237,15 +229,8 @@
                                                     (less words value2))))
         collection)))
 
-(defun parse-language-header ()
-  (>> (parse-whitespace)
-      (parse-constant "##")
-      (parse-whitespace-no-newline)
-      (parse-identifier)))
-
 (defun parse-language-file (binary-features valued-features privative-features)
   (>>!
-    name (parse-language-header)
     glyphs (parse-glyph-section binary-features valued-features
                                 privative-features)
     categories (parse-category-section glyphs)
@@ -255,8 +240,7 @@
     (markov-spec store) (parse-markov-section glyphs categories)
     _ (>> (parse-whitespace)
           (parse-eof))
-    (succeed (language name
-                       :glyphs glyphs
+    (succeed (language :glyphs glyphs
                        :categories categories
                        :sonority-hierarchy sonority-hierarchy
                        :matcher generator

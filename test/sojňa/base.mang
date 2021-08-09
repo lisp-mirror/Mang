@@ -1,4 +1,3 @@
-## sojňa
 # glyphs
 p := [bilabial    , manner=stop               , voice=unvoiced, ~round]
 t := [alveolar    , manner=stop               , voice=unvoiced, ~round]
