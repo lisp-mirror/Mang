@@ -191,6 +191,17 @@
           (dictionary<- language)
           :initial-value (empty-set)))
 
+(defun pos+glosses-of (language word)
+  (declare (type language language)
+           (type list word))
+  (reduce (lambda (acc pos defs)
+            (union (image (lambda (gloss)
+                            (cons pos gloss))
+                          (origin word defs
+                                  :key #'first))
+                   acc))
+          (dictionary<- language)))
+
 (defun heterophone? (language word)
   (reduce (lambda (acc pos defs)
             (declare (ignore pos))
