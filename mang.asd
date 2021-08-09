@@ -34,7 +34,8 @@
       :depends-on ("anaphora"
                    "list"))
      (:file "parser-combinator"
-      :depends-on ("anaphora"))
+            :depends-on ("anaphora"))
+     (:file "dot")
      ))
    (:module
     "source"
