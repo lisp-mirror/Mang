@@ -687,7 +687,7 @@
                                        (fst-elementary #'true #'list
                                                        :consume? t)))))))))
 
-(defun apply-sound-change (word sound-change)
+(defun apply-sound-change-to-word (word sound-change)
   (declare (type cons word)
            (type fst sound-change))
   (bind ((*category-registry* (make-hash-table :test 'equal))
@@ -695,3 +695,53 @@
     (declare (special *category-registry* *phoneme-registry*)
              (type hash-table *category-registry* *phoneme-registry*))
     (run-fst sound-change word)))
+
+(defun apply-sound-change-to-unknown (word sound-change)
+  (lambda (language)
+    (bind (((:values word word-categories negative-word-categories _ _
+                     allow-homophones?)
+            (funcall word language))
+           (allowed-word-categories
+            (union (domain (dictionary<- language))
+                   (domain (unknown-dictionary<- language))))
+           (word (apply-sound-change-to-word word sound-change)))
+      (values word (intersection word-categories allowed-word-categories)
+              (intersection negative-word-categories allowed-word-categories)
+              (if allow-homophones?
+                  (matcher<- language)
+                  (less-word (matcher<- language)
+                             word))
+              (less-word (generator<- language)
+                         word)
+              allow-homophones?))))
+
+(defun apply-sound-change! (language sound-change)
+  (declare (type language language)
+           (type fst sound-change))
+  (setf (dictionary<- language)
+        (image (lambda (pos entries)
+                 (values pos
+                         (image (lambda (gloss word)
+                                  (values gloss
+                                          (cons (apply-sound-change-to-word
+                                                 (first word)
+                                                 sound-change)
+                                                (rest word))))
+                                entries)))
+               (dictionary<- language))
+        (unknown-dictionary<- language)
+        (image (lambda (pos entries)
+                 (values pos
+                         (image (lambda (gloss word)
+                                  (values
+                                   gloss
+                                   (apply-sound-change-to-unknown word
+                                                                  sound-change)))
+                                entries)))
+               (unknown-dictionary<- language))
+        (matcher<- language)
+        nil
+        (generator<- language)
+        nil
+        (store<- language)
+        nil))
