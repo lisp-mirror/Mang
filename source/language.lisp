@@ -121,7 +121,8 @@
                                                     negative-word-categories)))
                                (values word word-categories
                                        negative-word-categories
-                                       (matcher<- language)
+                                       (less-word (matcher<- language)
+                                                  word)
                                        (less-word generator word)
                                        nil)))))))))
   storage)
@@ -159,6 +160,14 @@
         (setf (matcher<- storage)
               (less-word matcher word)))))
   storage)
+
+(defmethod known-gloss-candidate ((storage language)
+                                  (part-of-speech string)
+                                  (gloss string))
+  ([a]when (@ (@ (unknown-dictionary<- storage)
+                 part-of-speech)
+              gloss)
+    (funcall it storage)))
 
 (defun language-gen-word (language word-categories
                           &key
