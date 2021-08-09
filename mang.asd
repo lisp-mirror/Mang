@@ -84,7 +84,7 @@
                    "glyphs"
                    "categories"
                    "language"))
-     (:file "diachrony"
+     (:file "semantic-change"
       :depends-on ("language"
                    "dictionary"
                    "sound-change"))
