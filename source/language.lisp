@@ -58,6 +58,18 @@
                  :dictionary (c-in (empty-map (empty-map)))
                  :unknown-dictionary (empty-map (empty-map))))
 
+(defun copy-language (language)
+  (make-instance 'language
+                 :glyphs (glyphs<- language)
+                 :categories (categories<- language)
+                 :sonority-hierarchy (sonority-hierarchy<- language)
+                 :matcher (matcher<- language)
+                 :generator (generator<- language)
+                 :markov-spec (markov-spec<- language)
+                 :store (store<- language)
+                 :dictionary (dictionary<- language)
+                 :unknown-dictionary (unknown-dictionary<- language)))
+
 (defun less-word (dfsm word)
   (bind ((accepting (accepting-states<- dfsm))
          (dfsm (less (make-instance 'dfsm
@@ -122,13 +134,15 @@
                       allow-homophones?)
   (bind ((generator (generator<- storage))
          (matcher (matcher<- storage)))
-    (unless (or (@ (@ (unknown-dictionary<- storage)
-                      part-of-speech)
-                   gloss)
-                (not (run-dfsm (if allow-homophones?
-                                   matcher
-                                   generator)
-                               (rest word))))
+    (when (not (or (@ (@ (unknown-dictionary<- storage)
+                         part-of-speech)
+                      gloss)
+                   (and generator
+                        matcher
+                        (not (run-dfsm (if allow-homophones?
+                                           matcher
+                                           generator)
+                                       word)))))
       (setf (dictionary<- storage)
             (map* ($ (dictionary<- storage))
                   :default (empty-map)
