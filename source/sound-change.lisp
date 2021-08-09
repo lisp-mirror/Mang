@@ -622,14 +622,12 @@
       (empty-fst)))
 
 (defun parse-sound-change (binary-features valued-features privative-features
-                           source-language target-language)
+                           source-language target-glyphs target-categories)
   (declare (type set binary-features privative-features)
-           (type map valued-features)
-           (type language source-language target-language))
+           (type map valued-features target-glyphs target-categories)
+           (type language source-language))
   (bind ((source-glyphs (glyphs<- source-language))
-         (source-categories (categories<- source-language))
-         (target-glyphs (glyphs<- target-language))
-         (target-categories (categories<- target-language)))
+         (source-categories (categories<- source-language)))
     (>>!
       before (parse-to (>> (parse-whitespace-no-newline)
                            (// (parse-constant "->")
