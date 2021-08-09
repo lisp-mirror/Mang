@@ -1,33 +1,42 @@
 (in-package #:mang)
 
-(defclass language ()
+(defmodel language ()
   ((%glyphs :type map
             :initarg :glyphs
-            :reader glyphs<-)
+            :reader glyphs<-
+            :cell nil)
    (%categories :type map
                 :initarg :categories
-                :reader categories<-)
+                :reader categories<-
+                :cell nil)
    (%sonority-hierarchy :type list
                         :initarg :sonority-hierarchy
-                        :reader sonority-hierarchy<-)
+                        :reader sonority-hierarchy<-
+                        :cell nil)
    (%matcher :type dfsm
              :initarg :matcher
-             :reader matcher<-)
+             :accessor matcher<-
+             :cell nil)
    (%generator :type dfsm
                :initarg :generator
-               :reader generator<-)
+               :accessor generator<-
+               :cell nil)
    (%markov-spec :type map
                  :initarg :markov-spec
-                 :reader markov-spec<-)
+                 :reader markov-spec<-
+                 :cell nil)
    (%store :type map
            :initarg :store
-           :reader store<-)
+           :accessor store<-
+           :cell nil)
    (%dictionary :type map
                 :initarg :dictionary
-                :reader dictionary<-)
+                :accessor dictionary<-
+                :unchanged-if #'equal?)
    (%unknown-dictionary :type map
                         :initarg :unknown-dictionary
-                        :reader unknown-dictionary<-)))
+                        :accessor unknown-dictionary<-
+                        :cell nil)))
 
 (defun language (&key
                  (glyphs (empty-map))
@@ -46,7 +55,7 @@
                  :generator generator
                  :markov-spec markov-spec
                  :store store
-                 :dictionary (empty-map (empty-map))
+                 :dictionary (c-in (empty-map (empty-map)))
                  :unknown-dictionary (empty-map (empty-map))))
 
 (defun less-word (dfsm word)
@@ -66,73 +75,73 @@
                                    (map (:begin t)))
                    :accepting-states accepting)))
 
-(defmethod add-gloss ((storage language)
-                      (word-categories set)
-                      (negative-word-categories set)
-                      (part-of-speech string)
-                      (gloss string))
-  (make-instance 'language
-                 :glyphs (glyphs<- storage)
-                 :categories (categories<- storage)
-                 :sonority-hierarchy (sonority-hierarchy<- storage)
-                 :matcher (matcher<- storage)
-                 :generator (generator<- storage)
-                 :markov-spec (markov-spec<- storage)
-                 :store (store<- storage)
-                 :dictionary (dictionary<- storage)
-                 :unknown-dictionary
-                 (map* ($ (unknown-dictionary<- storage))
-                       :default (empty-map)
-                       (& (part-of-speech defs)
-                          (map ($ defs)
-                               (gloss (cons word-categories
-                                            negative-word-categories)))))))
+(defmethod add-gloss! ((storage language)
+                       (word-categories set)
+                       (negative-word-categories set)
+                       (part-of-speech string)
+                       (gloss string)
+                       allow-homophones?)
+  (setf (unknown-dictionary<- storage)
+        (map* ($ (unknown-dictionary<- storage))
+              :default (empty-map)
+              (& (part-of-speech defs)
+                 (map ($ defs)
+                      (gloss
+                       (if allow-homophones?
+                           (lambda (language)
+                             (bind ((matcher (matcher<- language))
+                                    (word
+                                     (generate-word matcher (store<- language)
+                                                    (markov-spec<- language)
+                                                    word-categories
+                                                    negative-word-categories)))
+                               (values word word-categories matcher
+                                       (less-word (generator<- language)
+                                                  word)
+                                       t)))
+                           (lambda (language)
+                             (bind ((generator (generator<- language))
+                                    (word
+                                     (generate-word generator (store<- language)
+                                                    (markov-spec<- language)
+                                                    word-categories
+                                                    negative-word-categories)))
+                               (values word word-categories (matcher<- language)
+                                       (less-word generator word)
+                                       nil)))))))))
+  storage)
 
-(defmethod add-word ((storage language)
-                     (word-categories set)
-                     (part-of-speech string)
-                     (gloss string)
-                     (word list)
-                     allow-homophones?)
-  (bind ((matcher (matcher<- storage))
-         (generator (generator<- storage))
-         (markov-spec (markov-spec<- storage))
-         (found-word-categories (@ (@ (unknown-dictionary<- storage)
-                                      part-of-speech)
-                                   gloss)))
-    (if (and (or (not found-word-categories)
-                 (equal? (car found-word-categories)
-                         word-categories))
-             (run-dfsm (if allow-homophones?
-                           matcher
-                           generator)
-                       (rest word)))
-        (values (make-instance 'language
-                               :glyphs (glyphs<- storage)
-                               :categories (categories<- storage)
-                               :sonority-hierarchy
-                               (sonority-hierarchy<- storage)
-                               :matcher (if allow-homophones?
-                                            matcher
-                                            (less-word matcher word))
-                               :generator (less-word generator word)
-                               :markov-spec markov-spec
-                               :store (learn (store<- storage)
-                                             markov-spec word word-categories)
-                               :dictionary
-                               (map* ($ (dictionary<- storage))
-                                     :default (empty-map)
-                                     (& (part-of-speech words)
-                                        (with words
-                                              gloss (list word word-categories
-                                                          allow-homophones?))))
-                               :unknown-dictionary
-                               (map* ($ (unknown-dictionary<- storage))
-                                     :default (empty-map)
-                                     (& (part-of-speech unwords)
-                                        (less unwords gloss))))
-                t)
-        (values storage nil))))
+(defmethod add-word! ((storage language)
+                      (word-categories set)
+                      (part-of-speech string)
+                      (gloss string)
+                      (word list)
+                      allow-homophones?)
+  (bind ((generator (generator<- storage))
+         (matcher (matcher<- storage)))
+    (unless (or (@ (@ (unknown-dictionary<- storage)
+                      part-of-speech)
+                   gloss)
+                (not (run-dfsm (if allow-homophones?
+                                   matcher
+                                   generator)
+                               (rest word))))
+      (setf (dictionary<- storage)
+            (map* ($ (dictionary<- storage))
+                  :default (empty-map)
+                  (& (part-of-speech glosses)
+                     (with glosses gloss
+                           (list word word-categories allow-homophones?))))
+            (store<- storage)
+            (learn (store<- storage)
+                   (markov-spec<- storage)
+                   word word-categories)
+            (generator<- storage)
+            (less-word generator word))
+      (unless allow-homophones?
+        (setf (matcher<- storage)
+              (less-word matcher word)))))
+  storage)
 
 (defun language-gen-word (language word-categories
                           &key
@@ -145,43 +154,6 @@
                  (markov-spec<- language)
                  word-categories negative-word-categories))
 
-(defun prompt-gen-word (language part-of-speech gloss word-categories
-                        &key
-                          allow-homophones?
-                          (negative-word-categories (empty-set)))
-  (bind ((generator (if allow-homophones?
-                        (matcher<- language)
-                        (generator<- language))))
-    (add-word language word-categories part-of-speech gloss
-              (loop
-                :as word
-                  := (generate-word generator (store<- language)
-                                    (markov-spec<- language)
-                                    word-categories negative-word-categories)
-                :until (y-or-n-p "Use <~A> for gloss \"~A\"?"
-                                 (string<-word (glyphs<- language)
-                                               word
-                                               :computer-readable? nil)
-                                 gloss)
-                :do
-                   (setf generator
-                         (less-word generator word))
-                :finally
-                   (return word))
-              allow-homophones?)))
-
-(defun prompt-gen-known-gloss (language part-of-speech gloss
-                               &key
-                                 allow-homophones?)
-  ([a]if (@ (@ (unknown-dictionary<- language)
-               part-of-speech)
-            gloss)
-      (values (prompt-gen-word language part-of-speech gloss (car it)
-                               :negative-word-categories (cdr it)
-                               :allow-homophones? allow-homophones?)
-              t)
-    (values language nil)))
-
 (defun glosses-of (language word)
   (declare (type language language)
            (type list word))
@@ -193,41 +165,49 @@
           (dictionary<- language)
           :initial-value (empty-set)))
 
-(defmethod less ((collection language)
-                 (value1 string)
-                 &optional value2)
-  (bind ((dictionary (dictionary<- collection))
-         (word (@ (@ dictionary value1)
-                  value2))
-         (delete? (empty? (glosses-of collection word)))
-         (matcher (matcher<- collection))
-         (generator (generator<- collection))
-         (markov-spec (markov-spec<- collection)))
-    (if word
-        (make-instance 'language
-                       :glyphs (glyphs<- collection)
-                       :categories (categories<- collection)
-                       :sonority-hierarchy (sonority-hierarchy<- collection)
-                       :matcher (if delete?
-                                    (with matcher (rest word))
-                                    matcher)
-                       :generator (if delete?
-                                      (with generator (rest word))
-                                      generator)
-                       :markov-spec markov-spec
-                       :store (unlearn (store<- collection)
-                                       markov-spec (first word)
-                                       (second word))
-                       :dictionary (map* ($ dictionary)
-                                         :default (empty-map)
-                                         (& (value1 words)
-                                            (less words value2)))
-                       :unknown-dictionary (map* ($ (unknown-dictionary<-
-                                                     collection))
-                                                 :default (empty-map)
-                                                 (& (value1 words)
-                                                    (less words value2))))
-        collection)))
+(defun heterophone? (language word)
+  (reduce (lambda (acc pos defs)
+            (declare (ignore pos))
+            (or acc (reduce (lambda (acc gloss found-word)
+                              (declare (ignore gloss))
+                              (bind (((found-word _ allow-homophones?)
+                                      found-word))
+                                (or acc (and (equal? found-word word)
+                                             allow-homophones?))))
+                            defs)))
+          (dictionary<- language)))
+
+(defmethod less-gloss! ((language language)
+                        (part-of-speech string)
+                        (gloss string))
+  (setf (unknown-dictionary<- language)
+        (map* ($ (unknown-dictionary<- language))
+              :default (empty-map)
+              (& (part-of-speech words)
+                 (less words gloss))))
+  (bind ((word (@ (@ (dictionary<- language)
+                     part-of-speech)
+                  gloss)))
+    (when word
+      (setf (dictionary<- language)
+            (map* ($ (dictionary<- language))
+                  :default (empty-map)
+                  (& (part-of-speech words)
+                     (less words gloss)))
+            (store<- language)
+            (unlearn (store<- language)
+                     (markov-spec<- language)
+                     (first word)
+                     (second word)))
+      (unless (heterophone? language word)
+        (setf (matcher<- language)
+              (less-word (matcher<- language)
+                         word)))
+      (when (empty? (glosses-of language word))
+        (setf (generator<- language)
+              (less-word (generator<- language)
+                         word)))))
+  language)
 
 (defun parse-language-file (binary-features valued-features privative-features)
   (>>!

@@ -8,7 +8,7 @@
                                        (@ (set #\- #\[ #\])
                                           parsed-char)))
                                  parsed)
-                        (fail nil)
+                        (fail `(:not-a-gloss ,parsed))
                         (succeed parsed)))))
 
 (defun parse-defined-entry (language parts-of-speech)
@@ -39,8 +39,8 @@
                    (lambda (cat cats)
                      (with cats cat)))
         (empty-set))
-    (succeed (add-word language word-categories part-of-speech gloss word
-                       allow-homophones?))))
+    (succeed (add-word! language word-categories part-of-speech gloss word
+                        allow-homophones?))))
 
 (defun parse-generated-entry (language parts-of-speech)
   (declare (type language language)
@@ -50,6 +50,11 @@
       gloss (parse-gloss)
       _ (parse-whitespace)
       part-of-speech (parse-from-set parts-of-speech)
+      _ (parse-whitespace)
+      allow-homophones? (// (<$ (parse-constant "y")
+                                t)
+                            (<$ (parse-constant "n")
+                                nil))
       _ (parse-whitespace)
       word-categories (parse-w/s (>> (parse-constant "{")
                                      (parse-whitespace))
@@ -77,8 +82,8 @@
                            (with cats cat)))
               (<$ (parse-constant "{}")
                   (empty-set))))
-      (succeed (add-gloss language word-categories negative-word-categories
-                          part-of-speech gloss)))))
+      (succeed (add-gloss! language word-categories negative-word-categories
+                           part-of-speech gloss allow-homophones?)))))
 
 (defun parse-dictionary-entry (language parts-of-speech)
   (declare (type language language)

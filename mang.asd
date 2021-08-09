@@ -8,6 +8,7 @@
                #:cl-unicode
                #:split-sequence
                #:metabang-bind
+               #:cells
                )
   :components
   ((:file "package")
