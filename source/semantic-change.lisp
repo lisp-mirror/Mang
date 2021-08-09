@@ -27,7 +27,8 @@
 
 (defun parse-semantic-shift (source-language target-language)
   (bind ((dictionary (map-union (dictionary<- source-language)
-                                (unknown-dictionary<- source-language))))
+                                (unknown-dictionary<- source-language)
+                                #'map-union)))
     (>>!
       source-glosses
       (parse-sequence (// (parse-full-existing-gloss dictionary)
@@ -57,9 +58,9 @@
 
 (defun parse-drop-gloss (language)
   (>>!
-    gloss
-    (parse-full-existing-gloss (map-union (dictionary<- language)
-                                          (unknown-dictionary<- language)))
+    gloss (parse-full-existing-gloss (map-union (dictionary<- language)
+                                                (unknown-dictionary<- language)
+                                                #'map-union))
     _ (>> (parse-whitespace-no-newline)
           (parse-constant "=>")
           (parse-whitespace-no-newline)
