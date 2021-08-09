@@ -125,13 +125,14 @@
     (parser-call (parse-dictionary-file language)
                  stream)))
 
-(defun write-dictionary (stream language
-                         &key
-                           (sort-by-gloss? t)
-                           (computer-readable? t)
-                           (sorting-predicate (lambda (s1 s2)
-                                                (string< (string-downcase s1)
-                                                         (string-downcase s2)))))
+(defun write-known-dictionary (stream language
+                               &key
+                                 (sort-by-gloss? t)
+                                 (computer-readable? t)
+                                 (sorting-predicate
+                                  (lambda (s1 s2)
+                                    (string< (string-downcase s1)
+                                             (string-downcase s2)))))
   (declare (type language language)
            (type boolean sort-by-gloss? computer-readable?)
            (type (function (string string)
@@ -170,3 +171,61 @@
                        "n")
                    (convert 'list
                             word-categories))))))
+
+(defun write-unknown-dictionary (stream language
+                                 &optional
+                                   (sorting-predicate
+                                    (lambda (s1 s2)
+                                      (string< (string-downcase s1)
+                                               (string-downcase s2)))))
+  (declare (type language language)
+           (type (function (string string)
+                           boolean)
+                 sorting-predicate))
+  (bind
+      ((udict
+        (sort (reduce (lambda (acc pos entries)
+                        (append (reduce (lambda (acc gloss entry)
+                                          (bind (((:values _ categories
+                                                     negative-categories _ _
+                                                     allow-homophones?)
+                                                  (funcall entry language)))
+                                            (cons (list gloss pos
+                                                        allow-homophones?
+                                                        categories
+                                                        negative-categories)
+                                                  acc)))
+                                        entries
+                                        :initial-value '())
+                                acc))
+                      (unknown-dictionary<- language)
+                      :initial-value '())
+              sorting-predicate
+              :key #'first)))
+    (loop
+      :for (gloss pos allow-homophones? categories negative-categories)
+        :in udict
+      :do
+         (format stream "~A ~A ~A {~{~A~^,~}} {~{~A~^,~}}~%"
+                 gloss pos (if allow-homophones?
+                               "y"
+                               "n")
+                 (convert 'list
+                          categories)
+                 (convert 'list
+                          negative-categories)))))
+
+(defun write-dictionary (stream language
+                         &key
+                           (sort-by-gloss? t)
+                           (computer-readable? t)
+                           (sorting-predicate
+                            (lambda (s1 s2)
+                              (string< (string-downcase s1)
+                                       (string-downcase s2)))))
+  (write-known-dictionary stream language
+                          :sort-by-gloss? sort-by-gloss?
+                          :computer-readable? computer-readable?
+                          :sorting-predicate sorting-predicate)
+  (format stream "~%")
+  (write-unknown-dictionary stream language sorting-predicate))

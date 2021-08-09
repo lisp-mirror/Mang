@@ -95,7 +95,8 @@
                                                     (markov-spec<- language)
                                                     word-categories
                                                     negative-word-categories)))
-                               (values word word-categories matcher
+                               (values word word-categories
+                                       negative-word-categories matcher
                                        (less-word (generator<- language)
                                                   word)
                                        t)))
@@ -106,7 +107,9 @@
                                                     (markov-spec<- language)
                                                     word-categories
                                                     negative-word-categories)))
-                               (values word word-categories (matcher<- language)
+                               (values word word-categories
+                                       negative-word-categories
+                                       (matcher<- language)
                                        (less-word generator word)
                                        nil)))))))))
   storage)
