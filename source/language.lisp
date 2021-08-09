@@ -36,7 +36,7 @@
    (%unknown-dictionary :type map
                         :initarg :unknown-dictionary
                         :accessor unknown-dictionary<-
-                        :cell nil)))
+                        :unchanged-if #'equal?)))
 
 (defun language (&key
                  (glyphs (empty-map))

@@ -715,33 +715,37 @@
                          word)
               allow-homophones?))))
 
-(defun apply-sound-change! (language sound-change)
+(defun apply-sound-change (language sound-change)
   (declare (type language language)
            (type fst sound-change))
-  (setf (dictionary<- language)
-        (image (lambda (pos entries)
-                 (values pos
-                         (image (lambda (gloss word)
-                                  (values gloss
-                                          (cons (apply-sound-change-to-word
-                                                 (first word)
-                                                 sound-change)
-                                                (rest word))))
-                                entries)))
-               (dictionary<- language))
-        (unknown-dictionary<- language)
-        (image (lambda (pos entries)
-                 (values pos
-                         (image (lambda (gloss word)
-                                  (values
-                                   gloss
-                                   (apply-sound-change-to-unknown word
-                                                                  sound-change)))
-                                entries)))
-               (unknown-dictionary<- language))
-        (matcher<- language)
-        nil
-        (generator<- language)
-        nil
-        (store<- language)
-        nil))
+  (bind ((new-language (copy-language language)))
+    (setf (dictionary<- new-language)
+          (c?
+            (image (lambda (pos entries)
+                     (values pos
+                             (image (lambda (gloss word)
+                                      (values gloss
+                                              (cons (apply-sound-change-to-word
+                                                     (first word)
+                                                     sound-change)
+                                                    (rest word))))
+                                    entries)))
+                   (dictionary<- language)))
+          (unknown-dictionary<- new-language)
+          (c?
+            (image (lambda (pos entries)
+                     (values
+                      pos
+                      (image (lambda (gloss word)
+                               (values
+                                gloss
+                                (apply-sound-change-to-unknown word
+                                                               sound-change)))
+                             entries)))
+                   (unknown-dictionary<- language)))
+          (matcher<- new-language)
+          nil
+          (generator<- new-language)
+          nil
+          (store<- new-language)
+          nil)))
