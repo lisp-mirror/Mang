@@ -49,13 +49,14 @@
   (parse-wrapped before (parse-sequence item separator d f)
                  after))
 
+(defun parse-file (parser)
+  (parse-wrapped (parse-whitespace)
+                 parser (>> (parse-whitespace)
+                            (parse-eof))))
+
 (defun load-by-parser (parser file)
   (with-open-file (stream file)
-    (parser-call (>>!
-                   result parser
-                   _ (>> (parse-whitespace)
-                         (parse-eof))
-                   (succeed result))
+    (parser-call (parse-file)
                  stream)))
 
 (defun on-files (f file &rest files)
