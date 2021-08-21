@@ -117,9 +117,8 @@
                          t)
                   (bind (((feature register)
                           feature))
-                    (setf (gethash register *phoneme-registry*)
-                          (with (gethash register *phoneme-registry*)
-                                feature (@ phoneme feature))))))))
+                    ([d]setf (with (gethash register *phoneme-registry*)
+                                   feature (@ phoneme feature))))))))
 
 (defun fst-write-register (register)
   (declare (special *phoneme-registry*))

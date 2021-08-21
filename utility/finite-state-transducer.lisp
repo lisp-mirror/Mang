@@ -72,7 +72,7 @@
       :for (source target)
         :on transitions
       :by #'cddr
-      :do (setf fst (add-epsilon-transition fst source target))
+      :do ([d]setf (add-epsilon-transition fst source target))
       :finally (return fst))))
 
 (defun empty-fst (&optional (state (gensym "state")))
@@ -425,8 +425,8 @@
                                         done))
       :while state
       :do
-         (setf done (with done state)
-               new-fst (fst-simplify-state new-fst state))
+         ([d]setf (with done state)
+                  (fst-simplify-state new-fst state))
       :finally (return new-fst))))
 
 ;;;; writing dot files for debugging purposes

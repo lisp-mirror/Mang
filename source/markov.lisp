@@ -423,8 +423,8 @@
          (if new-state
              (locally
                  (declare (type cons outro))
-               (setf word (append word outro)
-                     state new-state))
+               ([d]setf (append word outro))
+               (setf state new-state))
              (locally
                  (declare (type boolean outro))
                (return-from generate-word

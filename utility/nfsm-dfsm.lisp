@@ -77,11 +77,10 @@ EPSILON-TRANSITION-MAP"
       (multiple-value-bind (inner-in inner-out inner-transitions
                                      inner-eps-transitions)
           (nfsm<- inner)
-        (setf transitions
-              (map-union transitions inner-transitions
-                         (lambda (x y)
-                           (map-union x y #'union)))
-              eps-transitions
+        ([d]setf (map-union transitions inner-transitions
+                            (lambda (x y)
+                              (map-union x y #'union))))
+        (setf eps-transitions
               (epsilon-transition-map-with
                (epsilon-transition-map-with
                 (map-union eps-transitions inner-eps-transitions #'union)
@@ -156,15 +155,14 @@ EPSILON-TRANSITION-MAP"
     (do-map (in transitions transition-map)
       (bind ((in-simple (or (@ registry in)
                             (gensym "state"))))
-        (setf registry (with registry in in-simple))
+        ([d]setf (with registry in in-simple))
         (do-map (category target transitions)
           (bind ((target-simple (or (@ registry target)
                                     (gensym "state"))))
-            (setf registry (with registry target target-simple))
-            (setf new-dfsm
-                  (with new-dfsm in-simple
-                        (with (@ new-dfsm in-simple)
-                              category target-simple)))))))
+            ([d]setf (with registry target target-simple)
+                     (with new-dfsm in-simple
+                           (with (@ new-dfsm in-simple)
+                                 category target-simple)))))))
     (values new-dfsm start (range accepting))))
 
 (defun dfsm<-nfsm (start-state transition-map epsilon-transitions
@@ -220,15 +218,12 @@ EPSILON-TRANSITION-MAP"
              (found? (@ valuable-states identity))
              (new-state (or found? state)))
         (unless found?
-          (setf valuable-states
-                (with valuable-states
-                      identity state)))
-        (setf redirections
-              (with redirections
-                    state new-state)
-              new-transition-table
-              (with new-transition-table
-                    new-state transitions))))
+          ([d]setf (with valuable-states
+                         identity state)))
+        ([d]setf (with redirections
+                       state new-state)
+                 (with new-transition-table
+                       new-state transitions))))
     (image (lambda (state transitions)
              (values state
                      (map ($ (image (lambda (transition target)
@@ -330,10 +325,8 @@ EPSILON-TRANSITION-MAP"
                                         done))
       :while state
       :do
-         (setf transition-table
-               (dfsm-remove-infix-at transition-table state infix))
-         (setf done
-               (with done state))
+         ([d]setf (dfsm-remove-infix-at transition-table state infix)
+                  (with done state))
       :finally
          (return transition-table))))
 

@@ -27,11 +27,9 @@
   (bind ((collected (empty-set)))
     (if intersperse?
         (loop :for n :from min :to max
-           :do (setf collected
-                     (with collected (repeat n obj intersperse))))
+           :do ([d]setf (with collected (repeat n obj intersperse))))
         (loop :for n :from min :to max
-           :do (setf collected
-                     (with collected (repeat n obj)))))
+           :do ([d]setf (with collected (repeat n obj)))))
     collected))
 
 (defun intersperse (item list)

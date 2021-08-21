@@ -22,17 +22,17 @@
       :depends-on ("anaphora"))
      (:file "set"
       :depends-on ("list"))
-     (:file "distribution")
+     (:file "distribution"
+      :depends-on ("anaphora"))
      (:file "nfsm-dfsm"
-      :depends-on ("set" "distribution"))
+      :depends-on ("anaphora" "set" "distribution"))
      (:file "pointer")
-     (:file "list")
+     (:file "list"
+      :depends-on ("anaphora"))
      (:file "finite-state-transducer"
-      :depends-on ("constant-functions"
-                   "list"))
+      :depends-on ("anaphora" "constant-functions" "list"))
      (:file "buffered-stream"
-      :depends-on ("anaphora"
-                   "list"))
+      :depends-on ("anaphora" "list"))
      (:file "parser-combinator"
             :depends-on ("anaphora"))
      (:file "dot")

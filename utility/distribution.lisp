@@ -257,8 +257,7 @@
 (defun distribution (&rest args)
   (bind ((dist <nodist>))
     (loop :for (weight event) :on args :by #'cddr
-       :do (setf dist
-                 (with dist event weight))
+       :do ([d]setf (with dist event weight))
        :finally (return dist))))
 
 (defmatch list<-distribution ([distribution])
@@ -277,8 +276,7 @@
                                  &optional (weight 1))
   (bind ((dist <nodist>))
     (loop :for element :in elements
-       :do (setf dist
-                 (with dist element weight))
+       :do ([d]setf (with dist element weight))
        :finally (return dist))))
 
 (defmethod uniform-distribution ((elements set)
@@ -301,13 +299,13 @@
          (n (size elements))
          (sum (loop :for n :from 1 :to n
                  :sum (/ (expt n exponent)))))
-    (loop :for element :in elements
-       :for k :from 1
-       :do (setf dist
-                 (with dist element (* weight
-                                       (/ (* (expt k exponent)
-                                             sum)))))
-       :finally (return dist))))
+    (loop
+      :for element :in elements
+      :for k :from 1
+      :do ([d]setf (with dist element (* weight
+                                         (/ (* (expt k exponent)
+                                               sum)))))
+      :finally (return dist))))
 
 #+nil
 (defmethod yule-distribution ((elements null)
@@ -327,9 +325,8 @@
   (bind ((dist <nodist>))
     (loop :for element :in elements
        :for r :from 1
-       :do (setf dist
-                 (with dist element (* (/ a (expt r b))
-                                       (expt c r))))
+       :do ([d]setf (with dist element (* (/ a (expt r b))
+                                          (expt c r))))
        :finally (return dist))))
 
 #+nil
@@ -349,13 +346,13 @@
                  a b c))
   (bind ((n (length elements))
          (dist <nodist>))
-    (loop :for element :in elements
-       :for r :from 1
-       :do (setf dist
-                 (with dist element (* c (/ (expt (+ n 1 r)
-                                                  b)
-                                            (expt r a)))))
-       :finally (return-from beta-distribution dist))))
+    (loop
+      :for element :in elements
+      :for r :from 1
+      :do ([d]setf (with dist element (* c (/ (expt (+ n 1 r)
+                                                    b)
+                                              (expt r a)))))
+      :finally (return-from beta-distribution dist))))
 
 (defmethod print-object ((object [distribution])
                          stream)
