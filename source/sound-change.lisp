@@ -201,7 +201,7 @@
     feature (parse-from-set (union (union binary-features privative-features)
                                    (domain valued-features)))
     register (parse-register)
-    `(,feature ,register)))
+    (succeed `(,feature ,register))))
 
 (defun parse-features-emit (binary-features valued-features privative-features
                             feature-registers phoneme-registers
