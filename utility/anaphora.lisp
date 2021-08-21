@@ -53,3 +53,14 @@
                      ([d]or ,@forms))))
             form))
       nil))
+
+(defmacro [d]setf (&rest args)
+  (when args
+    (chop arg args
+      (bind (((&whole form _ place &rest _)
+              arg))
+        (if args
+            `(progn
+               (setf ,place ,form)
+               ([d]setf ,@args))
+            `(setf ,place ,form))))))
