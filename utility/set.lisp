@@ -1,5 +1,11 @@
 (in-package #:mang)
 
+(defun less* (collection items)
+  (reduce (lambda (collection item)
+            (less collection item))
+          items
+          :initial-value collection))
+
 (defmethod tree-map (f (tree set))
   (image (lambda (el)
            (tree-map f el))
