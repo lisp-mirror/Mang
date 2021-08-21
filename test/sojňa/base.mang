@@ -142,7 +142,7 @@ pronoun :=
  fallback = 0
  | (3 C-long + V-mid) + (2 C-mid + V-short) + C-short + [100 fallback]
 
-preposition :=
+adposition :=
  C-long   = 4~C,
  C-mid    = 3~C,
  C-short  = 2~C,
