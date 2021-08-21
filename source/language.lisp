@@ -1,42 +1,33 @@
 (in-package #:mang)
 
-(defmodel language ()
+(defclass language ()
   ((%glyphs :type map
             :initarg :glyphs
-            :reader glyphs<-
-            :cell nil)
+            :reader glyphs<-)
    (%categories :type map
                 :initarg :categories
-                :reader categories<-
-                :cell nil)
+                :reader categories<-)
    (%sonority-hierarchy :type list
                         :initarg :sonority-hierarchy
-                        :reader sonority-hierarchy<-
-                        :cell nil)
+                        :reader sonority-hierarchy<-)
    (%matcher :type dfsm
              :initarg :matcher
-             :accessor matcher<-
-             :cell nil)
+             :accessor matcher<-)
    (%generator :type dfsm
                :initarg :generator
-               :accessor generator<-
-               :cell nil)
+               :accessor generator<-)
    (%markov-spec :type map
                  :initarg :markov-spec
-                 :reader markov-spec<-
-                 :cell nil)
+                 :reader markov-spec<-)
    (%store :type map
            :initarg :store
-           :accessor store<-
-           :cell nil)
-   (%dictionary :type map
-                :initarg :dictionary
-                :accessor dictionary<-
-                :unchanged-if #'equal?)
-   (%unknown-dictionary :type map
-                        :initarg :unknown-dictionary
-                        :accessor unknown-dictionary<-
-                        :unchanged-if #'equal?)))
+           :accessor store<-)
+   (%dictionary :initarg :dictionary
+                :initform (empty-map (empty-map))
+                :accessor dictionary<-)
+   (%unknown-dictionary :initarg :unknown-dictionary
+                        :initform (empty-map (empty-map))
+                        :accessor unknown-dictionary<-)))
 
 (defun language (&key
                  (glyphs (empty-map))
@@ -55,7 +46,7 @@
                  :generator generator
                  :markov-spec markov-spec
                  :store store
-                 :dictionary (c-in (empty-map (empty-map)))
+                 :dictionary (empty-map (empty-map))
                  :unknown-dictionary (empty-map (empty-map))))
 
 (defun copy-language (language)
