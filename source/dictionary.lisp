@@ -186,14 +186,15 @@
       ((udict
         (sort (reduce (lambda (acc pos entries)
                         (append (reduce (lambda (acc gloss entry)
-                                          (bind (((:values _ categories
-                                                     negative-categories _ _
-                                                     allow-homophones?)
-                                                  (funcall entry language)))
-                                            (cons (list gloss pos
-                                                        allow-homophones?
-                                                        categories
-                                                        negative-categories)
+                                          (bind (((:values
+                                                   _ _ _ allow-homophones?
+                                                   word-categories
+                                                   negative-word-categories)
+                                                  (funcall entry)))
+                                            (cons (list
+                                                   gloss pos allow-homophones?
+                                                   word-categories
+                                                   negative-word-categories)
                                                   acc)))
                                         entries
                                         :initial-value '())
