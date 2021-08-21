@@ -8,6 +8,7 @@
                #:cl-unicode
                #:split-sequence
                #:metabang-bind
+               #:cl-bus
                )
   :components
   ((:file "package")
@@ -31,8 +32,6 @@
       :depends-on ("anaphora"))
      (:file "finite-state-transducer"
       :depends-on ("anaphora" "constant-functions" "list"))
-     (:file "buffered-stream"
-      :depends-on ("anaphora" "list"))
      (:file "parser-combinator"
             :depends-on ("anaphora"))
      (:file "dot")
