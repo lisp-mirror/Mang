@@ -78,46 +78,6 @@
                                    (map (:begin t)))
                    :accepting-states accepting)))
 
-(defmethod add-gloss! ((storage language)
-                       (word-categories set)
-                       (negative-word-categories set)
-                       (part-of-speech string)
-                       (gloss string)
-                       allow-homophones?)
-  (setf (unknown-dictionary<- storage)
-        (map* ($ (unknown-dictionary<- storage))
-              :default (empty-map)
-              (& (part-of-speech defs)
-                 (map ($ defs)
-                      (gloss
-                       (if allow-homophones?
-                           (lambda (language)
-                             (bind ((matcher (matcher<- language))
-                                    (word
-                                     (generate-word matcher (store<- language)
-                                                    (markov-spec<- language)
-                                                    word-categories
-                                                    negative-word-categories)))
-                               (values word word-categories
-                                       negative-word-categories matcher
-                                       (less-word (generator<- language)
-                                                  word)
-                                       t)))
-                           (lambda (language)
-                             (bind ((generator (generator<- language))
-                                    (word
-                                     (generate-word generator (store<- language)
-                                                    (markov-spec<- language)
-                                                    word-categories
-                                                    negative-word-categories)))
-                               (values word word-categories
-                                       negative-word-categories
-                                       (less-word (matcher<- language)
-                                                  word)
-                                       (less-word generator word)
-                                       nil)))))))))
-  storage)
-
 (defmethod add-word! ((storage language)
                       (word-categories set)
                       (part-of-speech string)
@@ -126,15 +86,15 @@
                       allow-homophones?)
   (bind ((generator (generator<- storage))
          (matcher (matcher<- storage)))
-    (when (not (or (@ (@ (unknown-dictionary<- storage)
-                         part-of-speech)
-                      gloss)
-                   (and generator
-                        matcher
-                        (not (run-dfsm (if allow-homophones?
-                                           matcher
-                                           generator)
-                                       (rest word))))))
+    (unless (or (@ (@ (unknown-dictionary<- storage)
+                      part-of-speech)
+                   gloss)
+                (and generator
+                     matcher
+                     (not (run-dfsm (if allow-homophones?
+                                        matcher
+                                        generator)
+                                    (rest word)))))
       (setf (dictionary<- storage)
             (map* ($ (dictionary<- storage))
                   :default (empty-map)
@@ -152,13 +112,95 @@
               (less-word matcher word)))))
   storage)
 
+(defmethod add-gloss! ((storage language)
+                       (word-categories set)
+                       (negative-word-categories set)
+                       (part-of-speech string)
+                       (gloss string)
+                       allow-homophones?)
+  (setf (unknown-dictionary<- storage)
+        (map* ($ (unknown-dictionary<- storage))
+              :default (empty-map)
+              (& (part-of-speech defs)
+                 (map ($ defs)
+                      (gloss
+                       (if allow-homophones?
+                           (lambda ()
+                             (bind ((word
+                                     (generate-word (matcher<- storage)
+                                                    (store<- storage)
+                                                    (markov-spec<- storage)
+                                                    word-categories
+                                                    negative-word-categories)))
+                               (values
+                                word
+                                (lambda ()
+                                  (when (run-dfsm (matcher<- storage)
+                                                  word)
+                                    (setf
+                                     (dictionary<- storage)
+                                     (map* ($ (dictionary<- storage))
+                                           :default (empty-map)
+                                           (& (part-of-speech glosses)
+                                              (with glosses gloss
+                                                    (list word word-categories
+                                                          allow-homophones?))))
+                                     (store<- storage)
+                                     (learn (store<- storage)
+                                            (markov-spec<- storage)
+                                            word word-categories)
+                                     (generator<- storage)
+                                     (less-word (generator<- storage)
+                                                word)
+                                     (unknown-dictionary<- storage)
+                                     (map* ($ (unknown-dictionary<- storage))
+                                           (& (part-of-speech defs)
+                                              (less defs gloss))))))
+                                t)))
+                           (lambda ()
+                             (bind ((word
+                                     (generate-word (generator<- storage)
+                                                    (store<- storage)
+                                                    (markov-spec<- storage)
+                                                    word-categories
+                                                    negative-word-categories)))
+                               (values
+                                word
+                                (lambda ()
+                                  (when (run-dfsm (generator<- storage)
+                                                  word)
+                                    (setf
+                                     (dictionary<- storage)
+                                     (map* ($ (dictionary<- storage))
+                                           :default (empty-map)
+                                           (& (part-of-speech glosses)
+                                              (with glosses gloss
+                                                    (list word word-categories
+                                                          allow-homophones?))))
+                                     (store<- storage)
+                                     (learn (store<- storage)
+                                            (markov-spec<- storage)
+                                            word word-categories)
+                                     (matcher<- storage)
+                                     (less-word (matcher<- storage)
+                                                word)
+                                     (generator<- storage)
+                                     (less-word (generator<- storage)
+                                                word)
+                                     (unknown-dictionary<- storage)
+                                     (map* ($ (unknown-dictionary<- storage))
+                                           (& (part-of-speech defs)
+                                              (less defs gloss))))))
+                                nil)))))))))
+  storage)
+
 (defmethod known-gloss-candidate ((storage language)
                                   (part-of-speech string)
                                   (gloss string))
   ([a]when (@ (@ (unknown-dictionary<- storage)
                  part-of-speech)
               gloss)
-    (funcall it storage)))
+    (funcall it)))
 
 (defun language-gen-word (language word-categories
                           &key
