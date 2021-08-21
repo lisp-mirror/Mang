@@ -63,8 +63,12 @@ use           verb        kir    y {everything, verb, positive}
 want          verb        duṛše  y {everything, verb}
 water         noun        felo   y {everything, noun, animate, positive}
 
-MED      determiner n {everything, determiner} {noun, verb, adjective, adverb, article, pronoun, preposition}
-cloud    noun       y {everything, noun, animate} {verb, adjective, adverb, determiner, pronoun, preposition, article}
-parent   noun       n {everything, noun, animate, positive, family} {verb, adjective, adverb, determiner, pronoun, preposition, article, negative, inanimate, mass}
-stranger noun       y {everything, noun, animate, human} {verb, adjective, adverb, determiner, pronoun, preposition, article, inanimate, mass, family}
-bow      noun       y {everything, noun, inanimate} {verb, adjective, adverb, determiner, pronoun, preposition, article, animate, mass, negative}
+MED      determiner  n {everything, determiner} {noun, verb, adjective, adverb, article, pronoun, preposition}
+cloud    noun        y {everything, noun, animate} {verb, adjective, adverb, determiner, pronoun, preposition, article}
+parent   noun        n {everything, noun, animate, positive, family} {verb, adjective, adverb, determiner, pronoun, preposition, article, negative, inanimate, mass}
+stranger noun        y {everything, noun, animate, human} {verb, adjective, adverb, determiner, pronoun, preposition, article, inanimate, mass, family}
+bow      noun        y {everything, noun, inanimate} {verb, adjective, adverb, determiner, pronoun, preposition, article, animate, mass, negative}
+knife    noun        y {everything, noun, inanimate} {verb, adjective, adverb, determiner, pronoun, preposition, article, animate, mass, negative}
+hole     noun        y {everything, noun, mass} {verb, adjective, adverb, determiner, pronoun, preposition, article, animate, positive}
+LEFT.OF  preposition n {everything, preposition} {noun, verb, adjective, adverb, determiner, pronoun, article}
+RIGHT.OF preposition n {everything, preposition} {noun, verb, adjective, adverb, determiner, pronoun, article}
