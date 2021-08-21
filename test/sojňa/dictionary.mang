@@ -67,3 +67,4 @@ MED      determiner n {everything, determiner} {noun, verb, adjective, adverb, a
 cloud    noun       y {everything, noun, animate} {verb, adjective, adverb, determiner, pronoun, preposition, article}
 parent   noun       n {everything, noun, animate, positive, family} {verb, adjective, adverb, determiner, pronoun, preposition, article, negative, inanimate, mass}
 stranger noun       y {everything, noun, animate, human} {verb, adjective, adverb, determiner, pronoun, preposition, article, inanimate, mass, family}
+bow      noun       y {everything, noun, inanimate} {verb, adjective, adverb, determiner, pronoun, preposition, article, animate, mass, negative}
