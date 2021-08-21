@@ -125,8 +125,10 @@
                                   word-categories
                                   negative-word-categories)))
         (values word (lambda ()
-                       (if (run-dfsm (matcher<- language)
-                                     word)
+                       (if (run-dfsm (if allow-homophones?
+                                         (matcher<- language)
+                                         (generator<- language))
+                                     (rest word))
                            (progn
                              (setf (dictionary<- language)
                                    (map* ($ (dictionary<- language))
