@@ -144,6 +144,7 @@
                                          word)
                                    (unknown-dictionary<- language)
                                    (map* ($ (unknown-dictionary<- language))
+                                         :default (empty-map)
                                          (& (part-of-speech defs)
                                             (less defs gloss))))
                              (unless allow-homophones?
@@ -313,3 +314,17 @@
                  (generator<- graph)
                  :edge-label-key #'glyph
                  :node-label-key node-label-key))))
+
+(defun ask-known-gloss (language part-of-speech gloss)
+  ([a]when (@ (@ (unknown-dictionary<- language)
+                 part-of-speech)
+              gloss)
+    (bind (((:values word accept reject _)
+            (funcall it)))
+      (if (y-or-n-p "Accept <~A> for gloss \"~A\"?"
+                    (string<-word (glyphs<- language)
+                                  word
+                                  :computer-readable? nil)
+                    gloss)
+          (funcall accept)
+          (funcall reject)))))
