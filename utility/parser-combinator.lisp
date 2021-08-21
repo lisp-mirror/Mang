@@ -6,7 +6,8 @@
                  parser)
            (type (or bus stream string)
                  to-parse))
-  (funcall parser (bus<- to-parse)))
+  (with-bus bus to-parse
+    (funcall parser bus)))
 
 ;;;; Monadic operations
 (defun succeed (x)
@@ -21,14 +22,14 @@
 (defun ^$ (p x)
   (lambda (s)
     (bind (((:values r _ success?)
-            (parser-call p x)))
+            (funcall p x)))
       (values r s success?))))
 
 (defun <$~> (p fs fe)
   (declare (type function p fs fe))
   (lambda (s)
     (bind (((:values r ns success?)
-            (parser-call p s)))
+            (funcall p s)))
       (values (if success?
                   (funcall fs r)
                   (funcall fe r))
@@ -62,11 +63,11 @@
   (declare (type function p pg))
   (lambda (s)
     (bind (((:values r ns success?)
-            (parser-call p s)))
+            (funcall p s)))
       (if success?
           (values r ns t)
-          (parser-call (funcall pg r)
-                       s)))))
+          (funcall (funcall pg r)
+                   s)))))
 
 (defun // (parser &rest parsers)
   (declare (type function parser))
@@ -100,16 +101,16 @@
                                   var))))
           `(lambda (,g!bus)
              (bind (((:values ,g!result ,g!new-bus ,g!success?)
-                     (parser-call ,parser ,g!bus)))
+                     (funcall ,parser ,g!bus)))
                (if ,g!success?
                    (values ,g!result ,g!new-bus t)
-                   (parser-call ,(if (and (symbolp var)
-                                          (string= (symbol-name var)
-                                                   "_"))
-                                     `(//! ,@bindings)
-                                     `(bind ((,var ,g!result))
-                                        (//! ,@bindings)))
-                                ,g!bus)))))
+                   (funcall ,(if (and (symbolp var)
+                                      (string= (symbol-name var)
+                                               "_"))
+                                 `(//! ,@bindings)
+                                 `(bind ((,var ,g!result))
+                                    (//! ,@bindings)))
+                            ,g!bus)))))
         (first bindings))))
 
 (defmacro //_ (parser &body parsers)
@@ -128,11 +129,11 @@
   (declare (type function p pg))
   (lambda (s)
     (bind (((:values r ns success?)
-            (parser-call p s)))
+            (funcall p s)))
       (if success?
           (bind (((:values r ns success?)
-                  (parser-call (funcall pg r)
-                               ns)))
+                  (funcall (funcall pg r)
+                           ns)))
             (if success?
                 (values r ns t)
                 (values r s nil)))
@@ -166,16 +167,16 @@
                                   var))))
           `(lambda (,g!bus)
              (bind (((:values ,g!result ,g!new-bus ,g!success?)
-                     (parser-call ,parser ,g!bus)))
+                     (funcall ,parser ,g!bus)))
                (if ,g!success?
                    (bind (((:values ,g!result ,g!new-bus ,g!success?)
-                           (parser-call ,(if (and (symbolp var)
-                                                  (string= (symbol-name var)
-                                                           "_"))
-                                             `(>>! ,@bindings)
-                                             `(bind ((,var ,g!result))
-                                                (>>! ,@bindings)))
-                                        ,g!new-bus)))
+                           (funcall ,(if (and (symbolp var)
+                                              (string= (symbol-name var)
+                                                       "_"))
+                                         `(>>! ,@bindings)
+                                         `(bind ((,var ,g!result))
+                                            (>>! ,@bindings)))
+                                    ,g!new-bus)))
                      (if ,g!success?
                          (values ,g!result ,g!new-bus ,g!success?)
                          (values ,g!result ,g!bus nil)))
@@ -194,12 +195,12 @@
   (declare (type function ptest pgthen pgelse))
   (lambda (s)
     (bind (((:values r ns success?)
-            (parser-call ptest s)))
-      (parser-call (funcall (if success?
-                                pgthen
-                                pgelse)
-                            r)
-                   ns))))
+            (funcall ptest s)))
+      (funcall (funcall (if success?
+                            pgthen
+                            pgelse)
+                        r)
+               ns))))
 
 (defun ??= (ptest pgthen pelse)
   (declare (type function ptest pgthen pelse))
@@ -249,7 +250,7 @@
   (declare (type function p))
   (lambda (s)
     (bind (((:values r ns success?)
-            (parser-call p s)))
+            (funcall p s)))
       (if success?
           (values r s t)
           (values r ns nil)))))

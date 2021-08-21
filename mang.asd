@@ -8,8 +8,7 @@
                #:cl-unicode
                #:split-sequence
                #:metabang-bind
-               #:cl-bus
-               )
+               #:cl-bus)
   :components
   ((:file "package")
    (:module

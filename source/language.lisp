@@ -310,7 +310,7 @@
                  :edge-label-key #'glyph
                  :node-label-key node-label-key))))
 
-(defun ask-known-gloss (language part-of-speech gloss)
+(defun ask-known-gloss! (language part-of-speech gloss)
   ([a]when (@ (@ (unknown-dictionary<- language)
                  part-of-speech)
               gloss)
@@ -323,3 +323,12 @@
                     gloss)
           (funcall accept)
           (funcall reject)))))
+
+(defun ask-arbitary-known-gloss! (language)
+  (bind (((:values pos defs)
+          (arb (filter (lambda (k v)
+                         (declare (ignore k))
+                         (not (empty? v)))
+                       (unknown-dictionary<- language)))))
+    (when pos
+      (ask-known-gloss! language pos (arb defs)))))
