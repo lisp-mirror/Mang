@@ -155,7 +155,7 @@
                            (values language nil)))
                 (lambda ()
                   (setf rejected (with rejected word)))
-                t)))))
+                allow-homophones? word-categories negative-word-categories)))))
 
 (defmethod add-gloss! ((storage language)
                        (word-categories set)
