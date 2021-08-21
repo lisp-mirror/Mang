@@ -134,7 +134,7 @@
                         (not (run-dfsm (if allow-homophones?
                                            matcher
                                            generator)
-                                       word)))))
+                                       (rest word))))))
       (setf (dictionary<- storage)
             (map* ($ (dictionary<- storage))
                   :default (empty-map)
