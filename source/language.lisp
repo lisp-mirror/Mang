@@ -112,8 +112,8 @@
               (less-word matcher word)))))
   storage)
 
-(defun make-unknown-gloss (language part-of-speech gloss allow-homophones?
-                           word-categories negative-word-categories)
+(defun make-unknown-word (language part-of-speech gloss allow-homophones?
+                          word-categories negative-word-categories)
   (bind ((rejected (empty-set)))
     (lambda ()
       (bind ((word (generate-word (less* (if allow-homophones?
@@ -167,10 +167,10 @@
               :default (empty-map)
               (& (part-of-speech defs)
                  (map ($ defs)
-                      (gloss (make-unknown-gloss storage part-of-speech gloss
-                                                 allow-homophones?
-                                                 word-categories
-                                                 negative-word-categories))))))
+                      (gloss (make-unknown-word storage part-of-speech gloss
+                                                allow-homophones?
+                                                word-categories
+                                                negative-word-categories))))))
   storage)
 
 (defmethod known-gloss-candidate ((storage language)
