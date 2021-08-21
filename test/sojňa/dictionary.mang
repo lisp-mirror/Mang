@@ -18,7 +18,7 @@ dark          adjective  масаҥ  y {everything, adjective}
 DEF           article    ха     n {everything, article}
 die           verb       паӄоҥ  n {everything, verb, negative}
 DIST          determiner ўэй    n {everything, determiner}
-eat           verb       нин    n {everything, verb, positive}
+eat           verb       нин    n {everything, verb, positive, food}
 female        noun       тила   y {everything, noun, animate}
 fire          noun       ԗах    n {everything, noun, animate, mass}
 GEN           adposition кун    n {everything, pronoun}
@@ -46,21 +46,21 @@ pain          noun       ӄах    n {everything, noun, animate, negative}
 PER           adposition зо     n {everything, adposition}
 person        noun       кути   n {everything, noun, animate, positive, human}
 PROX          determiner са     n {everything, determiner}
-rabbit        noun       болэй  y {everything, noun, animate}
+rabbit        noun       болэй  y {everything, noun, animate, food}
 REFL          pronoun    лэй    n {everything, pronoun}
 see           verb       шихӿин y {everything, verb}
-seed          noun       парҥэԕ y {everything, noun, inanimate, positive}
+seed          noun       парҥэԕ y {everything, noun, inanimate, positive, food}
 sibling       noun       ӿэғди  y {everything, noun, animate, positive, family}
 stand         verb       тайбо  y {everything, verb}
 stone         noun       кэм    y {everything, noun, inanimate}
-sweetroot     noun       ӄубаҥ  y {everything, noun, inanimate, positive}
+sweetroot     noun       ӄубаҥ  y {everything, noun, inanimate, positive, food}
 tongue        noun       сойҥа  y {everything, noun, animate}
 tree          noun       сэӄаў  y {everything, noun, inanimate}
-thick.leaf    noun       ӿаўгэҥ y {everything, noun, animate}
+thick.leaf    noun       ӿаўгэҥ y {everything, noun, animate, food}
 thin.leaf     noun       саӿи   y {everything, noun, animate}
 use           verb       киғ    y {everything, verb, positive}
 want          verb       дуԗшэ  y {everything, verb}
-water         noun       фэло   y {everything, noun, animate, positive}
+water         noun       фэло   y {everything, noun, animate, positive, food}
 
 MED      determiner n {everything, determiner} {noun, verb, adjective, adverb, article, pronoun, adposition}
 cloud    noun       y {everything, noun, animate} {verb, adjective, adverb, determiner, pronoun, adposition, article}
@@ -71,3 +71,4 @@ knife    noun       y {everything, noun, inanimate} {verb, adjective, adverb, de
 hole     noun       y {everything, noun, mass} {verb, adjective, adverb, determiner, pronoun, adposition, article, animate, positive}
 LEFT.OF  adposition n {everything, adposition} {noun, verb, adjective, adverb, determiner, pronoun, article}
 RIGHT.OF adposition n {everything, adposition} {noun, verb, adjective, adverb, determiner, pronoun, article}
+fruit    noun       y {everything, noun, inanimate, food, positive} {verb, adjective, adverb, determiner, pronoun, adposition, article, animate, mass, negative}

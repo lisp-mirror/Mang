@@ -206,3 +206,9 @@ family :=
  mid   = 2:2,
  short = 1:2
  | (3 long) + (2 mid) + short
+
+food :=
+ long  = 3:2,
+ mid   = 2:2,
+ short = 1:2
+ | (3 long) + (2 mid) + short
