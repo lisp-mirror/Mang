@@ -1,45 +1,45 @@
 # glyphs
-p := [bilabial    , manner=stop               , voice=unvoiced, ~round]
-t := [alveolar    , manner=stop               , voice=unvoiced, ~round]
-k := [velar       , manner=stop               , voice=unvoiced, ~round]
-q := [uvular      , manner=stop               , voice=unvoiced, ~round]
-b := [bilabial    , manner=stop               , voice=voiced  , ~round]
-d := [alveolar    , manner=stop               , voice=voiced  , ~round]
-g := [velar       , manner=stop               , voice=voiced  , ~round]
-m := [bilabial    , manner=nasal              , voice=voiced  , ~round]
-n := [alveolar    , manner=nasal              , voice=voiced  , ~round]
-ň := [velar       , manner=nasal              , voice=voiced  , ~round]
-ṛ := [alveolar    , manner=trill              , voice=unvoiced, ~round]
-r := [alveolar    , manner=trill              , voice=voiced  , ~round]
-ř := [uvular      , manner=trill              , voice=voiced  , ~round]
-f := [bilabial    , manner=fricative          , voice=unvoiced, ~round]
-s := [alveolar    , manner=fricative          , voice=unvoiced, ~round]
-š := [postalveolar, manner=fricative          , voice=unvoiced, ~round]
-h := [glottal     , manner=fricative          , voice=unvoiced, ~round]
-v := [bilabial    , manner=fricative          , voice=voiced  , ~round]
-z := [alveolar    , manner=fricative          , voice=voiced  , ~round]
-ž := [postalveolar, manner=fricative          , voice=voiced  , ~round]
-ḷ := [alveolar    , manner=lateral-fricative  , voice=unvoiced, ~round]
-l := [alveolar    , manner=lateral-approximant, voice=voiced  , ~round]
-j := [palatal     , manner=approximant        , voice=voiced  , ~round]
-ẉ := [velar       , manner=approximant        , voice=unvoiced,  round]
-w := [velar       , manner=approximant        , voice=voiced  ,  round]
+п := [bilabial    , manner=stop               , voice=unvoiced, ~round]
+т := [alveolar    , manner=stop               , voice=unvoiced, ~round]
+к := [velar       , manner=stop               , voice=unvoiced, ~round]
+ӄ := [uvular      , manner=stop               , voice=unvoiced, ~round]
+б := [bilabial    , manner=stop               , voice=voiced  , ~round]
+д := [alveolar    , manner=stop               , voice=voiced  , ~round]
+г := [velar       , manner=stop               , voice=voiced  , ~round]
+м := [bilabial    , manner=nasal              , voice=voiced  , ~round]
+н := [alveolar    , manner=nasal              , voice=voiced  , ~round]
+ҥ := [velar       , manner=nasal              , voice=voiced  , ~round]
+ԗ := [alveolar    , manner=trill              , voice=unvoiced, ~round]
+р := [alveolar    , manner=trill              , voice=voiced  , ~round]
+ғ := [uvular      , manner=trill              , voice=voiced  , ~round]
+ф := [bilabial    , manner=fricative          , voice=unvoiced, ~round]
+с := [alveolar    , manner=fricative          , voice=unvoiced, ~round]
+ш := [postalveolar, manner=fricative          , voice=unvoiced, ~round]
+ӿ := [glottal     , manner=fricative          , voice=unvoiced, ~round]
+в := [bilabial    , manner=fricative          , voice=voiced  , ~round]
+з := [alveolar    , manner=fricative          , voice=voiced  , ~round]
+ж := [postalveolar, manner=fricative          , voice=voiced  , ~round]
+ԕ := [alveolar    , manner=lateral-fricative  , voice=unvoiced, ~round]
+л := [alveolar    , manner=lateral-approximant, voice=voiced  , ~round]
+й := [palatal     , manner=approximant        , voice=voiced  , ~round]
+х := [velar       , manner=approximant        , voice=unvoiced,  round]
+ў := [velar       , manner=approximant        , voice=voiced  ,  round]
 
-i := [~round, height=high, frontness=front]
-u := [ round, height=high, frontness=back ]
-e := [~round, height=mid , frontness=front]
-o := [ round, height=mid , frontness=back ]
-a := [~round, height=low , frontness=front]
+и := [~round, height=high, frontness=front]
+у := [ round, height=high, frontness=back ]
+э := [~round, height=mid , frontness=front]
+о := [ round, height=mid , frontness=back ]
+а := [~round, height=low , frontness=front]
 
 
 # categories
-C := p,t,k,q,b,d,g,m,n,ň,ṛ,r,ř,f,s,š,h,v,z,ž,ḷ,l,j,ẉ,w
-V := i,u,e,o,a
-E := m,n,ň,ṛ,r,ř,ḷ,l,j,ẉ,w
-voiced        := b,d,g,m,n,ň,r,ř,v,z,ž,l,j,w
-unvoiced      := p,t,k,q,ṛ,f,s,š,h,ḷ,ẉ
-voiced-coda   := r,ř,l,j,w
-unvoiced-coda := ṛ,ḷ,ẉ
+C := п,т,к,б,д,г,м,н,ҥ,ԗ,р,ғ,ф,с,ш,ӿ,в,з,ж,ԕ,л,й,х,ў
+V := и,у,э,о,а
+E := м,н,ҥ,ԗ,р,ғ,ԕ,л,й,х,ў
+voiced        := б,д,г,м,н,ҥ,р,ғ,в,з,ж,л,й,ў
+unvoiced      := п,т,к,ԗ,ф,с,ш,ӿ,ԕ,х
+voiced-coda   := р,ғ,л,й,ў
+unvoiced-coda := ԗ,ԕ,х
 
 
 # nuclei
@@ -64,12 +64,12 @@ E
 # markovs
 everything :=
  end       = uniform {#},
- C-Zipf    = zipf {s,š,n,t,z,ž,d,l,ṛ,r,ḷ,w,j,f,m,p,v,b,ẉ,ň,k,g,ř,h,q} 1.1,
+ C-Zipf    = zipf {с,ш,н,т,з,ж,д,л,ԗ,р,ԕ,ў,й,ф,м,п,в,б,х,ҥ,к,г,ғ,ӿ,ӄ} 1.1,
  C-long    = 4~C,
  C-mid     = 3~C,
  C-short   = 2~C,
  C-support = 1~C,
- V-Zipf    = zipf {a,i,e,o,u} 1.05,
+ V-Zipf    = zipf {а,и,э,о,у} 1.05,
  V-short   = 2~V,
  V-support = 1~V,
  long      = 4,
