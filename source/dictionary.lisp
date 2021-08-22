@@ -5,7 +5,7 @@
              parsed (if (find-if (lambda (parsed-char)
                                    (or (has-property parsed-char "Whitespace")
                                        (has-property parsed-char "Control")
-                                       (@ (set #\- #\[ #\] #\#)
+                                       (@ (set #\- #\[ #\] #\# #\:)
                                           parsed-char)))
                                  parsed)
                         (fail `(:not-a-gloss ,parsed))
