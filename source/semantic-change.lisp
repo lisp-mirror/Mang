@@ -62,7 +62,5 @@
                                                 (unknown-dictionary<- language)
                                                 #'map-union))
     _ (>> (parse-whitespace-no-newline)
-          (parse-constant "=>")
-          (parse-whitespace-no-newline)
           (parse-constant "#"))
     (succeed `(:drop ,gloss))))
