@@ -1,40 +1,48 @@
 (in-package #:mang)
 
-(defclass language ()
+(defmodel language ()
   ((%glyphs :type map
             :initarg :glyphs
-            :reader glyphs<-)
+            :reader glyphs<-
+            :cell nil)
    (%categories :type map
                 :initarg :categories
-                :reader categories<-)
+                :reader categories<-
+                :cell nil)
    (%sonority-hierarchy :type list
                         :initarg :sonority-hierarchy
-                        :reader sonority-hierarchy<-)
+                        :reader sonority-hierarchy<-
+                        :cell nil)
    (%matcher :type dfsm
              :initarg :matcher
-             :accessor matcher<-)
+             :accessor matcher<-
+             :cell nil)
    (%generator :type dfsm
                :initarg :generator
-               :accessor generator<-)
+               :accessor generator<-
+               :cell nil)
    (%markov-spec :type map
                  :initarg :markov-spec
-                 :reader markov-spec<-)
+                 :reader markov-spec<-
+                 :cell nil)
    (%store :type map
            :initarg :store
-           :accessor store<-)
+           :accessor store<-
+           :cell nil)
    (%dictionary :type map
                 :initarg :dictionary
-                :accessor dictionary<-)
+                :accessor dictionary<-
+                :cell t)
    (%unknown-dictionary :type map
                         :initarg :unknown-dictionary
-                        :accessor unknown-dictionary<-)))
+                        :accessor unknown-dictionary<-
+                        :cell t)))
 
 (defun language (&key
                  (glyphs (empty-map))
                  (categories (empty-map))
                  (sonority-hierarchy '())
-                 (matcher (dfsm<- ()))
-                 (generator matcher)
+                 matcher (generator matcher)
                  (markov-spec (empty-map (list (empty-map (empty-set))
                                                '())))
                  (store (empty-map (empty-map (empty-map <nodist>)))))
@@ -46,20 +54,61 @@
                  :generator generator
                  :markov-spec markov-spec
                  :store store
-                 :dictionary (empty-map (empty-map))
-                 :unknown-dictionary (empty-map (empty-map))))
+                 :dictionary (c_in (empty-map (empty-map)))
+                 :unknown-dictionary (c_in (empty-map (empty-map)))))
 
-(defun copy-language (language)
+(defun copy-language (language
+                      &key
+                        glyphs (new-glyphs (empty-map))
+                        categories (new-categories (empty-map))
+                        (sonority-hierarchy nil sonority-hierarchy?)
+                        (matcher nil matcher?)
+                        (generator nil generator?)
+                        (markov-spec nil markov-spec?)
+                        store
+                        dictionary new-dictionary
+                        unknown-dictionary new-unknown-dictionary)
   (make-instance 'language
-                 :glyphs (glyphs<- language)
-                 :categories (categories<- language)
-                 :sonority-hierarchy (sonority-hierarchy<- language)
-                 :matcher (matcher<- language)
-                 :generator (generator<- language)
-                 :markov-spec (markov-spec<- language)
-                 :store (store<- language)
-                 :dictionary (dictionary<- language)
-                 :unknown-dictionary (unknown-dictionary<- language)))
+                 :glyphs (or glyphs (map-union (glyphs<- language)
+                                               new-glyphs))
+                 :categories (or categories
+                                 (map-union (categories<- language)
+                                            new-categories))
+                 :sonority-hierarchy (if sonority-hierarchy?
+                                         sonority-hierarchy
+                                         (sonority-hierarchy<- language))
+                 :matcher (if matcher?
+                              matcher
+                              (matcher<- language))
+                 :generator (if generator?
+                                generator
+                                (generator<- language))
+                 :markov-spec (if markov-spec?
+                                  markov-spec
+                                  (markov-spec<- language))
+                 :store (or store
+                            (if markov-spec?
+                                (empty-map (empty-map (empty-map <nodist>)))
+                                (store<- language)))
+                 :dictionary (if dictionary
+                                 (if (typep dictionary 'cell)
+                                     dictionary
+                                     (c_in dictionary))
+                                 (if new-dictionary
+                                     (c_? (map-union (dictionary<- language)
+                                                     new-dictionary
+                                                     #'map-union))
+                                     (c_in (dictionary<- language))))
+                 :unknown-dictionary
+                 (if unknown-dictionary
+                     (if (typep unknown-dictionary 'cell)
+                         unknown-dictionary
+                         (c_in unknown-dictionary))
+                     (if new-unknown-dictionary
+                         (c_? (map-union (unknown-dictionary<- language)
+                                         new-unknown-dictionary
+                                         #'map-union))
+                         (c_in (unknown-dictionary<- language))))))
 
 (defun less-word (dfsm word)
   (bind ((accepting (accepting-states<- dfsm))
@@ -100,16 +149,23 @@
                   :default (empty-map)
                   (& (part-of-speech glosses)
                      (with glosses gloss
-                           (list word word-categories allow-homophones?))))
+                           (list word word-categories
+                                 allow-homophones?))))
             (generator<- storage)
-            (less-word generator word))
+            (when generator
+              (less-word generator word)))
       ([d]setf (learn (store<- storage)
                       (markov-spec<- storage)
                       word word-categories))
-      (unless allow-homophones?
+      (unless (or allow-homophones? (not matcher))
         (setf (matcher<- storage)
               (less-word matcher word)))))
   storage)
+
+(defun get-known-word (language pos gloss)
+  (@ (@ (dictionary<- language)
+        pos)
+     gloss))
 
 (defun make-unknown-word (language part-of-speech gloss allow-homophones?
                           word-categories negative-word-categories)
@@ -174,12 +230,22 @@
                                                 negative-word-categories))))))
   storage)
 
+(defun get-unknown-word (language pos gloss)
+  (@ (@ (unknown-dictionary<- language)
+        pos)
+     gloss))
+
+(defun get-word (language pos gloss)
+  (mv-or
+    (values (get-known-word language pos gloss)
+            :known)
+    (values (get-unknown-word language pos gloss)
+            :unknown)))
+
 (defmethod known-gloss-candidate ((storage language)
                                   (part-of-speech string)
                                   (gloss string))
-  ([a]when (@ (@ (unknown-dictionary<- storage)
-                 part-of-speech)
-              gloss)
+  ([a]when (get-unknown-word storage part-of-speech gloss)
     (funcall it)))
 
 (defun language-gen-word (language word-categories

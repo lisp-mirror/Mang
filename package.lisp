@@ -1,7 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:mang
-  (:use #:cl #:cl-adt #:split-sequence #:cl-bus)
+  (:use #:cl #:cl-adt #:split-sequence #:cl-bus #:cells)
   (:shadow #:// #:some)
   (:shadowing-import-from
    #:fset
