@@ -1,0 +1,3 @@
+Feature ideas:
+- wave model of language change
+- find ancestors, descendants and cognates of a given word
