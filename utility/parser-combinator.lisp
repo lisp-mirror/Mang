@@ -22,7 +22,7 @@
 (defun ^$ (p x)
   (lambda (s)
     (bind (((:values r _ success?)
-            (funcall p x)))
+            (funcall p (bus<- x))))
       (values r s success?))))
 
 (defun <$~> (p fs fe)
