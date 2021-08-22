@@ -60,25 +60,10 @@
             (parse-constant "=>")
             (parse-whitespace-no-newline))
       target (parse-semantic-shift-target dictionary registers)
-      _ (parse-whitespace-no-newline)
-      word-categories
-      (<? (parse-w/s (>> (parse-constant "{")
-                         (parse-whitespace))
-                     (parse-from-set (domain (markov-spec<- source-language)))
-                     (>> (parse-whitespace)
-                         (parse-constant ",")
-                         (parse-whitespace))
-                     (>> (parse-whitespace)
-                         (parse-constant "}"))
-                     (empty-set)
-                     (lambda (cat cats)
-                       (with cats cat)))
-          (empty-set))
-      (succeed `(,source-glosses ,target ,word-categories)))))
+      (succeed `(,source-glosses ,target)))))
 
 (defun semantic-shift-results (semantic-shift dictionary)
-  (bind (((source (target-pos &rest target)
-                  word-categories)
+  (bind (((source (target-pos &rest target))
           semantic-shift))
     (labels ((_build-gloss (acc registers todo)
                (if todo
@@ -115,8 +100,7 @@
       (list target-pos (_rec `(,(map (:begin t))
                                ,(map (:end t)))
                              (empty-map)
-                             source)
-            word-categories))))
+                             source)))))
 
 (defun parse-drop-gloss (language)
   (>>!
