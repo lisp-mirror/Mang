@@ -10,6 +10,14 @@
               (ignorable ,list-var))
      ,@body))
 
+(defmacro spread ((&rest functions)
+                  &body args)
+  `(mapcar #'funcall
+           (list ,@(mapcar (lambda (function)
+                             `(function ,function))
+                           functions))
+           ,@args))
+
 (defmacro independently (&body body)
   (bind ((g!args (gensym "args")))
     `(lambda (&rest ,g!args)
