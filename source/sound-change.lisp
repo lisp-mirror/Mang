@@ -686,11 +686,41 @@
                                        (fst-elementary #'true #'list
                                                        :consume? t)))))))))
 
-(defun apply-sound-change-to-word (word sound-change)
-  (declare (type cons word)
-           (type fst sound-change))
+(defun apply-sound-change-to-word (sound-change word)
+  (declare (type fst sound-change)
+           (type cons word))
   (bind ((*category-registry* (make-hash-table :test 'equal))
          (*phoneme-registry* (make-hash-table :test 'equal)))
     (declare (special *category-registry* *phoneme-registry*)
              (type hash-table *category-registry* *phoneme-registry*))
     (arb (run-fst sound-change word))))
+
+(defun apply-sound-changes-to-word (sound-changes word)
+  (declare (type list sound-changes word))
+  (if sound-changes
+      (chop sound-change sound-changes
+        (apply-sound-changes-to-word sound-changes
+                                     (apply-sound-change-to-word sound-change
+                                                                 word)))
+      word))
+
+(defun apply-sound-changes (sound-changes language
+                            &key
+                              glyphs categories)
+  (copy-language language
+                 :glyphs glyphs
+                 :categories categories
+                 :dictionary
+                 (c_?
+                   (image (lambda (pos defs)
+                            (values
+                             pos
+                             (image (lambda (gloss word)
+                                      (values
+                                       gloss
+                                       (list (apply-sound-changes-to-word
+                                              sound-changes (first word))
+                                             (rest word))))
+                                    defs)))
+                          (dictionary<- language)))
+                 :unknown-dictionary (c_? (unknown-dictionary<- language))))
