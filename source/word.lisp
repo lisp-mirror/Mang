@@ -9,6 +9,10 @@
          (append `(,(map (:begin t)))
                  word `(,(map (:end t)))))))
 
+(defun append-words (word1 word2)
+  (append (butlast word1)
+          (rest word2)))
+
 (defun string<-word (glyphs word
                    &key
                      (computer-readable? t))
