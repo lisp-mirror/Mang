@@ -65,42 +65,60 @@
 (defun semantic-shift-results (semantic-shift dictionary)
   (bind (((source (target-pos &rest target))
           semantic-shift))
-    (labels ((_build-gloss (acc registers todo)
-               (if todo
-                   (chop task todo
-                     (_build-gloss (concatenate 'string
-                                                acc
-                                                (if (stringp task)
-                                                    task
-                                                    (@ registers task)))
-                                   registers todo))
-                   acc))
-             (_rec (word registers todo)
-               (if todo
-                   (chop task todo
-                     (bind (((mode pos gloss/register)
-                             task))
-                       (ecase mode
-                         (:part-of-speech
-                          (reduce (lambda (acc gloss continue)
-                                    (map-union acc
-                                               (_rec (append-words word
-                                                                   (first continue))
-                                                     (with registers
-                                                           gloss/register gloss)
-                                                     todo)))
-                                  (@ dictionary pos)
-                                  :initial-value (empty-map)))
-                         (:gloss
-                          (_rec (append-words word (first (@ (@ dictionary pos)
-                                                             gloss/register)))
-                                registers todo)))))
-                   (map ((_build-gloss "" registers target)
-                         word)))))
+    (labels
+        ((_build-gloss (acc registers todo)
+           (if todo
+               (chop task todo
+                 (_build-gloss (concatenate 'string
+                                            acc
+                                            (if (stringp task)
+                                                task
+                                                (@ registers task)))
+                               registers todo))
+               acc))
+         (_rec (word registers todo)
+           (if todo
+               (chop task todo
+                 (bind (((mode pos gloss/register)
+                         task))
+                   (ecase mode
+                     (:part-of-speech
+                      (reduce (lambda (acc gloss continue)
+                                (map-union acc
+                                           (_rec (append-words word
+                                                               (first continue))
+                                                 (with registers
+                                                       gloss/register gloss)
+                                                 todo)))
+                              (@ dictionary pos)
+                              :initial-value (empty-map)))
+                     (:gloss
+                      (_rec (append-words word (first (@ (@ dictionary pos)
+                                                         gloss/register)))
+                            registers todo)))))
+               (map ((_build-gloss "" registers target)
+                     word)))))
       (list target-pos (_rec `(,(map (:begin t))
                                ,(map (:end t)))
                              (empty-map)
                              source)))))
+
+;;; This does not deal with unknown words. This needs to be fixed.
+(defun apply-semantic-shift (semantic-shift language)
+  (bind (((target-pos new-glosses)
+          (semantic-shift-results semantic-shift (dictionary<- language))))
+    (copy-language language
+                   :dictionary
+                   (c_?
+                     (map* ($ (dictionary<- language))
+                           :default (empty-map)
+                           (& (target-pos defs)
+                              (map-union defs
+                                         (image (lambda (gloss word)
+                                                  (values gloss
+                                                          (list word (empty-set)
+                                                                t)))
+                                                new-glosses))))))))
 
 (defun parse-drop-gloss (language)
   (>>!
