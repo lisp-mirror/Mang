@@ -688,7 +688,10 @@
 
 (defun parse-sound-change-section (binary-features valued-features
                                    privative-features source-language
-                                   target-glyphs target-categories)
+                                   &key
+                                     (target-glyphs (glyphs<- source-language))
+                                     (target-categories
+                                      (categories<- source-language)))
   (parse-section "sound changes"
                  (parse-lines (parse-sound-change binary-features
                                                   valued-features
