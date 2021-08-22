@@ -85,7 +85,8 @@
                    "categories"
                    "language"))
      (:file "semantic-change"
-      :depends-on ("language"
+      :depends-on ("word"
+                   "language"
                    "dictionary"
                    "sound-change"))
      (:file "read-mang"
