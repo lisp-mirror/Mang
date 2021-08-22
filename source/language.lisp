@@ -22,11 +22,11 @@
    (%store :type map
            :initarg :store
            :accessor store<-)
-   (%dictionary :initarg :dictionary
-                :initform (empty-map (empty-map))
+   (%dictionary :type map
+                :initarg :dictionary
                 :accessor dictionary<-)
-   (%unknown-dictionary :initarg :unknown-dictionary
-                        :initform (empty-map (empty-map))
+   (%unknown-dictionary :type map
+                        :initarg :unknown-dictionary
                         :accessor unknown-dictionary<-)))
 
 (defun language (&key
@@ -152,8 +152,10 @@
                              (values language t))
                            (values language nil)))
                 (lambda ()
-                  (setf rejected (with rejected (rest word))))
-                allow-homophones? word-categories negative-word-categories)))))
+                  (setf rejected (with rejected (rest word)))
+                  (values language nil))
+                allow-homophones? word-categories negative-word-categories
+                language)))))
 
 (defmethod add-gloss! ((storage language)
                        (word-categories set)
@@ -314,7 +316,7 @@
   ([a]when (@ (@ (unknown-dictionary<- language)
                  part-of-speech)
               gloss)
-    (bind (((:values word accept reject _)
+    (bind (((:values word accept reject)
             (funcall it)))
       (if (y-or-n-p "Accept <~A> for gloss \"~A\"?"
                     (string<-word (glyphs<- language)

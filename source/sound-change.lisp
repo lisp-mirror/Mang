@@ -695,11 +695,13 @@
              (type hash-table *category-registry* *phoneme-registry*))
     (run-fst sound-change word)))
 
-(defun apply-sound-change-to-unknown (word sound-change)
-  (lambda (language)
-    (bind (((:values word word-categories negative-word-categories _ _
-                     allow-homophones?)
-            (funcall word language))
+#+nil
+(defun apply-sound-change-to-unknown! (language part-of-speech gloss
+                                       sound-change)
+  (lambda ()
+    (bind (((:values word accept reject allow-homophones? word-categories
+                     negative-word-categories)
+            (funcall unknown-word))
            (allowed-word-categories
             (union (domain (dictionary<- language))
                    (domain (unknown-dictionary<- language))))
