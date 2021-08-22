@@ -15,3 +15,15 @@
     `(lambda (&rest ,g!args)
        (declare (ignore ,g!args))
        ,@body)))
+
+(defmacro mv-or (&body forms)
+  (when forms
+    (chop form forms
+      (bind ((g!results (gensym "results"))
+             (g!succeed? (gensym "succeed?")))
+        `(bind (((&whole ,g!results ,g!succeed? &rest _)
+                 (multiple-value-list ,form)))
+           (if ,g!succeed?
+               (apply #'values
+                      ,g!results)
+               (mv-or ,@forms)))))))
