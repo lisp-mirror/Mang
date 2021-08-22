@@ -731,9 +731,12 @@
                              (image (lambda (gloss word)
                                       (values
                                        gloss
-                                       (list (apply-sound-changes-to-word
+                                       (cons (apply-sound-changes-to-word
                                               sound-changes (first word))
                                              (rest word))))
                                     defs)))
                           (dictionary<- language)))
+                 ;; Keep the unknown dictionary of the parent language – this
+                 ;; way any descending languages know which glosses this
+                 ;; language knows
                  :unknown-dictionary (c_? (unknown-dictionary<- language))))
