@@ -10,6 +10,12 @@
               (ignorable ,list-var))
      ,@body))
 
+(defmacro if-chop (curr-var list-var then else)
+  `(if ,list-var
+       (chop ,curr-var ,list-var
+         ,then)
+       ,else))
+
 (defmacro spread ((&rest functions)
                   &body args)
   `(mapcar #'funcall
