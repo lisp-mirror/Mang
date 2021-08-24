@@ -53,3 +53,13 @@
       (succeed (copy-language source-language
                               :glyphs glyphs
                               :categories categories))))
+
+(defun parse-diachrony-file (binary-features valued-features privative-features
+                             source-language)
+  (>>!
+    _ (parse-section-header "diachrony")
+    target-language (parse-diachrony-body binary-features valued-features
+                                          privative-features source-language)
+    _ (>> (parse-whitespace)
+          (parse-eof))
+    (succeed target-language)))
