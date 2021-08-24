@@ -97,11 +97,13 @@
                                                          gloss/register)))
                             registers todo)))))
                (map ((_build-gloss "" registers target)
-                     word)))))
-      (list target-pos (_rec `(,(map (:begin t))
+                     (list word (empty-set)
+                           t))))))
+      (map (target-pos (_rec `(,(map (:begin t))
                                ,(map (:end t)))
                              (empty-map)
-                             source)))))
+                             source))
+           :default (empty-map)))))
 
 ;;; This does not deal with unknown words. This needs to be fixed.
 (defun apply-semantic-shift (semantic-shift language)
@@ -127,4 +129,39 @@
                                                 #'map-union))
     _ (>> (parse-whitespace-no-newline)
           (parse-constant "#"))
-    (succeed `(:drop ,gloss))))
+    (succeed (rest gloss))))
+
+(defun parse-semantic-shift-section (language)
+  (parse-section "semantic shift"
+                 (parse-lines (// (<$> (parse-semantic-shift language)
+                                       (lambda (shift)
+                                         `(:semantic-shift ,shift)))
+                                  (<$> (parse-drop-gloss language)
+                                       (lambda (drop)
+                                         `(:drop ,drop)))))))
+
+(defun apply-semantic-shifts (semantic-shifts language)
+  (labels
+      ((_rec (semantic-shifts dictionary)
+         (if-chop shift semantic-shifts
+                  (bind (((mode shift)
+                          shift))
+                    (_rec semantic-shifts
+                          (ecase mode
+                            (:semantic-shift
+                             (map-union dictionary
+                                        (semantic-shift-results shift
+                                                                dictionary)
+                                        #'map-union))
+                            (:drop
+                             (bind (((pos gloss)
+                                     shift))
+                               (map* ($ dictionary)
+                                     :default (empty-map)
+                                     (& (pos defs)
+                                        (less defs gloss))))))))
+                  dictionary)))
+    (copy-language language
+                   :dictionary
+                   (c_?
+                     (_rec semantic-shifts (dictionary<- language))))))
