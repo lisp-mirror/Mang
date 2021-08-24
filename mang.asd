@@ -89,6 +89,10 @@
                    "language"
                    "dictionary"
                    "sound-change"))
+     (:file "diachrony"
+      :depends-on ("language"
+                   "sound-change"
+                   "semantic-change"))
      (:file "read-mang"
       :depends-on ("features"
                    "language"
