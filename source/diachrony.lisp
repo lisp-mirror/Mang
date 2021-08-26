@@ -25,17 +25,14 @@
         new-glyphs (parse-glyph-section binary-features valued-features
                                         privative-features)
         (parse-diachrony-body binary-features valued-features privative-features
-                              source-language
-                              :glyphs (map-union glyphs new-glyphs)
-                              :categories categories))
+                              (copy-language source-language
+                                             :new-glyphs new-glyphs)))
       (>>!
         _ (parse-section-header "augment")
         new-categories (parse-category-section (glyphs<- source-language))
         (parse-diachrony-body binary-features valued-features privative-features
-                              source-language
-                              :glyphs glyphs
-                              :categories (map-union categories
-                                                     new-categories)))
+                              (copy-language source-language
+                                             :new-categories new-categories)))
       (>>!
         sound-changes (parse-sound-change-section binary-features
                                                   valued-features
@@ -57,9 +54,17 @@
 (defun parse-diachrony-file (binary-features valued-features privative-features
                              source-language)
   (>>!
-    _ (parse-section-header "diachrony")
+    _ (>> (parse-section-header "diachrony")
+          (parse-whitespace))
     target-language (parse-diachrony-body binary-features valued-features
                                           privative-features source-language)
     _ (>> (parse-whitespace)
           (parse-eof))
     (succeed target-language)))
+
+(defun load-diachrony-file (file binary-features valued-features
+                            privative-features source-language)
+  (with-file-bus (bus file)
+    (parser-call (parse-diachrony-file binary-features valued-features
+                                       privative-features source-language)
+                 bus)))
