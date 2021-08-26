@@ -1,0 +1,15 @@
+# diachrony
+
+# semantic shift
+[noun]1 + determiner:many => noun:[1].PL
+pronoun:P1 + determiner:many => pronoun:P1.PL
+pronoun:P2 + determiner:many => pronoun:P2.PL
+pronoun:P3 + determiner:many => pronoun:P3.PL
+
+# augment
+# categories
+A := р,ғ,л,й,ў,ԗ,ԕ,х
+O := п,т,к,ӄ,б,д,г,ф,с,ш,ӿ,в,з,ж
+
+# sound changes
+V1A2 → A2V1 / O_C
