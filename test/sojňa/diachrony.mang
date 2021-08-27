@@ -2,9 +2,7 @@
 
 # semantic shift
 [noun]1 + determiner:many => noun:[1].PL
-pronoun:P1 + determiner:many => pronoun:P1.PL
-pronoun:P2 + determiner:many => pronoun:P2.PL
-pronoun:P3 + determiner:many => pronoun:P3.PL
+[pronoun]1 + determiner:many => pronoun:[1].PL
 
 # augment
 # categories
@@ -13,3 +11,42 @@ O := п,т,к,ӄ,б,д,г,ф,с,ш,ӿ,в,з,ж
 
 # sound changes
 V1A2 → A2V1 / O_C
+V → . / VC_#
+
+# semantic shift
+noun:person     + [article]1 => article:[1].PERS
+noun:person.PL  + [article]1 => article:[1].PERS.PL
+noun:animate    + [article]1 => article:[1].ANIM
+noun:animate.PL + [article]1 => article:[1].ANIM.PL
+noun:animate #
+noun:animate.PL #
+noun:stone     + [article]1 => article:[1].INAN
+noun:stone #
+noun:stone.PL => noun:stone
+noun:stone.PL #
+article:DEF #
+article:INDF #
+article:MASS #
+
+# augment
+# glyphs
+ҫ := [palatal , manner = fricative , voice=unvoiced   , ~round]
+ґ := [uvular  , manner = trill     , voice = unvoiced , ~round]
+
+# augment
+# categories
+C := п,т,к,ӄ,б,д,г,м,н,ҥ,ԗ,р,ґ,ғ,ф,с,ш,ҫ,ӿ,в,з,ж,ԕ,л,й,х,ў
+P := п,т,к,ӄ,ԗ,ґ,ф,с,ш,ҫ,ӿ,ԕ,х
+B := б,д,г,г,р,ғ,в,з,ж,й,ў,л,ў
+
+# sound changes
+V1A2 → A2V1 / #C_A
+V1A2 → A2V1 / VC_A
+шх → х
+ху → у
+ӿй → ҫ
+ԗх → ԗ
+ӿғ → ґ
+ӿў → ў
+C1 → . / _C1
+P1 → B1 / _C[voice=voiced]
