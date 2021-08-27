@@ -21,7 +21,8 @@
                          string (if computer-readable?
                                     "<"
                                     "")
-                         (arb (origin phoneme glyphs))
+                         (or (arb (origin phoneme glyphs))
+                             "?")
                          (if computer-readable?
                              ">"
                              "")))
