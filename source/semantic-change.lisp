@@ -124,12 +124,18 @@
 
 (defun parse-drop-gloss (language)
   (>>!
-    gloss (parse-full-existing-gloss (map-union (dictionary<- language)
-                                                (unknown-dictionary<- language)
-                                                #'map-union))
+    gloss (// (parse-full-existing-gloss (map-union (dictionary<- language)
+                                                    (unknown-dictionary<-
+                                                     language)
+                                                    #'map-union))
+              (<$> (parse-from-set (union (domain (dictionary<- language))
+                                          (domain (unknown-dictionary<-
+                                                   language))))
+                   (lambda (pos)
+                     `(:pos ,pos))))
     _ (>> (parse-whitespace-no-newline)
           (parse-constant "#"))
-    (succeed (rest gloss))))
+    (succeed gloss)))
 
 (defun parse-semantic-shift-section (language)
   (parse-section "semantic shift"
@@ -154,12 +160,18 @@
                                                                 dictionary)
                                         #'map-union))
                             (:drop
-                             (bind (((pos gloss)
+                             (bind (((mode &rest args)
                                      shift))
-                               (map* ($ dictionary)
-                                     :default (empty-map)
-                                     (& (pos defs)
-                                        (less defs gloss))))))))
+                               (ecase mode
+                                 (:gloss
+                                  (bind (((pos gloss)
+                                          args))
+                                    (map* ($ dictionary)
+                                          :default (empty-map)
+                                          (& (pos defs)
+                                             (less defs gloss)))))
+                                 (:pos
+                                  (less dictionary (first args)))))))))
                   dictionary)))
     (copy-language language
                    :dictionary
