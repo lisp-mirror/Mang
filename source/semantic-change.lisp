@@ -147,33 +147,34 @@
                                          `(:drop ,drop)))))))
 
 (defun apply-semantic-shifts (semantic-shifts language)
-  (labels
-      ((_rec (semantic-shifts dictionary)
-         (if-chop shift semantic-shifts
-                  (bind (((mode shift)
-                          shift))
-                    (_rec semantic-shifts
-                          (ecase mode
-                            (:semantic-shift
-                             (map-union dictionary
-                                        (semantic-shift-results shift
-                                                                dictionary)
-                                        #'map-union))
-                            (:drop
-                             (bind (((mode &rest args)
-                                     shift))
-                               (ecase mode
-                                 (:gloss
-                                  (bind (((pos gloss)
-                                          args))
-                                    (map* ($ dictionary)
-                                          :default (empty-map)
-                                          (& (pos defs)
-                                             (less defs gloss)))))
-                                 (:pos
-                                  (less dictionary (first args)))))))))
-                  dictionary)))
-    (copy-language language
-                   :dictionary
-                   (c_?
-                     (_rec semantic-shifts (dictionary<- language))))))
+  (bind ((original-dictionary (dictionary<- language)))
+    (labels
+        ((_rec (semantic-shifts dictionary)
+           (if-chop shift semantic-shifts
+                    (bind (((mode shift)
+                            shift))
+                      (_rec semantic-shifts
+                            (ecase mode
+                              (:semantic-shift
+                               (map-union dictionary
+                                          (semantic-shift-results shift
+                                                                  original-dictionary)
+                                          #'map-union))
+                              (:drop
+                               (bind (((mode &rest args)
+                                       shift))
+                                 (ecase mode
+                                   (:gloss
+                                    (bind (((pos gloss)
+                                            args))
+                                      (map* ($ dictionary)
+                                            :default (empty-map)
+                                            (& (pos defs)
+                                               (less defs gloss)))))
+                                   (:pos
+                                    (less dictionary (first args)))))))))
+                    dictionary)))
+      (copy-language language
+                     :dictionary
+                     (c_?
+                       (_rec semantic-shifts (dictionary<- language)))))))
