@@ -31,12 +31,12 @@ article:MASS #
 # augment
 # glyphs
 ҫ := [palatal , manner = fricative , voice=unvoiced   , ~round]
-ґ := [uvular  , manner = trill     , voice = unvoiced , ~round]
+ԟ := [uvular  , manner = trill     , voice = unvoiced , ~round]
 
 # augment
 # categories
-C := п,т,к,ӄ,б,д,г,м,н,ҥ,ԗ,р,ґ,ғ,ф,с,ш,ҫ,ӿ,в,з,ж,ԕ,л,й,х,ў
-P := п,т,к,ӄ,ԗ,ґ,ф,с,ш,ҫ,ӿ,ԕ,х
+C := п,т,к,ӄ,б,д,г,м,н,ҥ,ԗ,р,ԟ,ғ,ф,с,ш,ҫ,ӿ,в,з,ж,ԕ,л,й,х,ў
+P := п,т,к,ӄ,ԗ,ԟ,ф,с,ш,ҫ,ӿ,ԕ,х
 B := б,д,г,г,р,ғ,в,з,ж,й,ў,л,ў
 
 # sound changes
@@ -46,7 +46,7 @@ V1A2 → A2V1 / VC_A
 ху → у
 ӿй → ҫ
 ԗх → ԗ
-ӿғ → ґ
+ӿғ → ԟ
 ӿў → ў
 C1 → . / _C1
 P1 → B1 / _C[voice=voiced]
