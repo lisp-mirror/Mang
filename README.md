@@ -46,7 +46,7 @@ The executable has these command line options:
 ```
 
 
-## Feature Definition
+## Features
 A feature definition file starts with
 
 ```
@@ -57,7 +57,9 @@ For an example of a complete feature definition file see
 `test/features.mang`. That file does not contain any examples of binary
 features.
 
-### Privative Features
+### Definitions
+
+#### Privative Features
 Privative features are either present or absent in a feature set. You can define
 privative features like this:
 
@@ -66,7 +68,7 @@ privative : [feature1], [feature2], [feature3], ...
 ```
 
 
-### Binary Features
+#### Binary Features
 Binary features can be true, false, or unset in a given feature set. Define
 binary features like this:
 
@@ -75,7 +77,7 @@ binary : [feature1], [feature2], [feature3], ...
 ```
 
 
-### Valued Features
+#### Valued Features
 Valued features have a defined set of possible values which they can
 have. Valued features can also be absent from a feature set. They are defined
 via:
