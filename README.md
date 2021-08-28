@@ -29,7 +29,6 @@ $ chmod +x ./simplest-mang
 
 
 # Usage
-## Executable
 The executable has these command line options:
 
 ```
@@ -46,7 +45,7 @@ The executable has these command line options:
 ```
 
 
-## Features
+# Features
 A feature definition file starts with
 
 ```
@@ -57,9 +56,9 @@ For an example of a complete feature definition file see
 `test/features.mang`. That file does not contain any examples of binary
 features.
 
-### Definitions
+## Definitions
 
-#### Privative Features
+### Privative Features
 Privative features are either present or absent in a feature set. You can define
 privative features like this:
 
@@ -68,7 +67,7 @@ privative : [feature1], [feature2], [feature3], ...
 ```
 
 
-#### Binary Features
+### Binary Features
 Binary features can be true, false, or unset in a given feature set. Define
 binary features like this:
 
@@ -77,7 +76,7 @@ binary : [feature1], [feature2], [feature3], ...
 ```
 
 
-#### Valued Features
+### Valued Features
 Valued features have a defined set of possible values which they can
 have. Valued features can also be absent from a feature set. They are defined
 via:
@@ -88,11 +87,11 @@ valued : [feature] := [value1], [value2], [value3], ...
 
 
 
-### Feature Sets
+## Feature Sets
 Feature sets are used in multiple contexts. They are delimited with square
 brackets `[]`. In them different feature states can be specified.
 
-#### Privative
+### Privative
 To denote that a privative feature is present in a feature set, just put its
 name into the feature set:
 
@@ -113,7 +112,7 @@ denotes an unrounded bilabial phoneme.
 
 
 
-#### Binary
+### Binary
 To denote a binary feature being true, write it into the feature set with a
 preceding `+`:
 
@@ -128,7 +127,7 @@ To denote it being false, prefix it with a `-`:
 ```
 
 
-#### Valued
+### Valued
 A valued feature is written with it's name, followed by an `=`, followed by the
 value the feature has:
 
@@ -138,61 +137,61 @@ value the feature has:
 
 
 
-## Language Definition
+# Language Definition
+## Glyphs
+### Disallowed Unicode Symbols
+
+
+### Guaranteed Single Glyph
+
+
+
+## Categories
+
+
+
+## Phonotactics
+### Syllable Based
+
+
+### Cluster Based
+
+
+
+## Learning Markov Chains
+
+
+
+# Dictionary
+
+## Glosses
+
+
+## Parts of Speech
+
+
+## Known Entries
+
+
+## Unknown Entries
+
+
+
+# Diachrony
+## Sound Changes
+
+
+## Semantic Shift
+
+
+## Augment
 ### Glyphs
-#### Disallowed Unicode Symbols
-
-
-#### Guaranteed Single Glyph
-
-
 
 ### Categories
 
 
 
-### Phonotactics
-#### Syllable Based
+## Replace
+### Glyphs
 
-
-#### Cluster Based
-
-
-
-### Learning Markov Chains
-
-
-
-## Dictionary
-
-### Glosses
-
-
-### Parts of Speech
-
-
-### Known Entries
-
-
-### Unknown Entries
-
-
-
-## Diachrony
-### Sound Changes
-
-
-### Semantic Shift
-
-
-### Augment
-#### Glyphs
-
-#### Categories
-
-
-
-### Replace
-#### Glyphs
-
-#### Categories
+### Categories
