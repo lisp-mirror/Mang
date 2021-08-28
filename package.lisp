@@ -22,5 +22,9 @@
    #:has-property)
   (:export
    #:load-feature-file #:load-language-file #:load-dictionary-file
+   #:load-diachrony-file
+   #:read-mang-files
    #:language-gen-word #:add-word #:add-gloss
+   #:ask-known-gloss! #:ask-arbitrary-known-gloss!
+   #:write-dictionary
    ))
