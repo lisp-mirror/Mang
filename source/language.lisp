@@ -54,8 +54,8 @@
                  :generator generator
                  :markov-spec markov-spec
                  :store store
-                 :dictionary (c_in (empty-map (empty-map)))
-                 :unknown-dictionary (c_in (empty-map (empty-map)))))
+                 :dictionary (c-in (empty-map (empty-map)))
+                 :unknown-dictionary (c-in (empty-map (empty-map)))))
 
 (defun copy-language (language
                       &key
@@ -93,22 +93,22 @@
                  :dictionary (if dictionary
                                  (if (typep dictionary 'cell)
                                      dictionary
-                                     (c_in dictionary))
+                                     (c-in dictionary))
                                  (if new-dictionary
                                      (c_? (map-union (dictionary<- language)
                                                      new-dictionary
                                                      #'map-union))
-                                     (c_in (dictionary<- language))))
+                                     (c_? (dictionary<- language))))
                  :unknown-dictionary
                  (if unknown-dictionary
                      (if (typep unknown-dictionary 'cell)
                          unknown-dictionary
-                         (c_in unknown-dictionary))
+                         (c-in unknown-dictionary))
                      (if new-unknown-dictionary
                          (c_? (map-union (unknown-dictionary<- language)
                                          new-unknown-dictionary
                                          #'map-union))
-                         (c_in (unknown-dictionary<- language))))))
+                         (c_? (unknown-dictionary<- language))))))
 
 (defun less-word (dfsm word)
   (bind ((accepting (accepting-states<- dfsm))
@@ -392,7 +392,7 @@
           (funcall accept)
           (funcall reject)))))
 
-(defun ask-arbitary-known-gloss! (language)
+(defun ask-arbitrary-known-gloss! (language)
   (bind (((:values pos defs)
           (arb (filter (lambda (k v)
                          (declare (ignore k))

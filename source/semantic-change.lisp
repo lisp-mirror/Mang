@@ -105,8 +105,8 @@
                              source))
            :default (empty-map)))))
 
-;;; This does not deal with unknown words. This needs to be fixed.
 (defun apply-semantic-shift (semantic-shift language)
+  ;; This does not deal with unknown words. This needs to be fixed.
   (bind (((target-pos new-glosses)
           (semantic-shift-results semantic-shift (dictionary<- language))))
     (copy-language language

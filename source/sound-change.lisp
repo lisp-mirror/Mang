@@ -735,12 +735,4 @@
                                               sound-changes (first word))
                                              (rest word))))
                                     defs)))
-                          (dictionary<- language)))
-                 ;; Keep the unknown dictionary of the parent language – this
-                 ;; way any descending languages know which glosses this
-                 ;; language knows
-                 ;; It doesn't matter that the unknown words in this generate
-                 ;; words in an ancestor language – they'll automatically
-                 ;; translate to words in the descendant language when they're
-                 ;; accepted either way
-                 :unknown-dictionary (c_? (unknown-dictionary<- language))))
+                          (dictionary<- language)))))
