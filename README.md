@@ -27,7 +27,6 @@ $ chmod +x ./simplest-mang
 ```
 
 
-
 # Usage
 The executable has these command line options:
 
@@ -56,8 +55,8 @@ For an example of a complete feature definition file see
 `test/features.mang`. That file does not contain any examples of binary
 features.
 
-## Definitions
 
+## Definitions
 ### Privative Features
 Privative features are either present or absent in a feature set. You can define
 privative features like this:
@@ -86,10 +85,10 @@ valued : [feature] := [value1], [value2], [value3], ...
 ```
 
 
-
 ## Feature Sets
 Feature sets are used in multiple contexts. They are delimited with square
 brackets `[]`. In them different feature states can be specified.
+
 
 ### Privative
 To denote that a privative feature is present in a feature set, just put its
@@ -109,7 +108,6 @@ feature:
 ```
 
 denotes an unrounded bilabial phoneme.
-
 
 
 ### Binary
@@ -136,59 +134,47 @@ value the feature has:
 ```
 
 
-
 # Language Definition
 ## Glyphs
 ### Disallowed Unicode Symbols
 
-
 ### Guaranteed Single Glyph
-
 
 
 ## Categories
 
-
-
 ## Phonotactics
 ### Syllable Based
 
-
 ### Cluster Based
-
 
 
 ## Learning Markov Chains
 
 
-
 # Dictionary
-
 ## Glosses
-
 
 ## Parts of Speech
 
-
 ## Known Entries
 
-
 ## Unknown Entries
-
 
 
 # Diachrony
 ## Sound Changes
 
-
 ## Semantic Shift
+### Combining Words
+
+### Dropping Words
 
 
 ## Augment
 ### Glyphs
 
 ### Categories
-
 
 
 ## Replace
