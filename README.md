@@ -54,7 +54,7 @@ A feature definition file starts with
 ```
 
 For an example of a complete feature definition file see
-`test/features.mang`. This file does not contain any examples of binary
+`test/features.mang`. That file does not contain any examples of binary
 features.
 
 ### Privative Features
@@ -85,12 +85,68 @@ valued : [feature] := [value1], [value2], [value3], ...
 ```
 
 
+### Feature Sets
+Feature sets are used in multiple contexts. They are delimited with square
+brackets `[]`. In them different feature states can be specified.
 
-# Feature Sets
+#### Privative
+To denote that a privative feature is present in a feature set, just put its
+name into the feature set:
+
+```
+[bilabial, round]
+```
+
+denotes a rounded bilabial phoneme.
+
+To denote a privative feature's absence, put a `~` before the name of the
+feature:
+
+```
+[bilabial, ~round]
+```
+
+denotes an unrounded bilabial phoneme.
+
+
+#### Binary
+To denote a binary feature being true, write it into the feature set with a
+preceding `+`:
+
+```
+[+high]
+```
+
+To denote it being false, prefix it with a `-`:
+
+```
+[-high]
+```
+
+
+#### Valued
+A valued feature is written with it's name, followed by an `=`, followed by the
+value the feature has:
+
+```
+[manner=stop]
+```
 
 
 
 ## Language Definition
+### Glyphs
+
+
+### Categories
+
+
+### Phonotactics
+#### Syllable Based
+
+
+#### Cluster Based
+
 
 
 ## Dictionary
