@@ -53,24 +53,17 @@ A feature definition file starts with
 # features
 ```
 
+For an example of a complete feature definition file see
+`test/features.mang`. This file does not contain any examples of binary
+features.
+
 ### Privative Features
 Privative features are either present or absent in a feature set. You can define
 privative features like this:
 
 ```
-privative : feature1, feature2, feature3, ...
+privative : [feature1], [feature2], [feature3], ...
 ```
-
-It is possible to extend a privative feature definition across multiple lines:
-
-```
-privative
-   : bilabial, labiodental, linguolabial, bidental, dental, sublaminal,
-     alveolar, postalveolar, retroflex, palatal, velar, uvular,
-     epiglottal, glottal
-```
-
-The indentation shown is optional.
 
 
 ### Binary Features
@@ -78,10 +71,8 @@ Binary features can be true, false, or unset in a given feature set. Define
 binary features like this:
 
 ```
-binary : high, front
+binary : [feature1], [feature2], [feature3], ...
 ```
-
-A definition like this can be extended across multiple lines.
 
 
 ### Valued Features
@@ -90,21 +81,9 @@ have. Valued features can also be absent from a feature set. They are defined
 via:
 
 ```
-valued : feature := value1, value2, value3, ...
+valued : [feature] := [value1], [value2], [value3], ...
 ```
 
-and can be extended across multiple lines like this:
-
-```
-valued
-: manner
-  := stop
-   , affricate
-   , fricative
-   , ...
-```
-
-The indentation is optional.
 
 
 # Feature Sets
