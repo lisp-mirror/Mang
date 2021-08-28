@@ -46,7 +46,6 @@ The executable has these command line options:
 ```
 
 
-***
 ## Features
 A feature definition file starts with
 
@@ -87,7 +86,6 @@ via:
 valued : [feature] := [value1], [value2], [value3], ...
 ```
 
-***
 
 
 ### Feature Sets
@@ -114,6 +112,7 @@ feature:
 denotes an unrounded bilabial phoneme.
 
 
+
 #### Binary
 To denote a binary feature being true, write it into the feature set with a
 preceding `+`:
@@ -138,7 +137,7 @@ value the feature has:
 ```
 
 
-***
+
 ## Language Definition
 ### Glyphs
 #### Disallowed Unicode Symbols
@@ -147,13 +146,9 @@ value the feature has:
 #### Guaranteed Single Glyph
 
 
-***
-
 
 ### Categories
 
-
-***
 
 
 ### Phonotactics
@@ -163,48 +158,31 @@ value the feature has:
 #### Cluster Based
 
 
-***
-
 
 ### Learning Markov Chains
 
 
-***
+
 ## Dictionary
 
 ### Glosses
 
 
-***
-
-
 ### Parts of Speech
-
-
-***
 
 
 ### Known Entries
 
 
-***
-
-
 ### Unknown Entries
 
 
-***
+
 ## Diachrony
 ### Sound Changes
 
 
-***
-
-
 ### Semantic Shift
-
-
-***
 
 
 ### Augment
@@ -212,8 +190,6 @@ value the feature has:
 
 #### Categories
 
-
-***
 
 
 ### Replace
