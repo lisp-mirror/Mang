@@ -86,7 +86,7 @@ via:
 valued : [feature] := [value1], [value2], [value3], ...
 ```
 
----
+***
 
 
 ### Feature Sets
@@ -140,9 +140,19 @@ value the feature has:
 
 ## Language Definition
 ### Glyphs
+#### Disallowed Unicode Symbols
+
+
+#### Guaranteed Single Glyph
+
+
+***
 
 
 ### Categories
+
+
+***
 
 
 ### Phonotactics
@@ -152,8 +162,35 @@ value the feature has:
 #### Cluster Based
 
 
+***
+
+
+### Learning Markov Chains
+
+
 
 ## Dictionary
+
+### Glosses
+
+
+***
+
+
+### Parts of Speech
+
+
+***
+
+
+### Known Entries
+
+
+***
+
+
+### Unknown Entries
+
 
 
 ## Diachrony
