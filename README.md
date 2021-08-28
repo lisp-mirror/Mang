@@ -46,6 +46,7 @@ The executable has these command line options:
 ```
 
 
+***
 ## Features
 A feature definition file starts with
 
@@ -137,7 +138,7 @@ value the feature has:
 ```
 
 
-
+***
 ## Language Definition
 ### Glyphs
 #### Disallowed Unicode Symbols
@@ -168,7 +169,7 @@ value the feature has:
 ### Learning Markov Chains
 
 
-
+***
 ## Dictionary
 
 ### Glosses
@@ -192,5 +193,30 @@ value the feature has:
 ### Unknown Entries
 
 
-
+***
 ## Diachrony
+### Sound Changes
+
+
+***
+
+
+### Semantic Shift
+
+
+***
+
+
+### Augment
+#### Glyphs
+
+#### Categories
+
+
+***
+
+
+### Replace
+#### Glyphs
+
+#### Categories
