@@ -33,15 +33,15 @@ $ chmod +x ./simplest-mang
 The executable has these command line options:
 
 ```
--f, ----features path/to/features.mang (Required)                      
+-f, --features path/to/features.mang (Required)
      Phonological feature description file
--l, ----language-base path/to/language/base.mang (Required)            
+-l, --language-base path/to/language/base.mang (Required)
      Language description file
--d, ----language-dictionary path/to/language/dictionary.mang (Required)
+-d, --language-dictionary path/to/language/dictionary.mang (Required)
      Language dictionary file
--D, ----diachrony path/to/language/diachrony.mang                      
+-D, --diachrony path/to/language/diachrony.mang
      Diachrony file
--c, ----computer-readable                                              
+-c, --computer-readable
      Print the dictionary in a format that is uniquely parseable by Mang
 ```
 
