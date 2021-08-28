@@ -1,14 +1,14 @@
 # dictionary
 noun, verb, determiner
 
-animal noun       {everything, noun}       {determiner, verb}
-DIST   determiner {everything, determiner} {noun, verb}
-go     verb       {everything, verb}       {determiner, noun}
-hold   verb       {everything, verb}       {determiner, noun}
-love   verb       {everything, verb}       {determiner, noun}
-person noun       {everything, noun}       {determiner, verb}
-plant  noun       {everything, noun}       {determiner, verb}
-PROX   determiner {everything, determiner} {noun, verb}
-stone  noun       {everything, noun}       {determiner, verb}
-use    verb       {everything, verb}       {determiner, noun}
-wind   noun       {everything, noun}       {determiner, verb}
+animal noun       y {everything, noun}       {determiner, verb}
+DIST   determiner n {everything, determiner} {noun, verb}
+go     verb       n {everything, verb}       {determiner, noun}
+hold   verb       n {everything, verb}       {determiner, noun}
+love   verb       n {everything, verb}       {determiner, noun}
+person noun       n {everything, noun}       {determiner, verb}
+plant  noun       y {everything, noun}       {determiner, verb}
+PROX   determiner n {everything, determiner} {noun, verb}
+stone  noun       y {everything, noun}       {determiner, verb}
+use    verb       n {everything, verb}       {determiner, noun}
+wind   noun       y {everything, noun}       {determiner, verb}
