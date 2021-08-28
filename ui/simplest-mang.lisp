@@ -63,7 +63,7 @@
    :meta-var "path/to/language/diachrony.mang")
   (:name :computer-readable?
    :description "Print the dictionary in a format that is uniquely parseable by
-  Mang?"
+  Mang"
    :short #\c
    :long "computer-readable"))
 
