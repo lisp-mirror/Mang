@@ -37,46 +37,48 @@
   (:name :features
    :description "Phonological feature description file"
    :short #\f
-   :long "--features"
+   :long "features"
    :arg-parser #'identity
    :meta-var "path/to/features.mang"
    :required t)
   (:name :language
    :description "Language description file"
    :short #\l
-   :long "--language-base"
+   :long "language-base"
    :arg-parser #'identity
    :meta-var "path/to/language/base.mang"
    :required t)
   (:name :dictionary
    :description "Language dictionary file"
    :short #\d
-   :long "--language-dictionary"
+   :long "language-dictionary"
    :arg-parser #'identity
    :meta-var "path/to/language/dictionary.mang"
    :required t)
   (:name :diachrony
    :description "Diachrony file"
    :short #\D
-   :long "--diachrony"
+   :long "diachrony"
    :arg-parser #'identity
    :meta-var "path/to/language/diachrony.mang")
   (:name :computer-readable?
    :description "Print the dictionary in a format that is uniquely parseable by
   Mang?"
    :short #\c
-   :long "--computer-readable"))
+   :long "computer-readable"))
 
 (defun simplest-mang ()
   (bind (((:values args free)
           (get-opts)))
     ;; TODO: Add error handling for missing arguments
     (assert (not free))
+    (setf *random-state* (make-random-state t))
     (simplest-mang-inner (getf args :features)
                          (getf args :language)
                          (getf args :dictionary)
                          :diachrony-file (getf args :diachrony)
-                         :computer-readable? (get args :computer-readable?))))
+                         :computer-readable? (getf args :computer-readable?))
+    (exit)))
 
 #+sbcl
 (defun compile-simplest-mang ()
