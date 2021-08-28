@@ -86,6 +86,8 @@ via:
 valued : [feature] := [value1], [value2], [value3], ...
 ```
 
+---
+
 
 ### Feature Sets
 Feature sets are used in multiple contexts. They are delimited with square
