@@ -3,6 +3,7 @@
 (asdf:defsystem #:mang
   :description "Library for generating language families"
   :author "Thomas Bartscher <thomas.bartscher@weltraumschlangen.de>"
+  :license "BSD-3"
   :depends-on (#:fset
                #:cl-adt
                #:cl-unicode
