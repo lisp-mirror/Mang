@@ -136,7 +136,17 @@ value the feature has:
 
 # Language Definition
 ## Glyphs
-### Disallowed Unicode Symbols
+### Disallowed Unicode Symbols and Sequences
+The following character sequences are not allowed in glyphs:
+
+```
+( ) { } [ ] < > . , + -> → => = : := | # ## ~
+```
+
+Glyphs may also not contain whitespace. All other unicode symbols may be used in
+glyph names.
+
+
 
 ### Guaranteed Single Glyph
 
