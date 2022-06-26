@@ -26,6 +26,6 @@
    #:read-mang-files
    #:language-gen-word #:add-word #:add-gloss
    #:ask-known-gloss! #:ask-arbitrary-known-gloss!
-   #:write-dictionary #:write-known-dictionary
+   #:write-dictionary #:write-known-dictionary #:write-unknown-dictionary
    #:unknown-dictionary<-
    ))

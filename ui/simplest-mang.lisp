@@ -32,19 +32,26 @@
                                     "Diachrony file failed to load: ~A"))
                   error))
         (if target-file
-            (with-open-file (stream target-file
-                                    :direction :output
-                                    :if-exists :supersede
-                                    :if-does-not-exist :create)
-              (write-known-dictionary stream language
-                                      :computer-readable? computer-readable?)
-              (loop
-                :until (empty? (unknown-dictionary<- language))
-                :do
-                   (bind (((:values _ word-printer)
-                           (ask-arbitrary-known-gloss! language)))
-                     (when word-printer
-                       (funcall word-printer stream computer-readable?)))))
+            (bind ((stream (open target-file
+                                 :direction :output
+                                 :if-exists :supersede
+                                 :if-does-not-exist :create)))
+              (unwind-protect
+                   (progn
+                     (write-known-dictionary stream language
+                                             :computer-readable?
+                                             computer-readable?)
+                     (loop
+                       :until (empty? (unknown-dictionary<- language))
+                       :do
+                          (bind (((:values _ word-printer)
+                                  (ask-arbitrary-known-gloss! language)))
+                            (when word-printer
+                              (funcall word-printer stream
+                                       computer-readable?)))))
+                (terpri stream)
+                (write-unknown-dictionary stream language)
+                (close stream)))
             (loop
               :while (ask-arbitrary-known-gloss! language)
               :finally
