@@ -193,10 +193,14 @@
                                                   (list word word-categories
                                                         allow-homophones?))))
                                    (unknown-dictionary<- language)
-                                   (map* ($ (unknown-dictionary<- language))
-                                         :default (empty-map)
-                                         (& (part-of-speech defs)
-                                            (less defs gloss))))
+                                   (filter (lambda (k v)
+                                             (declare (ignore k))
+                                             (not (empty? v)))
+                                           (map* ($ (unknown-dictionary<-
+                                                     language))
+                                                 :default (empty-map)
+                                                 (& (part-of-speech defs)
+                                                    (less defs gloss)))))
                              ([d]setf (learn (store<- language)
                                              (markov-spec<- language)
                                              word word-categories)
@@ -205,7 +209,20 @@
                              (unless allow-homophones?
                                ([d]setf (less (matcher<- language)
                                               word)))
-                             (values language t))
+                             (values language
+                                     (lambda (stream computer-readable?)
+                                       (format stream
+                                               "~A ~A ~A ~A {~{~A~^,~}}~%"
+                                               gloss part-of-speech
+                                               (string<-word (glyphs<- language)
+                                                             word
+                                                             :computer-readable?
+                                                             computer-readable?)
+                                               (if allow-homophones?
+                                                   "y"
+                                                   "n")
+                                               (convert 'list
+                                                        word-categories)))))
                            (values language nil)))
                 (lambda ()
                   (setf rejected (with rejected (rest word)))
@@ -330,7 +347,7 @@
 (defmethod less-gloss! ((language language)
                         (part-of-speech string)
                         (gloss string))
-  (less-known-gloss! (less-unknown-gloss! part-of-speech gloss)
+  (less-known-gloss! (less-unknown-gloss! language part-of-speech gloss)
                      part-of-speech gloss))
 
 (defun parse-language-file (binary-features valued-features privative-features)

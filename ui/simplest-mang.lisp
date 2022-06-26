@@ -4,6 +4,9 @@
    #:metabang-bind
    #:bind)
   (:shadowing-import-from
+   #:fset
+   #:empty?)
+  (:shadowing-import-from
    #:opts
    #:get-opts #:define-opts #:describe #:exit))
 
@@ -12,6 +15,7 @@
 (defun simplest-mang-inner (feature-file language-file dictionary-file
                             &key
                               diachrony-file
+                              target-file
                               computer-readable?)
   (bind ((language (read-mang-files feature-file language-file
                                     :dictionary-file dictionary-file
@@ -27,11 +31,25 @@
                                    (:diachrony-file-error
                                     "Diachrony file failed to load: ~A"))
                   error))
-        (loop
-          :while (ask-arbitrary-known-gloss! language)
-          :finally
-             (write-dictionary t language
-                               :computer-readable? computer-readable?)))))
+        (if target-file
+            (with-open-file (stream target-file
+                                    :direction :output
+                                    :if-exists :supersede
+                                    :if-does-not-exist :create)
+              (write-known-dictionary stream language
+                                      :computer-readable? computer-readable?)
+              (loop
+                :until (empty? (unknown-dictionary<- language))
+                :do
+                   (bind (((:values _ word-printer)
+                           (ask-arbitrary-known-gloss! language)))
+                     (when word-printer
+                       (funcall word-printer stream computer-readable?)))))
+            (loop
+              :while (ask-arbitrary-known-gloss! language)
+              :finally
+                 (write-dictionary t language
+                                   :computer-readable? computer-readable?))))))
 
 (define-opts
   (:name :features
@@ -61,6 +79,12 @@
    :long "diachrony"
    :arg-parser #'identity
    :meta-var "path/to/language/diachrony.mang")
+  (:name :output
+   :description "Target file for output dictionary"
+   :short #\o
+   :long "output"
+   :arg-parser #'identity
+   :meta-var "path/to/output/dictionary.mang")
   (:name :computer-readable?
    :description "Print the dictionary in a format that is uniquely parseable by
   Mang"
@@ -77,6 +101,7 @@
                          (getf args :language)
                          (getf args :dictionary)
                          :diachrony-file (getf args :diachrony)
+                         :target-file (getf args :output)
                          :computer-readable? (getf args :computer-readable?))
     (exit)))
 
