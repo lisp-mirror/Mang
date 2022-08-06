@@ -1,0 +1,14 @@
+# dictionary
+noun, verb, determiner
+
+animal noun       y {everything, noun}       {determiner, verb}
+DIST   determiner n {everything, determiner} {noun, verb}
+go     verb       n {everything, verb}       {determiner, noun}
+hold   verb       n {everything, verb}       {determiner, noun}
+love   verb       n {everything, verb}       {determiner, noun}
+person noun       n {everything, noun}       {determiner, verb}
+plant  noun       y {everything, noun}       {determiner, verb}
+PROX   determiner n {everything, determiner} {noun, verb}
+stone  noun       y {everything, noun}       {determiner, verb}
+use    verb       n {everything, verb}       {determiner, noun}
+wind   noun       y {everything, noun}       {determiner, verb}

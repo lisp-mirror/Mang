@@ -1,0 +1,86 @@
+# glyphs
+p := [ bilabial    , manner=stop        ]
+b := [ bilabial    , manner=stop        ]
+t := [ alveolar    , manner=stop        ]
+k := [ velar       , manner=stop        ]
+ʔ := [ glottal     , manner=stop        ]
+m := [ bilabial    , manner=nasal       ]
+n := [ alveolar    , manner=nasal       ]
+ɾ := [ alveolar    , manner=tap         ]
+f := [ labiodental , manner=fricative   ]
+s := [ alveolar    , manner=fricative   ]
+x := [ velar       , manner=fricative   ]
+h := [ glottal     , manner=fricative   ]
+ʋ := [ labiodental , manner=approximant ]
+ɹ := [ alveolar    , manner=approximant ]
+ɰ := [ velar       , manner=approximant ]
+
+i := [ height = high , ~round , syllabic ]
+u := [ height = high ,  round , syllabic ]
+a := [ height = low  , ~round , syllabic ]
+
+
+# categories
+C := p,t,k,ʔ,m,n,ɾ,f,s,x,h,ʋ,ɹ,ɰ
+V := i,u,a
+
+
+# nuclei
+V
+
+# begin
+C
+()
+
+# middle
+CC
+
+# end
+C
+()
+
+# min: 1
+# max: 3
+
+
+# markovs
+everything :=
+ end      = uniform {#},
+ C-Zipf   = zipf {m,p,f,t,s,ɾ,n,ɹ,k,h,ɰ,x,ʋ,ʔ} 1.1,
+ V-Zipf   = zipf {a,u,i} 1.05,
+ fallback = 0,
+ long     = 4,
+ mid      = 3,
+ short    = 2,
+ direct   = 1,
+ C        = 2~C,
+ V        = 1~V
+ | (12 long) + (24 mid) + (4 short) + direct
+ + [1000 {fallback + [10 fallback] + [100 fallback]}] + [1000 end]
+ + C-Zipf + V-Zipf + (5 C) + (20 V)
+ + [10 (10 C-Zipf + V-Zipf)]
+ + [100 (100 C-Zipf + V-Zipf)]
+ + [1000 (1000 C-Zipf + V-Zipf)]
+
+determiner :=
+ end      = uniform {#},
+ long     = 2,
+ short    = 1,
+ fallback = 0
+ | long + (2 short) + [100 fallback] + end
+
+noun :=
+ long   = 4,
+ mid    = 3,
+ short  = 2,
+ direct = 1,
+ V      = 1:2~V
+ | (10 long) + (9 V) + (7 mid) + (4 short) + direct
+
+verb :=
+ long   = 4,
+ mid    = 3,
+ short  = 2,
+ direct = 1,
+ V      = 1:2~V
+ | (10 long) + (9 V) + (7 mid) + (4 short) + direct
