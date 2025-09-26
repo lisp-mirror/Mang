@@ -1,3 +1,5 @@
+Migrated to [Codeberg](https://codeberg.org/Aksej/Mang)
+
 # Installation
 ## via Quicklisp
 You will need SBCL and quicklisp already installed, and also need to know how to
